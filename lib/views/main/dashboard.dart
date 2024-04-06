@@ -36,15 +36,20 @@ class _DashboardState extends State<Dashboard> {
 // This function fetch patients' records
   Future<void> _fetchAllPatient() async {
     try {
-      final conn = await onConnToDb();
+      final conn = await onConnToSqliteDb();
       // Fetch all patients
-      var allPatResults = await conn.query('SELECT COUNT(*) FROM patients');
-      int allPatients = allPatResults.first[0];
+      var allPatResults = await conn
+          .rawQuery('SELECT COUNT(*) AS num_of_patient FROM patients');
+      int allPatients = allPatResults.isNotEmpty
+          ? allPatResults.first["num_of_patient"] as int
+          : 0;
 
       // Fetch the patients who are added today
-      var todayResult = await conn.query(
-          'SELECT COUNT(*) FROM patients WHERE DATE(reg_date) = CURDATE()');
-      int todayPat = todayResult.first[0];
+      var todayResult = await conn.rawQuery(
+          'SELECT COUNT(*) AS today_patient FROM patients WHERE DATE(reg_date) = CURDATE()');
+      int todayPat = todayResult.isNotEmpty
+          ? todayResult.first["today_patient"] as int
+          : 0;
       await conn.close();
       setState(() {
         _allPatients = allPatients;
@@ -61,23 +66,24 @@ class _DashboardState extends State<Dashboard> {
   double _curYearTax = 0;
   Future<void> _fetchFinance() async {
     try {
-      final conn = await onConnToDb();
+      final conn = await onConnToSqliteDb();
       // Fetch sum of current month expenses
-      var expResults = await conn.query(
-          'SELECT SUM(total) FROM expense_detail WHERE YEAR(purchase_date) = YEAR(CURDATE()) AND MONTH(purchase_date) = MONTH(CURDATE())');
+      var expResults = await conn.rawQuery(
+          'SELECT SUM(total) AS sum_of_cur_exp FROM expense_detail WHERE YEAR(purchase_date) = YEAR(CURDATE()) AND MONTH(purchase_date) = MONTH(CURDATE())');
       double curMonthExp =
-          (expResults.isNotEmpty && expResults.first[0] != null)
-              ? expResults.first[0]
+          (expResults.isNotEmpty && expResults.first["sum_of_cur_exp"] != null)
+              ? double.parse(expResults.first["sum_of_cur_exp"].toString())
               : 0;
       // Firstly, fetch jalali(hijri shamsi) from current date.
       final jalaliDate = Jalali.now();
       final hijriYear = jalaliDate.year;
       // Query taxes of current hijri year
-      var taxResults = await conn.query(
+      var taxResults = await conn.rawQuery(
           'SELECT total_annual_tax FROM taxes WHERE tax_for_year = ?',
           [hijriYear]);
-      double curYearTax = (taxResults.isNotEmpty && taxResults.first[0] != null)
-          ? taxResults.first[0]
+      double curYearTax = (taxResults.isNotEmpty &&
+              taxResults.first["total_annual_tax"] != null)
+          ? double.parse(taxResults.first["total_annual_tax"].toString())
           : 0;
 
       await conn.close();
@@ -126,9 +132,13 @@ class _DashboardState extends State<Dashboard> {
   List<_PatientsData> patientData = [];
 
   Future<void> _getLastSixMonthPatient() async {
-    final conn = await onConnToDb();
-    final results = await conn.query(
-        'SELECT DATE_FORMAT(reg_date, "%b %d, %Y"), COUNT(*) FROM patients WHERE (reg_date >= CURDATE() - INTERVAL 6 MONTH) GROUP BY MONTH(reg_date)');
+    final conn = await onConnToSqliteDb();
+    final results = await conn.rawQuery('''
+  SELECT strftime('%m %d, %Y', reg_date) as formatted_date, COUNT(*) as count
+  FROM patients
+  WHERE julianday('now') - julianday(reg_date) <= 180
+  GROUP BY strftime('%m', reg_date)
+''');
 
     for (var row in results) {
       patientData.add(
@@ -145,40 +155,58 @@ class _DashboardState extends State<Dashboard> {
   Future<List<_PieDataIncome>> _getPieData() async {
     try {
       int numberOnly = int.parse(incomeDuration.split(' ')[0]);
-      final conn = await onConnToDb();
+      final conn = await onConnToSqliteDb();
       // Fetch total paid amount
-      var result = await conn.query(
-          'SELECT SUM(paid_amount) as total_paid_amount FROM fee_payments WHERE (payment_date >= CURDATE() - INTERVAL ? MONTH)',
-          [numberOnly]);
-      double totalEarnings = result.first['total_paid_amount'] ?? 0;
+      var result = await conn.rawQuery('''
+  SELECT SUM(paid_amount) as total_paid_amount 
+  FROM fee_payments 
+  WHERE julianday('now') - julianday(payment_date) <= ? * 30
+''', [numberOnly]);
+
+      double totalEarnings = (result.first['total_paid_amount'] != null)
+          ? double.parse(result.first['total_paid_amount'].toString())
+          : 0.0;
 
       // Fetch total fee (whole may be earned are still due)
-      result = await conn.query(
-          'SELECT SUM(total_fee) as totalFee FROM appointments WHERE (meet_date >= CURDATE() - INTERVAL ? MONTH)',
-          [numberOnly]);
+      result = await conn.rawQuery('''
+  SELECT SUM(total_fee) as totalFee 
+  FROM appointments 
+  WHERE julianday('now') - julianday(meet_date) <= ? * 30
+''', [numberOnly]);
 
-      double totalFee = result.first['totalFee'] ?? 0;
+      double totalFee = (result.first['totalFee'] != null)
+          ? double.parse(result.first['totalFee'].toString())
+          : 0.0;
 
       // Fetch total expenses
-      result = await conn.query(
-          'SELECT SUM(total) as sum FROM expense_detail  WHERE (purchase_date >= CURDATE() - INTERVAL ? MONTH)',
-          [numberOnly]);
-      double totalExpenses = result.first['sum'] ?? 0;
+      result = await conn.rawQuery('''
+  SELECT SUM(total) as sum 
+  FROM expense_detail 
+  WHERE julianday('now') - julianday(purchase_date) <= ? * 30
+''', [numberOnly]);
+
+      double totalExpenses = (result.first['sum'] != null)
+          ? double.parse(result.first['sum'].toString())
+          : 0.0;
 
       // Whole due amount on patients
-      result = await conn.query('''
-                          SELECT SUM(due_amount) as due_amount 
-                          FROM (
-                              SELECT due_amount 
-                              FROM fee_payments 
-                              WHERE (payment_ID, apt_ID) IN (
-                                  SELECT MAX(payment_ID), apt_ID 
-                                  FROM fee_payments 
-                                   WHERE payment_date >= DATE_SUB(CURDATE(), INTERVAL ? MONTH)
-                                  GROUP BY apt_ID
-                              )
-                          ) AS total_due_amount''', [numberOnly]);
-      double totalDueAmount = result.first['due_amount'] ?? 0;
+      result = await conn.rawQuery('''
+        SELECT SUM(due_amount) as due_amount 
+        FROM (
+            SELECT due_amount 
+            FROM fee_payments 
+            WHERE (payment_ID, apt_ID) IN (
+                SELECT MAX(payment_ID), apt_ID 
+                FROM fee_payments 
+                WHERE julianday('now') - julianday(payment_date) <= ? * 30
+                GROUP BY apt_ID
+            )
+        ) AS total_due_amount
+      ''', [numberOnly]);
+
+      double totalDueAmount = (result.first['due_amount'] != null)
+          ? double.parse(result.first['due_amount'].toString())
+          : 0.0;
       // Total Income
       // netIncome = totalFee - totalExpenses - totalDueAmount;
       netIncome = totalEarnings - totalExpenses - totalDueAmount;
@@ -199,22 +227,23 @@ class _DashboardState extends State<Dashboard> {
 
   Future<void> _alertNotification() async {
     try {
-      final conn = await onConnToDb();
+      final conn = await onConnToSqliteDb();
       // Here Afghanistan Timezone is addressed
-      final results = await conn.query(
-          'SELECT *, CONVERT_TZ(meet_date, @@session.time_zone, "+04:30") as local_meet_date FROM appointments a INNER JOIN patients p ON a.pat_ID = p.pat_ID WHERE status = ? AND meet_date > NOW()',
+      final results = await conn.rawQuery(
+          'SELECT *, meet_date as local_meet_date FROM appointments a INNER JOIN patients p ON a.pat_ID = p.pat_ID WHERE status = ? AND meet_date > NOW()',
           ['Pending']);
 
       // Loop through the results
       for (final row in results) {
         // Get the notification frequency for this appointment
-        final notificationFrequency = row['notification'];
-        final patientId = row['pat_ID'];
-        final patientFName = row['firstname'];
-        final patientLName = row['lastname'] ?? '';
+        final notificationFrequency = row['notification'].toString();
+        final patientId = row['pat_ID'] as int;
+        final patientFName = row['firstname'].toString();
+        final patientLName = row['lastname'].toString();
 
         // Calculate the time until the notification should be shown
-        final appointmentTime = row['local_meet_date'];
+        final appointmentTime =
+            DateTime.parse(row['local_meet_date'].toString());
         // Convert to not contain 'Z' as UTC timezone contains by default
         final formattedApptTime =
             intl.DateFormat('yyyy-MM-dd HH:mm:ss').format(appointmentTime);
