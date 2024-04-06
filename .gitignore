@@ -25,3 +25,6 @@ flutter_dentistry.iml
 # Ignore private folder
 lib/config/private
 
+# Ignore
+local_packages/
+.metadata
