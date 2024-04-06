@@ -1,8 +1,11 @@
 import 'dart:io';
 import 'package:galileo_mysql/galileo_mysql.dart';
 import 'package:flutter_dentistry/config/private/private.dart';
+// For only Android & IOS this package is enough
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+// This package is only required by flutter web & desktop in addtion to sqflite
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 Future<MySqlConnection> onConnToDb() async {
   try {
@@ -23,7 +26,13 @@ Future<MySqlConnection> onConnToDb() async {
 }
 
 // This function connects to SQLite database
+void initSqflite() {
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
+}
+
 Future<Database> onConnToSqliteDb() async {
+  initSqflite(); // Initialize sqflite_common_ffi
   try {
     // Get the path to the database.
     final databasePath = await getDatabasesPath();
@@ -59,7 +68,7 @@ Future<Database> onConnToSqliteDb() async {
       username TEXT,
       password TEXT,
       role TEXT,
-      FOREIGN KEY(staff_ID) REFERENCES staff(staff_ID) ON DELETE CASCASE ON UPDATE CASCADE
+      FOREIGN KEY(staff_ID) REFERENCES staff(staff_ID) ON DELETE CASCADE ON UPDATE CASCADE
     )
   ''');
     });
