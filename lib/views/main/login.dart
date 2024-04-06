@@ -77,12 +77,12 @@ class _LoginState extends State<Login> {
           String firstName = row2["firstname"];
           String lastName = row2["lastname"];
           String position = row2["position"];
-          double salary = row2["salary"];
+          double salary = row2["salary"] ;
           String phone = row2["phone"];
           String tazkira = row2["tazkira_ID"];
           String addr = row2["address"];
-          final userPhoto =
-              row2['photo'] != null ? row2['photo'] as Uint8List : null;
+          /* final userPhoto =
+              row2['photo'] != null ? row2['photo'] as Uint8List : null; */
           // Global variables to be assigned staff info
           StaffInfo.staffID = staffID;
           StaffInfo.staffRole = role;
@@ -108,6 +108,7 @@ class _LoginState extends State<Login> {
           setState(() {
             _isLoggedIn = false;
           });
+          // ignore: avoid_single_cascade_in_expression_statements
           Flushbar(
             backgroundColor: Colors.redAccent,
             flushbarStyle: FlushbarStyle.GROUNDED,
