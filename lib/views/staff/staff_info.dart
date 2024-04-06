@@ -14,7 +14,7 @@ class StaffInfo {
   static String? tazkira;
   static String? address;
   static Function? onUpdateProfile;
-  static Uint8List? userPhoto;
+  static Blob? userPhoto;
   static Uint8List? contractFile;
   static String? fileType;
 

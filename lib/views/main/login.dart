@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,7 +5,6 @@ import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/main/dashboard.dart';
 import 'package:flutter_dentistry/views/staff/staff_info.dart';
-import 'package:galileo_mysql/galileo_mysql.dart';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -56,120 +54,11 @@ class _LoginState extends State<Login> {
     });
   }
 
-  Future<void> _onPressLoginButton(BuildContext context) async {
-    if (_loginFormKey.currentState!.validate()) {
-      try {
-        final conn = await onConnToDb();
-        final userName = _userNameController.text;
-        final pwd = _pwdController.text;
-        var results = await conn.query(
-            'SELECT * FROM staff_auth WHERE username = ? AND password = PASSWORD(?)',
-            [userName, pwd]);
-
-        if (results.isNotEmpty) {
-          final row = results.first;
-          final staffID = row["staff_ID"];
-          final role = row["role"];
-
-          var results2 = await conn
-              .query('SELECT * FROM staff WHERE staff_ID = ?', [staffID]);
-          final row2 = results2.first;
-          String firstName = row2["firstname"];
-          String lastName = row2["lastname"];
-          String position = row2["position"];
-          double salary = row2["salary"];
-          String phone = row2["phone"];
-          String tazkira = row2["tazkira_ID"];
-          String addr = row2["address"];
-          final userPhoto =
-              row2['photo'] != null ? row2['photo'] as Blob : null;
-          // Global variables to be assigned staff info
-          StaffInfo.staffID = staffID;
-          StaffInfo.staffRole = role;
-          StaffInfo.firstName = firstName;
-          StaffInfo.lastName = lastName;
-          StaffInfo.position = position;
-          StaffInfo.salary = salary;
-          StaffInfo.phone = phone;
-          StaffInfo.tazkira = tazkira;
-          StaffInfo.address = addr;
-          StaffInfo.userPhoto = userPhoto;
-
-          /*  Map<String, String> userData = {
-          "staffID": staffID.toString(),
-          "role": role
-        }; */
-          // ignore: use_build_context_synchronously
-          // Navigator.pushNamed(context, '/dashboard', arguments: userData);
-          // ignore: use_build_context_synchronously
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const Dashboard(),
-            ),
-          );
-          setState(() {
-            _isLoggedIn = false;
-          });
-        } else {
-          setState(() {
-            _isLoggedIn = false;
-          });
-          // ignore: avoid_single_cascade_in_expression_statements
-          Flushbar(
-            backgroundColor: Colors.redAccent,
-            flushbarStyle: FlushbarStyle.GROUNDED,
-            flushbarPosition: FlushbarPosition.TOP,
-            messageText: Directionality(
-              textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
-              child: Text(
-                translations[selectedLanguage]?['InvalidUP'] ?? ''.toString(),
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white),
-              ),
-            ),
-            duration: const Duration(seconds: 3),
-          )..show(context);
-
-          _userNameController.clear();
-          _pwdController.clear();
-          setState(() {
-            _isLoggedIn = false;
-          });
-        }
-      } on SocketException catch (e) {
-        // ignore: avoid_single_cascade_in_expression_statements
-        Flushbar(
-          backgroundColor: Colors.redAccent,
-          flushbarStyle: FlushbarStyle.GROUNDED,
-          flushbarPosition: FlushbarPosition.TOP,
-          messageText: Directionality(
-            textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
-            child: const Text(
-              "دیتابیس یافت نشد، لطفا با یک شخص مسلکی تماس بگیرید.",
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-          duration: const Duration(seconds: 3),
-        )..show(context);
-        setState(() {
-          _isLoggedIn = false;
-        });
-      } catch (e) {
-        print('Exception is $e');
-      }
-    } else {
-      setState(() {
-        _isLoggedIn = false;
-      });
-    }
-  }
-
 // This function does login using SQLite
   Future<void> _onLoginToSystem(BuildContext context) async {
     if (_loginFormKey.currentState!.validate()) {
       try {
+        // Create tables and connect with sqlite database.
         final db = await onConnToSqliteDb();
         final userName = _userNameController.text;
         final pwd = _pwdController.text;
@@ -204,7 +93,7 @@ class _LoginState extends State<Login> {
           StaffInfo.phone = phone;
           StaffInfo.tazkira = tazkira;
           StaffInfo.address = addr;
-          StaffInfo.userPhoto = userPhoto;
+          // StaffInfo.userPhoto = userPhoto;
 
           Navigator.push(
             context,
@@ -320,7 +209,7 @@ class _LoginState extends State<Login> {
                                       _userNameFocus.unfocus();
                                       FocusScope.of(context)
                                           .requestFocus(_passwordFocus);
-                                      _onPressLoginButton(context);
+                                      _onLoginToSystem(context);
                                     },
                                     validator: (value) {
                                       if (value!.isEmpty) {
@@ -385,7 +274,7 @@ class _LoginState extends State<Login> {
                                       controller: _pwdController,
                                       onFieldSubmitted: (value) {
                                         _passwordFocus.unfocus();
-                                        _onPressLoginButton(context);
+                                        _onLoginToSystem(context);
                                       },
                                       validator: (value) {
                                         if (value!.isEmpty) {
@@ -486,7 +375,7 @@ class _LoginState extends State<Login> {
                                         setState(() {
                                           _isLoggedIn = true;
                                         });
-                                        _onPressLoginButton(context);
+                                        _onLoginToSystem(context);
                                       },
                                       child: _isLoggedIn
                                           ? const SizedBox(
