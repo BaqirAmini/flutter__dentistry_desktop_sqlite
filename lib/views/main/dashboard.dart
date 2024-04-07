@@ -46,7 +46,7 @@ class _DashboardState extends State<Dashboard> {
 
       // Fetch the patients who are added today
       var todayResult = await conn.rawQuery(
-          'SELECT COUNT(*) AS today_patient FROM patients WHERE DATE(reg_date) = CURDATE()');
+          'SELECT COUNT(*) AS today_patient FROM patients WHERE DATE(reg_date) = date(\'now\')');
       int todayPat = todayResult.isNotEmpty
           ? todayResult.first["today_patient"] as int
           : 0;
@@ -69,7 +69,8 @@ class _DashboardState extends State<Dashboard> {
       final conn = await onConnToSqliteDb();
       // Fetch sum of current month expenses
       var expResults = await conn.rawQuery(
-          'SELECT SUM(total) AS sum_of_cur_exp FROM expense_detail WHERE YEAR(purchase_date) = YEAR(CURDATE()) AND MONTH(purchase_date) = MONTH(CURDATE())');
+          'SELECT SUM(total) AS sum_of_cur_exp FROM expense_detail WHERE strftime(\'%Y\', purchase_date) = strftime(\'%Y\', date(\'now\')) AND strftime(\'%m\', purchase_date) = strftime(\'%m\', date(\'now\'))');
+
       double curMonthExp =
           (expResults.isNotEmpty && expResults.first["sum_of_cur_exp"] != null)
               ? double.parse(expResults.first["sum_of_cur_exp"].toString())
