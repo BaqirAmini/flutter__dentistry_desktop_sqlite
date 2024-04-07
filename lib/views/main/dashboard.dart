@@ -50,7 +50,6 @@ class _DashboardState extends State<Dashboard> {
       int todayPat = todayResult.isNotEmpty
           ? todayResult.first["today_patient"] as int
           : 0;
-      await conn.close();
       setState(() {
         _allPatients = allPatients;
         _todaysPatients = todayPat;
@@ -86,8 +85,6 @@ class _DashboardState extends State<Dashboard> {
               taxResults.first["total_annual_tax"] != null)
           ? double.parse(taxResults.first["total_annual_tax"].toString())
           : 0;
-
-      await conn.close();
       setState(() {
         _currentMonthExp = curMonthExp;
         _curYearTax = curYearTax;
@@ -145,8 +142,6 @@ class _DashboardState extends State<Dashboard> {
       patientData.add(
           _PatientsData(row[0].toString(), double.parse(row[1].toString())));
     }
-
-    await conn.close();
     setState(() {
       _isPatientDataInitialized = true;
     });
@@ -211,7 +206,6 @@ class _DashboardState extends State<Dashboard> {
       // Total Income
       // netIncome = totalFee - totalExpenses - totalDueAmount;
       netIncome = totalEarnings - totalExpenses - totalDueAmount;
-      await conn.close();
       return [
         _PieDataIncome(_transExpenses, totalExpenses, Colors.red),
         _PieDataIncome(_transEarnings, totalEarnings, Colors.green),
@@ -295,7 +289,6 @@ class _DashboardState extends State<Dashboard> {
           print('appointment time: $formattedApptTime');
         }
       }
-      await conn.close();
     } catch (e) {
       print('Error occured with notification: $e');
     }
