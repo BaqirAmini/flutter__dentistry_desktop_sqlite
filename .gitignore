@@ -4,9 +4,6 @@ build/
 # ignore flutter folder
 flutter/
 
-# ignore .vscode folder
-.vscode/
-
 # ignore .idea folder
 .idea/
 
