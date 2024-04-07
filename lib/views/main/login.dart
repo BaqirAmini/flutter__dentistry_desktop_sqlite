@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -62,9 +65,13 @@ class _LoginState extends State<Login> {
         final db = await onConnToSqliteDb();
         final userName = _userNameController.text;
         final pwd = _pwdController.text;
+        // Do some hashing for password to see if it matches with what is store into database
+        var bytes = utf8.encode(pwd);
+        var digest = sha256.convert(bytes);
+        var hashedPwd = digest.toString();
         List<Map> results = await db.rawQuery(
             'SELECT * FROM staff_auth WHERE username = ? AND password = ?',
-            [userName, pwd]);
+            [userName, hashedPwd]);
 
         if (results.isNotEmpty) {
           final row = results.first;
@@ -74,13 +81,13 @@ class _LoginState extends State<Login> {
           List<Map> results2 = await db
               .rawQuery('SELECT * FROM staff WHERE staff_ID = ?', [staffID]);
           final row2 = results2.first;
-          String firstName = row2["firstname"];
-          String lastName = row2["lastname"];
-          String position = row2["position"];
-          double salary = row2["salary"] ;
-          String phone = row2["phone"];
-          String tazkira = row2["tazkira_ID"];
-          String addr = row2["address"];
+          String? firstName = row2["firstname"];
+          String? lastName = row2["lastname"];
+          String? position = row2["position"];
+          double? salary = row2["salary"];
+          String? phone = row2["phone"];
+          String? tazkira = row2["tazkira_ID"];
+          String? addr = row2["address"];
           /* final userPhoto =
               row2['photo'] != null ? row2['photo'] as Uint8List : null; */
           // Global variables to be assigned staff info
