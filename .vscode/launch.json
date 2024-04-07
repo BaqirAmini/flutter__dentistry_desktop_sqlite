@@ -4,19 +4,13 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
         {
-            "name": "Dart",
-            "type": "dart",
-            "request": "launch",
-        },
-        {
-            "name": "flutter_dentistry_desktop",
-            "request": "launch",
-            "type": "dart",
-            // "program": "lib/views/main/splashscreen.dart",
-            "program": "lib/views/main/login.dart",
-            // "program": "lib/views/patients/new_patient.dart",
+        "name": "flutter_dentistry_desktop",
+        "request": "launch",
+        "type": "dart",
+        "program": "lib/views/main/splashscreen.dart",
+        // "program": "lib/views/main/login.dart",
+        // "program": "lib/views/patients/new_patient.dart",
         },
         {
             "name": "flutter_dentistry_desktop (profile mode)",
