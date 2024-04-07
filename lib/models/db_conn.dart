@@ -243,7 +243,7 @@ Future<Database> onConnToSqliteDb() async {
             tax_rate REAL,
             total_annual_tax REAL NOT NULL,
             TIN TEXT NOT NULL,
-            tax_of_year INTEGER NOT NULL
+            tax_for_year INTEGER NOT NULL
           )
         ''');
       // TABLE = tax_payments
