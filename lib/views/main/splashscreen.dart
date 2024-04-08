@@ -73,8 +73,8 @@ class _SplashScreenState extends State<SplashScreen> {
             'SELECT * FROM staff_auth WHERE username = ?', ['admin123']);
         if (query1.isEmpty) {
           int resultStaff = await conn.rawInsert(
-              'INSERT INTO staff (firstname, lastname, phone, family_phone1) VALUES (?, ?, ?, ?)',
-              ['Ahmad', 'Ahmadi', '1234567890', '1234567891']);
+              'INSERT INTO staff (firstname, lastname, position, phone, family_phone1) VALUES (?, ?, ?, ?, ?)',
+              ['Ahmad', 'Ahmadi', 'داکتر دندان', '1234567890', '1234567891']);
           if (resultStaff > 0) {
             // Select to see if it exsits.
             var selectStaff = await conn.rawQuery(

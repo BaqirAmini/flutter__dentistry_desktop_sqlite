@@ -224,29 +224,35 @@ class _MyDataTableState extends State<MyDataTable> {
   List<MyStaff> _data = [];
 
   Future<void> _fetchData() async {
-    final conn = await onConnToDb();
-    final queryResult = await conn.query(
-        'SELECT photo, firstname, lastname, position, salary, phone, tazkira_ID, address, staff_ID, DATE_FORMAT(hire_date, "%M %d, %Y"), prepayment, family_phone1, family_phone2, contract_file, file_type FROM staff ORDER BY staff_ID desc');
-    conn.close();
+    final conn = await onConnToSqliteDb();
+    final queryResult = await conn.rawQuery(
+        'SELECT photo, firstname, lastname, position, salary, phone, tazkira_ID, address, staff_ID, strftime("%m %d, %Y", hire_date), prepayment, family_phone1, family_phone2, contract_file, file_type FROM staff ORDER BY staff_ID desc');
 
     _data = queryResult.map((row) {
       return MyStaff(
-        photo: row[0],
-        firstName: row[1],
-        lastName: row[2],
-        position: row[3],
-        salary: row[4],
-        phone: row[5],
-        tazkira: row[6],
-        address: row[7],
-        staffID: row[8],
-        hireDate: row[9].toString(),
-        prepayment: row[10] ?? 0,
-        familyPhone1: row[11] ?? '',
-        familyPhone2: row[12] ?? '',
-        contractFile:
-            row[13] == null ? null : Uint8List.fromList(row[13].toBytes()),
-        fileType: row[14],
+        photo: row["photo"] == null ? null : row["photo"] as Blob,
+        firstName: row["firstname"].toString(),
+        lastName: row["lastname"] == null ? '' : row["lastname"].toString(),
+        position: row["position"] == null ? '' : row["position"].toString(),
+        salary: row["salary"] == null ? 0.0 : row["salary"] as double,
+        phone: row["phone"] == null ? '' : row["phone"].toString(),
+        tazkira:
+            row["tazkira_ID"] == null ? '' : row["tazkira_ID"].toString(),
+        address: row["address"] == null ? '' : row["address"].toString(),
+        staffID: row["staff_ID"] as int,
+        hireDate: row["hire_date"] == null ? '' : row["hire_date"].toString(),
+        prepayment:
+            row["prepayment"] == null ? 0.0 : row["prepayment"] as double,
+        familyPhone1: row["family_phone1"] == null
+            ? ''
+            : row["family_phone1"].toString(),
+        familyPhone2: row["family_phone2"] == null
+            ? ''
+            : row["family_phone2"].toString(),
+        contractFile: row["contract_file"] == null
+            ? null
+            : Uint8List.fromList(row["contract_file"] as Uint8List),
+        fileType: row["contract_file"].toString(),
       );
     }).toList();
     _filteredData = List.from(_data);
@@ -330,8 +336,10 @@ class _MyDataTableState extends State<MyDataTable> {
                 ElevatedButton(
                   onPressed: () async {
                     if (await Features.staffLimitReached()) {
-                      _onShowSnack(Colors.red,
-                          translations[selectedLanguage]?['RecordLimitMsg'] ?? '');
+                      _onShowSnack(
+                          Colors.red,
+                          translations[selectedLanguage]?['RecordLimitMsg'] ??
+                              '');
                     } else {
                       // ignore: use_build_context_synchronously
                       Navigator.push(
@@ -720,6 +728,7 @@ class MyData extends DataTableSource {
                   textDirection:
                       isEnglish ? TextDirection.ltr : TextDirection.rtl,
                   child: Builder(builder: (BuildContext context) {
+                    DateTime? hireDateTime;
                     return ListTile(
                       leading: const Icon(
                         Icons.edit,
@@ -731,26 +740,50 @@ class MyData extends DataTableSource {
                       ),
                       onTap: () async {
                         int staffId = data[index].staffID;
-                        final conn = await onConnToDb();
-                        final results = await conn.query(
+                        final conn = await onConnToSqliteDb();
+                        final results = await conn.rawQuery(
                             'SELECT * FROM staff WHERE staff_ID = ?',
                             [staffId]);
                         final staffRow = results.first;
-                        String firstName = staffRow['firstname'];
-                        String lastName = staffRow['lastname'];
-                        String position = staffRow['position'];
-                        double salary = staffRow['salary'];
-                        double prePayment = staffRow['prepayment'] ?? 0;
-                        DateTime? hireDateTime = staffRow['hire_date'];
+                        String firstName = staffRow['firstname'] == null
+                            ? ''
+                            : staffRow['firstname'].toString();
+                        String lastName = staffRow['lastname'] == null
+                            ? ''
+                            : staffRow['lastname'].toString();
+                        String position = staffRow['position'] == null
+                            ? ''
+                            : staffRow['position'].toString();
+                        double salary = staffRow['salary'] == null
+                            ? 0.0
+                            : staffRow['salary'] as double;
+                        double prePayment = staffRow['prepayment'] == null
+                            ? 0.0
+                            : staffRow['prepayment'] as double;
+                        if (staffRow['hire_date'] != null &&
+                            staffRow['hire_date'].toString().isNotEmpty) {
+                          hireDateTime =
+                              DateTime.parse(staffRow['hire_date'].toString());
+                        }
                         String? hireDate = hireDateTime == null
                             ? null
                             : intl2.DateFormat('yyyy-MM-dd')
-                                .format(hireDateTime);
-                        String phone = staffRow['phone'];
-                        String fPhone1 = staffRow['family_phone1'];
-                        String fPhone2 = staffRow['family_phone2'] ?? '';
-                        String tazkira = staffRow['tazkira_ID'];
-                        String address = staffRow['address'];
+                                .format(hireDateTime!);
+                        String phone = staffRow['phone'] == null
+                            ? ''
+                            : staffRow['phone'].toString();
+                        String fPhone1 = staffRow['family_phone1'] == null
+                            ? ''
+                            : staffRow['family_phone1'].toString();
+                        String fPhone2 = staffRow['family_phone2'] == null
+                            ? ''
+                            : staffRow['family_phone2'].toString();
+                        String tazkira = staffRow['tazkira_ID'] == null
+                            ? ''
+                            : staffRow['tazkira_ID'].toString();
+                        String address = staffRow['address'] == null
+                            ? ''
+                            : staffRow['address'].toString();
                         // ignore: use_build_context_synchronously
                         Navigator.pop(context);
                         // ignore: use_build_context_synchronously
@@ -1666,7 +1699,7 @@ onEditStaff(
                         onPressed: () async {
                           try {
                             String? fileType;
-                            final conn = await onConnToDb();
+                            final conn = await onConnToSqliteDb();
                             String fname = nameController.text;
                             String lname = lastNameController.text;
                             String pos = StaffInfo.staffDefaultPosistion;
@@ -1695,7 +1728,7 @@ onEditStaff(
                             if (selectedContractFile == null) {
                               if (formKey1.currentState!.validate()) {
                                 if (isIntern) {
-                                  final results = await conn.query(
+                                  final results = await conn.rawUpdate(
                                       'UPDATE staff SET firstname = ?, lastname = ?, position = ?,  prepayment = ?, hire_date = ?, phone = ?,  family_phone1 = ?, family_phone2 = ?, tazkira_ID = ?, address = ? WHERE staff_ID = ?',
                                       [
                                         fname,
@@ -1710,7 +1743,7 @@ onEditStaff(
                                         addr,
                                         staffID
                                       ]);
-                                  if (results.affectedRows! > 0) {
+                                  if (results > 0) {
                                     _onShowSnack(
                                         Colors.green,
                                         translations[selectedLanguage]
@@ -1727,7 +1760,7 @@ onEditStaff(
                                     Navigator.pop(context);
                                   }
                                 } else {
-                                  final results = await conn.query(
+                                  final results = await conn.rawUpdate(
                                       'UPDATE staff SET firstname = ?, lastname = ?, position = ?, salary = ?, hire_date = ?, phone = ?,  family_phone1 = ?, family_phone2 = ?, tazkira_ID = ?, address = ? WHERE staff_ID = ?',
                                       [
                                         fname,
@@ -1742,7 +1775,7 @@ onEditStaff(
                                         addr,
                                         staffID
                                       ]);
-                                  if (results.affectedRows! > 0) {
+                                  if (results > 0) {
                                     _onShowSnack(
                                         Colors.green,
                                         translations[selectedLanguage]
@@ -1767,7 +1800,7 @@ onEditStaff(
                                     contractFileMessage.value =
                                         'اندازه این فایل باید 1 میگابایت یا کمتر باشد.';
                                   } else {
-                                    final results = await conn.query(
+                                    final results = await conn.rawUpdate(
                                         'UPDATE staff SET firstname = ?, lastname = ?, position = ?, prepayment = ?, hire_date = ?, phone = ?,  family_phone1 = ?, family_phone2 = ?, tazkira_ID = ?, address = ?, contract_file = ?, file_type = ? WHERE staff_ID = ?',
                                         [
                                           fname,
@@ -1784,7 +1817,7 @@ onEditStaff(
                                           fileType,
                                           staffID
                                         ]);
-                                    if (results.affectedRows! > 0) {
+                                    if (results > 0) {
                                       _onShowSnack(
                                           Colors.green,
                                           translations[selectedLanguage]
@@ -1806,7 +1839,7 @@ onEditStaff(
                                     contractFileMessage.value =
                                         'اندازه این فایل باید 1 میگابایت یا کمتر باشد.';
                                   } else {
-                                    final results = await conn.query(
+                                    final results = await conn.rawUpdate(
                                         'UPDATE staff SET firstname = ?, lastname = ?, position = ?, salary = ?, hire_date = ?, phone = ?,  family_phone1 = ?, family_phone2 = ?, tazkira_ID = ?, address = ?, contract_file = ?, file_type = ? WHERE staff_ID = ?',
                                         [
                                           fname,
@@ -1823,7 +1856,7 @@ onEditStaff(
                                           fileType,
                                           staffID
                                         ]);
-                                    if (results.affectedRows! > 0) {
+                                    if (results > 0) {
                                       _onShowSnack(
                                           Colors.green,
                                           translations[selectedLanguage]
@@ -2137,8 +2170,11 @@ onCreateUserAccount(BuildContext context, int staff_id) {
                                 if (await Features.userLimitReached()) {
                                   // ignore: use_build_context_synchronously
                                   Navigator.pop(context);
-                                  _onShowSnack(Colors.red,
-                                      translations[selectedLanguage]?['RecordLimitMsg'] ?? '');
+                                  _onShowSnack(
+                                      Colors.red,
+                                      translations[selectedLanguage]
+                                              ?['RecordLimitMsg'] ??
+                                          '');
                                 } else {
                                   var queryResult = await conn.query(
                                       'INSERT INTO staff_auth (staff_ID, username, password, role) VALUES (?, ?, PASSWORD(?), ?)',

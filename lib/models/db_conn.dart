@@ -46,14 +46,14 @@ Future<Database> onConnToSqliteDb() async {
       await db.execute('''
           CREATE TABLE staff(
             staff_ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            firstname TEXT,
-            lastname TEXT,
+            firstname TEXT NOT NULL,
+            lastname TEXT NOT NULL,
             hire_date TEXT,
             position TEXT,
             salary REAL,
             prepayment REAL,
-            phone TEXT,
-            family_phone1 TEXT,
+            phone TEXT NOT NULL,
+            family_phone1 TEXT NOT NULL,
             tazkira_ID TEXT,
             photo BLOB,
             contract_file BLOB,
@@ -66,10 +66,10 @@ Future<Database> onConnToSqliteDb() async {
       await db.execute('''
           CREATE TABLE staff_auth(
             auth_ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            staff_ID INTEGER,
-            username TEXT,
-            password TEXT,
-            role TEXT,
+            staff_ID INTEGER NOT NULL,
+            username TEXT NOT NULL,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL,
             FOREIGN KEY(staff_ID) REFERENCES staff(staff_ID) ON DELETE CASCADE ON UPDATE CASCADE
           )
         ''');
@@ -77,14 +77,14 @@ Future<Database> onConnToSqliteDb() async {
       await db.execute('''
           CREATE TABLE patients(
             pat_ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            staff_ID INTEGER,
+            staff_ID INTEGER NOT NULL,
             firstname TEXT,
             lastname TEXT,
-            sex TEXT,
-            age INTEGER,
+            sex TEXT NOT NULL,
+            age INTEGER NOT NULL,
             marital_status TEXT,
             phone TEXT,
-            reg_date TEXT,
+            reg_date TEXT NOT NULL,
             blood_group TEXT,
             address TEXT,
             photo BLOB,

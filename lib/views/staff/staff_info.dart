@@ -31,9 +31,9 @@ class StaffInfo {
   static Uint8List? uint8list;
   // This function fetches staff photo
   static Future<void> onFetchStaffPhoto(int staffID) async {
-    final conn = await onConnToDb();
+    final conn = await onConnToSqliteDb();
     final result = await conn
-        .query('SELECT photo FROM staff WHERE staff_ID = ?', [staffID]);
+        .rawQuery('SELECT photo FROM staff WHERE staff_ID = ?', [staffID]);
 
     Blob? staffPhoto =
         result.first['photo'] != null ? result.first['photo'] as Blob : null;
@@ -41,6 +41,5 @@ class StaffInfo {
     // Convert image of BLOB type to binary first.
     uint8list =
         staffPhoto != null ? Uint8List.fromList(staffPhoto.toBytes()) : null;
-    await conn.close();
   }
 }

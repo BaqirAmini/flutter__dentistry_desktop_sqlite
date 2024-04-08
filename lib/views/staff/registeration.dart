@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
-import 'package:flutter_dentistry/views/staff/staff.dart';
 import 'package:flutter_dentistry/views/staff/staff_info.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart' as intl2;
@@ -995,7 +994,7 @@ class _NewStaffFormState extends State<NewStaffForm> {
                           fileType = p.extension(_selectedContractFile!.path);
                         }
                         try {
-                          final conn = await onConnToDb();
+                          final conn = await onConnToSqliteDb();
                           if (!_isIntern) {
                             if (_newStaffFormKey.currentState!.validate() &&
                                 _selectedContractFile != null) {
@@ -1006,7 +1005,7 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                 _contractFileMessage.value =
                                     'لطفاً قرارداد خط را انتخاب کنید.';
                               } else {
-                                await conn.query(
+                                await conn.rawInsert(
                                     'INSERT INTO staff (firstname, lastname, hire_date, position, salary, prepayment, phone, family_phone1, family_phone2, contract_file, file_type, tazkira_ID, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                                     [
                                       fname,
@@ -1024,7 +1023,6 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                       addr
                                     ]);
                                 Navigator.of(context).pop();
-                                await conn.close();
                               }
                             }
                           } else {
@@ -1035,7 +1033,7 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                   _contractFileMessage.value =
                                       'اندازه این فایل باید 1 میگابایت یا کمتر باشد.';
                                 } else {
-                                  await conn.query(
+                                  await conn.rawInsert(
                                       'INSERT INTO staff (firstname, lastname, hire_date, position, salary, prepayment, phone, family_phone1, family_phone2, contract_file, file_type, tazkira_ID, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                                       [
                                         fname,
@@ -1053,12 +1051,11 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                         addr
                                       ]);
                                   Navigator.of(context).pop();
-                                  await conn.close();
                                 }
                               }
                             } else {
                               if (_newStaffFormKey.currentState!.validate()) {
-                                await conn.query(
+                                await conn.rawInsert(
                                     'INSERT INTO staff (firstname, lastname, hire_date, position, salary, prepayment, phone, family_phone1, family_phone2, tazkira_ID, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                                     [
                                       fname,
@@ -1074,7 +1071,6 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                       addr
                                     ]);
                                 Navigator.of(context).pop();
-                                await conn.close();
                               }
                             }
                           }
