@@ -252,7 +252,7 @@ class _MyDataTableState extends State<MyDataTable> {
         contractFile: row["contract_file"] == null
             ? null
             : Uint8List.fromList(row["contract_file"] as Uint8List),
-        fileType: row["contract_file"].toString(),
+        fileType: row["file_type"].toString(),
       );
     }).toList();
     _filteredData = List.from(_data);
