@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:crypto/crypto.dart';
+import 'package:ffi/ffi.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -29,11 +32,23 @@ int pdfOutputCounter = 1;
 int excelOutputCounter = 1;
 // This function create excel output when called.
 void createExcelForStaff() async {
-  final conn = await onConnToDb();
+  final conn = await onConnToSqliteDb();
 
   // Query data from the database.
-  var results = await conn.query(
-      'SELECT staff_ID, firstname, lastname, position, salary, phone, tazkira_ID, COALESCE(address, \' \'), COALESCE(DATE_FORMAT(hire_date, "%M %d, %Y"), \'--\'), COALESCE(CONCAT(prepayment, \' افغانی \'), \'--\'), family_phone1 FROM staff');
+  var results = await conn.rawQuery('''SELECT 
+  staff_ID, 
+  firstname, 
+  lastname, 
+  position, 
+  salary, 
+  phone, 
+  tazkira_ID, 
+  COALESCE(address, ' ') as address, 
+  COALESCE(strftime('%m %d, %Y', hire_date), '--') as hire_date, 
+  COALESCE(prepayment || ' افغانی ', '--') as prepayment, 
+  family_phone1 
+FROM staff
+''');
 
   // Create a new Excel document.
   final xls.Workbook workbook = xls.Workbook();
@@ -63,8 +78,11 @@ void createExcelForStaff() async {
   var rowIndex =
       1; // Start from the second row as the first row is used for column titles.
   for (var row in results) {
-    for (var i = 0; i < row.length; i++) {
-      sheet.getRangeByIndex(rowIndex + 1, i + 1).setText(row[i].toString());
+    var columnValues = row.values.toList();
+    for (var i = 0; i < columnValues.length; i++) {
+      sheet
+          .getRangeByIndex(rowIndex + 1, i + 1)
+          .setText(columnValues[i].toString());
     }
     rowIndex++;
   }
@@ -82,18 +100,27 @@ void createExcelForStaff() async {
 
   // Open the file
   await OpenFile.open(file.path);
-
-  // Close the database connection.
-  await conn.close();
 }
 
 // This function generates PDF output when called.
 void createPdfForStaff() async {
-  final conn = await onConnToDb();
+  final conn = await onConnToSqliteDb();
 
   // Query data from the database.
-  var results = await conn.query(
-      'SELECT staff_ID, firstname, lastname, position, salary, phone, tazkira_ID, COALESCE(address, \' \'), COALESCE(DATE_FORMAT(hire_date, "%M %d, %Y"), \'--\'), COALESCE(CONCAT(prepayment, \' افغانی \'), \'--\'), family_phone1 FROM staff');
+  var results = await conn.rawQuery('''SELECT 
+  staff_ID, 
+  firstname, 
+  lastname, 
+  position, 
+  salary, 
+  phone, 
+  tazkira_ID, 
+  COALESCE(address, ' ') as address, 
+  COALESCE(strftime('%m %d, %Y', hire_date), '--') as hire_date, 
+  COALESCE(prepayment || ' افغانی ', '--') as prepayment, 
+  family_phone1 
+FROM staff
+''');
 
   // Create a new PDF document.
   final pdf = pw.Document();
@@ -126,8 +153,8 @@ void createPdfForStaff() async {
           context: context,
           data: <List<String>>[
             columnTitles,
-            ...results
-                .map((row) => row.map((item) => item.toString()).toList()),
+            ...results.map((row) =>
+                row.values.map((item) => item?.toString() ?? '--').toList()),
           ],
           border: null, // Remove cell borders
           headerStyle: pw.TextStyle(
@@ -154,9 +181,6 @@ void createPdfForStaff() async {
 
   // Open the file
   await OpenFile.open(file.path);
-
-  // Close the database connection.
-  await conn.close();
 }
 
 // This is shows snackbar when called
@@ -236,19 +260,16 @@ class _MyDataTableState extends State<MyDataTable> {
         position: row["position"] == null ? '' : row["position"].toString(),
         salary: row["salary"] == null ? 0.0 : row["salary"] as double,
         phone: row["phone"] == null ? '' : row["phone"].toString(),
-        tazkira:
-            row["tazkira_ID"] == null ? '' : row["tazkira_ID"].toString(),
+        tazkira: row["tazkira_ID"] == null ? '' : row["tazkira_ID"].toString(),
         address: row["address"] == null ? '' : row["address"].toString(),
         staffID: row["staff_ID"] as int,
         hireDate: row["hire_date"] == null ? '' : row["hire_date"].toString(),
         prepayment:
             row["prepayment"] == null ? 0.0 : row["prepayment"] as double,
-        familyPhone1: row["family_phone1"] == null
-            ? ''
-            : row["family_phone1"].toString(),
-        familyPhone2: row["family_phone2"] == null
-            ? ''
-            : row["family_phone2"].toString(),
+        familyPhone1:
+            row["family_phone1"] == null ? '' : row["family_phone1"].toString(),
+        familyPhone2:
+            row["family_phone2"] == null ? '' : row["family_phone2"].toString(),
         contractFile: row["contract_file"] == null
             ? null
             : Uint8List.fromList(row["contract_file"] as Uint8List),
@@ -703,15 +724,15 @@ class MyData extends DataTableSource {
                       onTap: () async {
                         int staffId = data[index].staffID;
                         Navigator.pop(context);
-                        var conn = await onConnToDb();
-                        var results = await conn.query(
+                        var conn = await onConnToSqliteDb();
+                        var results = await conn.rawQuery(
                             'SELECT username, password, role FROM staff_auth WHERE staff_ID = ?',
                             [staffId]);
 
                         if (results.isNotEmpty) {
                           final row = results.first;
-                          final userName = row['username'];
-                          final role = row['role'];
+                          final userName = row['username'].toString();
+                          final role = row['role'].toString();
                           // ignore: use_build_context_synchronously
                           onUpdateUserAccount(context, staffId, userName, role);
                         } else {
@@ -822,12 +843,12 @@ class MyData extends DataTableSource {
                     ),
                     onTap: () async {
                       int staffID = data[index].staffID;
-                      final conn = await onConnToDb();
-                      final results = await conn.query(
+                      final conn = await onConnToSqliteDb();
+                      final results = await conn.rawQuery(
                           'SELECT * FROM staff WHERE staff_ID = ?', [staffID]);
                       final row = results.first;
-                      String firstName = row['firstname'];
-                      String lastName = row['lastname'];
+                      String firstName = row['firstname'].toString();
+                      String lastName = row['lastname'].toString();
                       // ignore: use_build_context_synchronously
                       Navigator.pop(context);
                       // ignore: use_build_context_synchronously
@@ -879,15 +900,14 @@ onDeleteStaff(BuildContext context, int staffId, String firstName,
             ),
             TextButton(
               onPressed: () async {
-                final conn = await onConnToDb();
-                final deleteResult = await conn
-                    .query('DELETE FROM staff WHERE staff_ID = ?', [staffId]);
-                if (deleteResult.affectedRows! > 0) {
+                final conn = await onConnToSqliteDb();
+                final deleteResult = await conn.rawDelete(
+                    'DELETE FROM staff WHERE staff_ID = ?', [staffId]);
+                if (deleteResult > 0) {
                   _onShowSnack(Colors.green,
                       translations[selectedLanguage]?['DeleteStaffMsg'] ?? '');
                   onDelete();
                 }
-                await conn.close();
                 // ignore: use_build_context_synchronously
                 Navigator.of(context, rootNavigator: true).pop();
               },
@@ -2153,8 +2173,11 @@ onCreateUserAccount(BuildContext context, int staff_id) {
                               String userName = userNameController.text;
                               String pwd = pwdController.text;
                               String role = roleDropDown;
-                              var conn = await onConnToDb();
-                              var dupUserResult = await conn.query(
+                              var bytes = utf8.encode(pwd);
+                              var digest = sha256.convert(bytes);
+                              String hashedPwd = digest.toString();
+                              var conn = await onConnToSqliteDb();
+                              var dupUserResult = await conn.rawQuery(
                                   'SELECT * FROM staff_auth WHERE username = ?',
                                   [userName]);
 
@@ -2176,11 +2199,11 @@ onCreateUserAccount(BuildContext context, int staff_id) {
                                               ?['RecordLimitMsg'] ??
                                           '');
                                 } else {
-                                  var queryResult = await conn.query(
-                                      'INSERT INTO staff_auth (staff_ID, username, password, role) VALUES (?, ?, PASSWORD(?), ?)',
-                                      [staffId, userName, pwd, role]);
+                                  var queryResult = await conn.rawInsert(
+                                      'INSERT INTO staff_auth (staff_ID, username, password, role) VALUES (?, ?, ?, ?)',
+                                      [staffId, userName, hashedPwd, role]);
 
-                                  if (queryResult.affectedRows! > 0) {
+                                  if (queryResult > 0) {
                                     print('Insert success!');
                                     userNameController.clear();
                                     pwdController.clear();
@@ -2458,63 +2481,67 @@ onUpdateUserAccount(
             ),
             actions: [
               Directionality(
-                  textDirection:
-                      isEnglish ? TextDirection.ltr : TextDirection.rtl,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context, rootNavigator: true).pop();
-                        },
-                        child: Text(
-                            translations[selectedLanguage]?['CancelBtn'] ?? ''),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          if (formKey3.currentState!.validate()) {
-                            final userName = userNameController.text;
-                            final pwd = pwdController.text;
-                            final userRole = roleDropDown;
-                            var conn = await onConnToDb();
-                            var dupUNameResult = await conn.query(
-                                'SELECT * FROM staff_auth WHERE username = ?',
-                                [userName]);
-                            if (dupUNameResult.isEmpty) {
-                              var queryResult = await conn.query(
-                                  'UPDATE staff_auth SET username = ?, password = PASSWORD(?), role = ? WHERE staff_ID = ?',
-                                  [userName, pwd, userRole, staff_id]);
+                textDirection:
+                    isEnglish ? TextDirection.ltr : TextDirection.rtl,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context, rootNavigator: true).pop();
+                      },
+                      child: Text(
+                          translations[selectedLanguage]?['CancelBtn'] ?? ''),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (formKey3.currentState!.validate()) {
+                          final userName = userNameController.text;
+                          final pwd = pwdController.text;
+                          final userRole = roleDropDown;
+                          var conn = await onConnToSqliteDb();
+                          var dupUNameResult = await conn.rawQuery(
+                              'SELECT * FROM staff_auth WHERE username = ?',
+                              [userName]);
+                          if (dupUNameResult.isEmpty) {
+                            var bytes = utf8.encode(pwd);
+                            var digest = sha256.convert(bytes);
+                            String hashedPwd = digest.toString();
+                            var queryResult = await conn.rawUpdate(
+                                'UPDATE staff_auth SET username = ?, password = ?, role = ? WHERE staff_ID = ?',
+                                [userName, hashedPwd, userRole, staff_id]);
 
-                              if (queryResult.affectedRows! > 0) {
-                                print('success!');
-                                userNameController.clear();
-                                pwdController.clear();
-                                confirmController.clear();
-                                // ignore: use_build_context_synchronously
-                                Navigator.pop(context);
-                                // ignore: use_build_context_synchronously
-                                _onShowSnack(
-                                    Colors.green,
-                                    translations[selectedLanguage]
-                                            ?['UpdateUAMsg'] ??
-                                        '');
-                              }
-                            } else {
+                            if (queryResult > 0) {
+                              print('success!');
+                              userNameController.clear();
+                              pwdController.clear();
+                              confirmController.clear();
+                              // ignore: use_build_context_synchronously
                               Navigator.pop(context);
                               // ignore: use_build_context_synchronously
                               _onShowSnack(
-                                  Colors.red,
+                                  Colors.green,
                                   translations[selectedLanguage]
-                                          ?['DupUNameMsg'] ??
+                                          ?['UpdateUAMsg'] ??
                                       '');
                             }
+                          } else {
+                            Navigator.pop(context);
+                            // ignore: use_build_context_synchronously
+                            _onShowSnack(
+                                Colors.red,
+                                translations[selectedLanguage]
+                                        ?['DupUNameMsg'] ??
+                                    '');
                           }
-                        },
-                        child: Text(
-                            translations[selectedLanguage]?['SaveUABtn'] ?? ''),
-                      ),
-                    ],
-                  ))
+                        }
+                      },
+                      child: Text(
+                          translations[selectedLanguage]?['SaveUABtn'] ?? ''),
+                    ),
+                  ],
+                ),
+              ),
             ],
           );
         }),
