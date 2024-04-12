@@ -121,7 +121,7 @@ Future<Database> onConnToSqliteDb() async {
           CREATE TABLE services(
             ser_ID INTEGER PRIMARY KEY AUTOINCREMENT,
             ser_name TEXT NOT NULL,
-            ser_fee REAL
+            ser_fee REAL DEFAULT 0
           )
         ''');
       // TABLE = appointments
@@ -130,10 +130,10 @@ Future<Database> onConnToSqliteDb() async {
             apt_ID INTEGER PRIMARY KEY AUTOINCREMENT,
             pat_ID INTEGER NOT NULL,
             service_ID INTEGER,
-            installment INTEGER,
-            round INTEGER NOT NULL,
-            discount REAL,
-            total_fee REAL,
+            installment INTEGER DEFAULT 1,
+            round INTEGER NOT NULL DEFAULT 1,
+            discount REAL DEFAULT 0,
+            total_fee REAL DEFAULT 0,
             meet_date TEXT,
             staff_ID INTEGER,
             status TEXT,
@@ -169,7 +169,7 @@ Future<Database> onConnToSqliteDb() async {
       await db.execute('''
           CREATE TABLE fee_payments(
             payment_ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            installment_counter INTEGER,
+            installment_counter INTEGER DEFAULT 1,
             payment_date TEXT NOT NULL,
             paid_amount REAL DEFAULT 0.0,
             due_amount REAL DEFAULT 0.0,
