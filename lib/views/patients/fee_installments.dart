@@ -695,12 +695,13 @@ class _FeeContentState extends State<FeeContent> {
     final apptFees = results
         .map((row) => ApptFeeDataModel(
             serviceName: row['ser_name'].toString(),
-            totalInstallment: row['installment'] as int == 0 ? 1 : row['installment'] as int,
+            totalInstallment:
+                row['installment'] as int == 0 ? 1 : row['installment'] as int,
             totalFee: row['total_fee'] as double,
             round: row['round'] as int,
             paymentID: row['payment_id'] as int,
             instCounter: row['int_counter'] as int,
-            paymentDateTime: row['payment_date'] as DateTime,
+            paymentDateTime: row['payment_date'].toString(),
             paidAmount: row['paid_amount'] as double,
             dueAmount: row['due_amount'] as double,
             isWholePaid: row['whole_paid'] as int,
@@ -840,8 +841,7 @@ class _FeeContentState extends State<FeeContent> {
                                                           'MMM d, y hh:mm a')
                                                       .format(DateTime.parse(
                                                           payment
-                                                              .paymentDateTime
-                                                              .toString())),
+                                                              .paymentDateTime.toString())),
                                                   style: const TextStyle(
                                                       fontSize: 18.0),
                                                 ),
@@ -1196,7 +1196,7 @@ class ApptFeeDataModel {
   final int round;
   final int paymentID;
   final int instCounter;
-  final DateTime paymentDateTime;
+  final String paymentDateTime;
   final double paidAmount;
   final double dueAmount;
   final int isWholePaid;

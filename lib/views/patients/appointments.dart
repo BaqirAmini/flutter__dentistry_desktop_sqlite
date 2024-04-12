@@ -1413,7 +1413,7 @@ Future<List<ServiceDetailDataModel>> _getServiceDetails(
   final conn = await onConnToSqliteDb();
 
   const query =
-      ''' SELECT sr.req_name, ps.value, ps.apt_ID, ps.pat_ID, ps.apt_ID, ps.req_ID FROM service_requirements sr 
+      ''' SELECT sr.req_name AS req_name, ps.value AS value, ps.apt_ID AS apt_id, ps.pat_ID AS pat_id, ps.req_ID AS req_id FROM service_requirements sr 
           INNER JOIN patient_services ps ON sr.req_ID = ps.req_ID 
           WHERE ps.pat_ID = ? AND ps.apt_ID = ?
           GROUP BY sr.req_name;''';
@@ -1424,12 +1424,12 @@ Future<List<ServiceDetailDataModel>> _getServiceDetails(
   final requirements = results
       .map(
         (row) => ServiceDetailDataModel(
-            appointmentID: row["ps.apt_ID"] as int,
-            patID: row["ps.pat_ID"] as int,
+            appointmentID: row["apt_id"] as int,
+            patID: row["pat_id"] as int,
             // serviceID: row[4] as int,
-            reqID: row["ps.req_ID"] as int,
-            reqName: row["sr.req_name"].toString(),
-            reqValue: row["ps.value"].toString()),
+            reqID: row["req_id"] as int,
+            reqName: row["req_name"].toString(),
+            reqValue: row["value"].toString()),
       )
       .toList();
   return requirements;
