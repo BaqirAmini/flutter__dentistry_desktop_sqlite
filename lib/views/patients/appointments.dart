@@ -226,10 +226,10 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                     ),
                     TextButton(
                       onPressed: () async {
-                        final conn = await onConnToDb();
-                        final deleteResult = await conn.query(
+                        final conn = await onConnToSqliteDb();
+                        final deleteResult = await conn.rawDelete(
                             'DELETE FROM appointments WHERE apt_ID = ?', [id]);
-                        if (deleteResult.affectedRows! > 0) {
+                        if (deleteResult > 0) {
                           // ignore: use_build_context_synchronously
                           Navigator.of(context).pop();
                           // ignore: use_build_context_synchronously
@@ -241,7 +241,6 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                               context);
                           refresh();
                         }
-                        await conn.close();
                       },
                       child:
                           Text(translations[selectedLanguage]?['Delete'] ?? ''),
@@ -739,8 +738,8 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                             double retreatCost = _feeNotRequired
                                 ? 0
                                 : double.parse(retreatFeeController.text);
-                            final conn = await onConnToDb();
-                            var results = await conn.query(
+                            final conn = await onConnToSqliteDb();
+                            var results = await conn.rawInsert(
                                 '''INSERT INTO retreatments (apt_ID, pat_ID, help_service_ID, damage_service_ID, staff_ID, retreat_date, retreat_cost, retreat_reason, retreat_outcome, outcome_details)
                       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                       ''',
@@ -758,7 +757,7 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                                       ? null
                                       : retreatOutcomeController.text
                                 ]);
-                            if (results.affectedRows! > 0) {
+                            if (results > 0) {
                               // ignore: use_build_context_synchronously
                               Navigator.of(context, rootNavigator: true).pop();
                               // ignore: use_build_context_synchronously
@@ -779,8 +778,6 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                                       '',
                                   context);
                             }
-
-                            await conn.close();
                           } catch (e) {
                             print('Creating retreatment failed: $e');
                           }
@@ -1312,37 +1309,37 @@ class ExpandableCard extends StatelessWidget {
 // This function fetches records of patients, appointments, staff and services using JOIN
 Future<List<Map>> _getAppointment() async {
   try {
-    final conn = await onConnToDb();
+    print('Loading APPOINTMENTS');
+    final conn = await onConnToSqliteDb();
 
     const query =
-        '''SELECT a.apt_ID, s.ser_ID, a.meet_date, a.round, a.installment, a.discount, a.total_fee, s.ser_name, st.staff_ID, st.firstname, st.lastname
+        '''SELECT a.apt_ID as appt_id, s.ser_ID AS ser_id, a.meet_date AS meet_date, a.round AS round, a.installment AS installment, a.discount AS discount, a.total_fee AS total_fee, s.ser_name AS ser_name, st.staff_ID AS staff_ID, st.firstname AS staff_fname, st.lastname AS staff_lname
           FROM appointments a 
           INNER JOIN services s ON a.service_ID = s.ser_ID
           INNER JOIN staff st ON a.staff_ID = st.staff_ID
           WHERE a.pat_ID = ? AND a.status IS NULL ORDER BY a.meet_date DESC, a.round DESC''';
 
 // a.status = 'Pending' means it is scheduled in calendar not completed.
-    final results = await conn.query(query, [PatientInfo.patID]);
+    final results = await conn.rawQuery(query, [PatientInfo.patID]);
 
     List<Map> appointments = [];
 
     for (var row in results) {
       appointments.add({
-        'staffID': row[8],
-        'visitTime': row[2].toString(),
-        'round': row[3],
-        'installment': row[4],
-        'discount': row[5],
-        'apptID': row[0],
-        'staffFName': row[9].toString(),
-        'staffLName': row[10].toString(),
-        'serviceName': row[7].toString(),
-        'serviceID': row[1],
-        'totalFee': row[6]
+        'staffID': row['staff_id'],
+        'visitTime': row['meet_date'].toString(),
+        'round': row['round'],
+        'installment': row['installment'],
+        'discount': row['discount'],
+        'apptID': row['appt_id'],
+        'staffFName': row['staff_fname'].toString(),
+        'staffLName': row['staff_lname'].toString(),
+        'serviceName': row['ser_name'].toString(),
+        'serviceID': row['ser_id'],
+        'totalFee': row['total_fee']
       });
     }
-
-    await conn.close();
+    print('Appointments: $appointments');
     return appointments;
   } catch (e) {
     print('Error with retrieving appointments: $e');
@@ -1413,7 +1410,7 @@ class AppointmentDataModel {
 // This function fetches records from service_requirments, patient_services, services and patients using JOIN
 Future<List<ServiceDetailDataModel>> _getServiceDetails(
     int appointmentID) async {
-  final conn = await onConnToDb();
+  final conn = await onConnToSqliteDb();
 
   const query =
       ''' SELECT sr.req_name, ps.value, ps.apt_ID, ps.pat_ID, ps.apt_ID, ps.req_ID FROM service_requirements sr 
@@ -1421,20 +1418,20 @@ Future<List<ServiceDetailDataModel>> _getServiceDetails(
           WHERE ps.pat_ID = ? AND ps.apt_ID = ?
           GROUP BY sr.req_name;''';
 
-  final results = await conn.query(query, [PatientInfo.patID, appointmentID]);
+  final results =
+      await conn.rawQuery(query, [PatientInfo.patID, appointmentID]);
 
   final requirements = results
       .map(
         (row) => ServiceDetailDataModel(
-            appointmentID: row[2],
-            patID: row[3],
-            serviceID: row[4],
-            reqID: row[5],
-            reqName: row[0],
-            reqValue: row[1] ?? ''),
+            appointmentID: row["ps.apt_ID"] as int,
+            patID: row["ps.pat_ID"] as int,
+            // serviceID: row[4] as int,
+            reqID: row["ps.req_ID"] as int,
+            reqName: row["sr.req_name"].toString(),
+            reqValue: row["ps.value"].toString()),
       )
       .toList();
-  await conn.close();
   return requirements;
 }
 
@@ -1442,7 +1439,7 @@ Future<List<ServiceDetailDataModel>> _getServiceDetails(
 class ServiceDetailDataModel {
   final int appointmentID;
   final int patID;
-  final int serviceID;
+  // final int serviceID;
   final int reqID;
   final String reqName;
   final String reqValue;
@@ -1450,7 +1447,7 @@ class ServiceDetailDataModel {
   ServiceDetailDataModel({
     required this.appointmentID,
     required this.patID,
-    required this.serviceID,
+    // required this.serviceID,
     required this.reqID,
     required this.reqName,
     required this.reqValue,

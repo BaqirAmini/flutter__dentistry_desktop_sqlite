@@ -105,14 +105,14 @@ onCreatePrescription(BuildContext context) {
                               onPressed: () async {
                                 if (formKeyPresc.currentState!.validate()) {
                                   /* -------------------- Fetch staff firstname & lastname ---------------- */
-                                  final conn = await onConnToDb();
-                                  final results = await conn.query(
+                                  final conn = await onConnToSqliteDb();
+                                  final results = await conn.rawQuery(
                                       'SELECT * FROM staff WHERE staff_ID = ?',
                                       [defaultSelectedStaff]);
                                   var row = results.first;
-                                  String drFirstName = row['firstname'];
-                                  String drLastName = row['lastname'] ?? '';
-                                  String drPhone = row['phone'];
+                                  String drFirstName = row['firstname'].toString();
+                                  String drLastName = row['lastname'].toString();
+                                  String drPhone = row['phone'].toString();
                                   /* --------------------/. Fetch staff firstname & lastname ---------------- */
 
                                   // Current date
@@ -490,8 +490,8 @@ onCreatePrescription(BuildContext context) {
                                     child: TypeAheadField(
                                       suggestionsCallback: (search) async {
                                         try {
-                                          final conn = await onConnToDb();
-                                          var results = await conn.query(
+                                          final conn = await onConnToSqliteDb();
+                                          var results = await conn.rawQuery(
                                               'SELECT pat_ID, firstname, lastname, phone, age, sex FROM patients WHERE firstname LIKE ?',
                                               ['%$search%']);
 
@@ -499,11 +499,11 @@ onCreatePrescription(BuildContext context) {
                                           var suggestions = results
                                               .map((row) => PatientDataModel(
                                                   patientId: row[0] as int,
-                                                  patientFName: row[1],
-                                                  patientLName: row[2] ?? '',
-                                                  patientPhone: row[3],
-                                                  patientAge: row[4] as int,
-                                                  patientGender: row[5]))
+                                                  patientFName: row["firstname"].toString(),
+                                                  patientLName: row["lastname"] == null ? '' : row["lastname"].toString(),
+                                                  patientPhone: row["phone"].toString(),
+                                                  patientAge: row["age"] as int,
+                                                  patientGender: row["sex"].toString()))
                                               .toList();
                                           await conn.close();
                                           return suggestions;
@@ -1138,8 +1138,8 @@ class _PatientState extends State<Patient> {
   // Fetch staff which will be needed later.
   Future<void> fetchStaff() async {
     // Fetch staff for purchased by fields
-    var conn = await onConnToDb();
-    var results = await conn.query(
+    var conn = await onConnToSqliteDb();
+    var results = await conn.rawQuery(
         'SELECT staff_ID, firstname, lastname FROM staff WHERE position = ?',
         ['داکتر دندان']);
     defaultSelectedStaff =
@@ -1147,33 +1147,31 @@ class _PatientState extends State<Patient> {
     // setState(() {
     staffList = results
         .map((result) => {
-              'staff_ID': result[0].toString(),
-              'firstname': result[1],
-              'lastname': result[2]
+              'staff_ID': result["staff_ID"].toString(),
+              'firstname': result["firstname"],
+              'lastname': result["lastname"]
             })
         .toList();
     // });
-    await conn.close();
   }
 
   // Fetch patients
   Future<void> fetchPatients() async {
     // Fetch patients for prescription
-    var conn = await onConnToDb();
+    var conn = await onConnToSqliteDb();
     var results =
-        await conn.query('SELECT pat_ID, firstname, lastname FROM patients');
+        await conn.rawQuery('SELECT pat_ID, firstname, lastname FROM patients');
     defaultSelectedPatient =
         patientsList.isNotEmpty ? patientsList[0]['pat_ID'] : null;
     // setState(() {
     patientsList = results
         .map((result) => {
-              'pat_ID': result[0].toString(),
-              'firstname': result[1],
-              'lastname': result[2]
+              'pat_ID': result["pat_ID"].toString(),
+              'firstname': result["firstname"],
+              'lastname': result["lastname"]
             })
         .toList();
     // });
-    await conn.close();
   }
 
   @override
@@ -1254,10 +1252,10 @@ onDeletePatient(BuildContext context, Function onRefresh) {
               TextButton(
                 onPressed: () async {
                   try {
-                    final conn = await onConnToDb();
-                    final results = await conn.query(
+                    final conn = await onConnToSqliteDb();
+                    final results = await conn.rawDelete(
                         'DELETE FROM patients WHERE pat_ID = ?', [patientId]);
-                    if (results.affectedRows! > 0) {
+                    if (results > 0) {
                       // ignore: use_build_context_synchronously
                       _onShowSnack(
                           Colors.green,
@@ -1809,7 +1807,7 @@ onEditPatientInfo(BuildContext context, Function onRefresh) {
                       onPressed: () async {
                         try {
                           if (_editPatFormKey.currentState!.validate()) {
-                            final conn = await onConnToDb();
+                            final conn = await onConnToSqliteDb();
                             String firstName = _firstNameController.text;
                             String? lastName = _lastNameController.text.isEmpty
                                 ? null
@@ -1822,7 +1820,7 @@ onEditPatientInfo(BuildContext context, Function onRefresh) {
                             String? address = _addrController.text.isEmpty
                                 ? null
                                 : _addrController.text;
-                            final results = await conn.query(
+                            final results = await conn.rawUpdate(
                                 'UPDATE patients SET firstname = ?, lastname = ?, age = ?, sex = ?, marital_status = ?, phone = ?, blood_group = ?, address = ? WHERE pat_ID = ?',
                                 [
                                   firstName,
@@ -1835,7 +1833,7 @@ onEditPatientInfo(BuildContext context, Function onRefresh) {
                                   address,
                                   PatientInfo.patID
                                 ]);
-                            if (results.affectedRows! > 0) {
+                            if (results > 0) {
                               // ignore: use_build_context_synchronously
                               Navigator.of(context, rootNavigator: true).pop();
                               // ignore: use_build_context_synchronously
@@ -1856,7 +1854,6 @@ onEditPatientInfo(BuildContext context, Function onRefresh) {
                                       '',
                                   context);
                             }
-                            await conn.close();
                           }
                         } catch (e) {
                           print('Editing patient\' info failed: $e');
@@ -1891,30 +1888,29 @@ class _PatientDataTableState extends State<PatientDataTable> {
   List<PatientData> _data = [];
 
   Future<void> _fetchData() async {
-    final conn = await onConnToDb();
-    final queryResult = await conn.query(
-        'SELECT firstname, lastname, age, sex, marital_status, phone, pat_ID, DATE_FORMAT(reg_date, "%Y-%m-%d"), blood_group, address FROM patients ORDER BY reg_date DESC');
+    final conn = await onConnToSqliteDb();
+    final queryResult = await conn.rawQuery(
+        'SELECT firstname, lastname, age, sex, marital_status, phone, pat_ID, strftime("%Y-%m-%d", reg_date) as reg_date, blood_group, address FROM patients ORDER BY reg_date DESC');
     conn.close();
 
     _data = queryResult.map((row) {
       return PatientData(
-        firstName: row[0],
-        lastName: row[1] ?? '',
-        age: row[2].toString(),
-        sex: row[3],
-        maritalStatus: row[4],
-        phone: row[5],
-        patID: row[6],
-        regDate: row[7].toString(),
-        bloodGroup: row[8] ?? '',
-        address: row[9] ?? '',
+        firstName: row["firstname"].toString(),
+        lastName: row["lastname"] == null ? '' : row["lastname"].toString(),
+        age: row["age"].toString(),
+        sex: row["sex"].toString(),
+        maritalStatus: row["marital_status"].toString(),
+        phone: row["phone"].toString(),
+        patID: row["pat_ID"] as int,
+        regDate: row["reg_date"].toString(),
+        bloodGroup: row["blood_group"] == null ? '' : row["blood_group"].toString(),
+        address: row["address"] == null ? '' : row["address"].toString(),
         patientDetail: const Icon(Icons.list),
         editPatient: const Icon(Icons.edit_outlined),
         deletePatient: const Icon(Icons.delete),
       );
     }).toList();
     _filteredData = List.from(_data);
-    await conn.close();
     // Notify the framework that the state of the widget has changed
     setState(() {});
     // Print the data that was fetched from the database

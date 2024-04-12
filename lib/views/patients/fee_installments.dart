@@ -596,7 +596,7 @@ class _FeeContentState extends State<FeeContent> {
                               '')),
                       ElevatedButton(
                           onPressed: () async {
-                            final conn = await onConnToDb();
+                            final conn = await onConnToSqliteDb();
                             if (_formKey4Payment.currentState!.validate()) {
                               bool dateResult = await _fetchPaidDate(
                                   _payDateController.text, apptID);
@@ -605,7 +605,7 @@ class _FeeContentState extends State<FeeContent> {
                                 errorMessage = null;
 
                                 try {
-                                  await conn.query(
+                                  await conn.rawInsert(
                                       '''INSERT INTO fee_payments (installment_counter, payment_date, paid_amount, due_amount, whole_fee_paid, staff_ID, apt_ID)
                                     VALUES (?, ?, ?, ?, ?, ?, ?)''',
                                       [
@@ -624,7 +624,6 @@ class _FeeContentState extends State<FeeContent> {
                                 } catch (e) {
                                   print('Error with inserting payment: $e');
                                 }
-                                await conn.close();
                               } else {
                                 errorMessage = translations[selectedLanguage]
                                         ?['ValidPayDateMsg'] ??
@@ -647,29 +646,26 @@ class _FeeContentState extends State<FeeContent> {
   // Fetch staff which will be needed later.
   Future<void> _fetchStaff() async {
     // Fetch staff for purchased by fields
-    var conn = await onConnToDb();
-    var results = await conn.query(
+    var conn = await onConnToSqliteDb();
+    var results = await conn.rawQuery(
         'SELECT staff_ID, firstname, lastname FROM staff WHERE position = ?',
         ['داکتر دندان']);
 
-    // setState(() {
     staffList = results
         .map((result) => {
-              'staff_ID': result[0].toString(),
-              'firstname': result[1],
-              'lastname': result[2]
+              'staff_ID': result['staff_ID'].toString(),
+              'firstname': result['firstname'],
+              'lastname': result['lastname']
             })
         .toList();
     defaultSelectedStaff =
         staffList.isNotEmpty ? staffList[0]['staff_ID'] : null;
-    // });
-    await conn.close();
   }
 
   Future<bool> _fetchPaidDate(String date, int aptID) async {
     try {
-      final conn = await onConnToDb();
-      final results = await conn.query(
+      final conn = await onConnToSqliteDb();
+      final results = await conn.rawQuery(
           'SELECT payment_date FROM fee_payments WHERE apt_ID = ? AND payment_date <= ?',
           [aptID, date]);
       if (results.isNotEmpty) {
@@ -685,11 +681,11 @@ class _FeeContentState extends State<FeeContent> {
 
 // Fetch appointments-related fields & fee
   Future<List<ApptFeeDataModel>> _fetchApptFee() async {
-    final conn = await onConnToDb();
-    final results = await conn.query(
-        '''SELECT s.ser_name, a.installment, a.total_fee, a.round, fp.payment_ID, 
-            fp.installment_counter, fp.payment_date, fp.paid_amount, fp.due_amount, fp.whole_fee_paid, fp.apt_ID,
-            st.firstname, st.lastname FROM services s 
+    final conn = await onConnToSqliteDb();
+    final results = await conn.rawQuery(
+        '''SELECT s.ser_name AS ser_name, a.installment AS installment, a.total_fee AS total_fee, a.round AS round, fp.payment_ID AS payment_id, 
+            fp.installment_counter AS int_counter, fp.payment_date AS payment_date, fp.paid_amount AS paid_amount, fp.due_amount AS due_amount, fp.whole_fee_paid AS whole_paid, fp.apt_ID AS apt_id,
+            st.firstname AS first_name, st.lastname AS last_name FROM services s 
             INNER JOIN appointments a ON s.ser_ID = a.service_ID
             INNER JOIN fee_payments fp ON fp.apt_ID = a.apt_ID 
             INNER JOIN staff st ON fp.staff_ID = st.staff_ID
@@ -698,22 +694,20 @@ class _FeeContentState extends State<FeeContent> {
 
     final apptFees = results
         .map((row) => ApptFeeDataModel(
-            serviceName: row[0],
-            totalInstallment: row[1] == 0 ? 1 : row[1],
-            totalFee: row[2],
-            round: row[3],
-            paymentID: row[4],
-            instCounter: row[5],
-            paymentDateTime: row[6] as DateTime,
-            paidAmount: row[7],
-            dueAmount: row[8],
-            isWholePaid: row[9],
-            apptID: row[10],
-            staffFirstName: row[11],
-            staffLastName: row[12]))
+            serviceName: row['ser_name'].toString(),
+            totalInstallment: row['installment'] as int == 0 ? 1 : row['installment'] as int,
+            totalFee: row['total_fee'] as double,
+            round: row['round'] as int,
+            paymentID: row['payment_id'] as int,
+            instCounter: row['int_counter'] as int,
+            paymentDateTime: row['payment_date'] as DateTime,
+            paidAmount: row['paid_amount'] as double,
+            dueAmount: row['due_amount'] as double,
+            isWholePaid: row['whole_paid'] as int,
+            apptID: row['apt_id'] as int,
+            staffFirstName: row['first_name'].toString(),
+            staffLastName: row['last_name'].toString()))
         .toList();
-
-    await conn.close();
     return apptFees;
   }
 

@@ -37,21 +37,18 @@ class GlobalUsage {
   Future<List<Map<String, dynamic>>> fetchStaff() async {
     try {
       // Fetch staff for purchased by fields
-      var conn = await onConnToDb();
-      var results = await conn.query(
+      var conn = await onConnToSqliteDb();
+      var results = await conn.rawQuery(
           'SELECT staff_ID, firstname, lastname FROM staff WHERE position = ?',
           ['داکتر دندان']);
 
       List<Map<String, dynamic>> staffList = results
           .map((result) => {
-                'staff_ID': result[0].toString(),
-                'firstname': result[1],
-                'lastname': result[2] ?? ''
+                'staff_ID': result["staff_ID"].toString(),
+                'firstname': result["firstname"],
+                'lastname': result["lastname"] ?? ''
               })
           .toList();
-
-      await conn.close();
-
       return staffList;
     } catch (e) {
       print('Error occured fetching staff (Global Usage): $e');

@@ -678,8 +678,8 @@ class _HistoryContentState extends State<_HistoryContent> {
                               // print('Editing $condID');
                               if (_patientHistEditFK.currentState!.validate()) {
                                 try {
-                                  final conn = await onConnToDb();
-                                  var editResults = await conn.query(
+                                  final conn = await onConnToSqliteDb();
+                                  var editResults = await conn.rawUpdate(
                                       'UPDATE condition_details SET result = ?, severty = ?, duration = ?, diagnosis_date = ?, notes = ? WHERE pat_ID = ? AND cond_detail_ID = ?',
                                       [
                                         _editHCondResultGV,
@@ -699,7 +699,7 @@ class _HistoryContentState extends State<_HistoryContent> {
                                         PatientInfo.patID,
                                         histCondID
                                       ]);
-                                  if (editResults.affectedRows! > 0) {
+                                  if (editResults > 0) {
                                     _onShowSnack(
                                         Colors.green,
                                         translations[selectedLanguage]
@@ -716,7 +716,6 @@ class _HistoryContentState extends State<_HistoryContent> {
                                   // ignore: use_build_context_synchronously
                                   Navigator.of(context, rootNavigator: true)
                                       .pop();
-                                  await conn.close();
                                 } catch (e) {
                                   print(
                                       'Error occured with updating a patient health history: $e');
@@ -1109,29 +1108,28 @@ class _HoverCardState extends State<HoverCard> {
 
 // This function fetches health histories from the database.
 Future<List<HistoryDataModel>> _getHistory() async {
-  final conn = await onConnToDb();
-  final results = await conn.query('''
-SELECT d.cond_detail_ID, c.name, d.result, d.severty, d.duration, DATE_FORMAT(d.diagnosis_date, '%Y-%m-%d'), d.notes FROM conditions c 
+  final conn = await onConnToSqliteDb();
+  final results = await conn.rawQuery('''
+SELECT d.cond_detail_ID AS cond_did, c.name AS name, d.result AS result, d.severty AS severty, d.duration AS duration, strftime('%Y-%m-%d', d.diagnosis_date) AS diag_date, d.notes AS desc FROM conditions c 
 INNER JOIN condition_details d ON c.cond_ID = d.cond_ID WHERE d.pat_ID = ? ORDER BY d.cond_detail_ID DESC''',
       [PatientInfo.patID]);
 
   final histories = results
       .map(
         (row) => HistoryDataModel(
-            condDetailID: row[0],
-            condName: row[1].toString(),
-            result: row[2],
-            severty: row[3] ?? "--",
-            duration: row[4] ?? "--",
-            dianosisDate: row[5].toString() == '0000-00-00' || row[5] == null
+            condDetailID: row['cond_did'] as int,
+            condName: row['name'].toString(),
+            result: row['result'] as int,
+            severty: row['severty'] == null ? "--" : row["severty"].toString(),
+            duration: row['duration'] == null ? "--" : row['duration'].toString(),
+            dianosisDate: row['diag_date'].toString() == '0000-00-00' || row['diag_date'] == null
                 ? '--'
-                : row[5].toString(),
-            notes: row[6].toString().isEmpty || row[6] == null
+                : row['diag_date'].toString(),
+            notes: row['desc'].toString().isEmpty || row['desc'] == null
                 ? '--'
-                : row[6].toString()),
+                : row['desc'].toString()),
       )
       .toList();
-  await conn.close();
   return histories;
 }
 

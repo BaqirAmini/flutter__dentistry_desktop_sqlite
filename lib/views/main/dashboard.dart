@@ -140,7 +140,7 @@ class _DashboardState extends State<Dashboard> {
 
     for (var row in results) {
       patientData.add(
-          _PatientsData(row[0].toString(), double.parse(row[1].toString())));
+          _PatientsData(row["formatted_date"].toString(), double.parse(row["count"].toString())));
     }
     setState(() {
       _isPatientDataInitialized = true;
@@ -225,7 +225,7 @@ class _DashboardState extends State<Dashboard> {
       final conn = await onConnToSqliteDb();
       // Here Afghanistan Timezone is addressed
       final results = await conn.rawQuery(
-          'SELECT *, meet_date as local_meet_date FROM appointments a INNER JOIN patients p ON a.pat_ID = p.pat_ID WHERE status = ? AND meet_date > NOW()',
+          'SELECT *, meet_date as local_meet_date FROM appointments a INNER JOIN patients p ON a.pat_ID = p.pat_ID WHERE status = ? AND meet_date > date(\'now\')',
           ['Pending']);
 
       // Loop through the results

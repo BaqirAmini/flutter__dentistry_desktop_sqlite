@@ -52,12 +52,11 @@ class _NewAppointmentState extends State<NewAppointment> {
 
 // Fetch round
   Future<int> fetchRound() async {
-    final conn = await onConnToDb();
-    final roundResults = await conn.query(
+    final conn = await onConnToSqliteDb();
+    final roundResults = await conn.rawQuery(
         'SELECT round FROM appointments WHERE pat_ID = ? AND status IS NULL ORDER BY round DESC',
         [PatientInfo.patID]);
     if (roundResults.isNotEmpty) {
-      await conn.close();
       return roundResults.first['round'] as int;
     } else {
       return 0;
@@ -279,9 +278,9 @@ class _NewAppointmentState extends State<NewAppointment> {
                       ServiceInfo.meetingDate!,
                       ServiceInfo.selectedDentistID!)) {
                     // Here i fetch apt_ID (appointment ID) which needs to be passed.
-                    final conn = await onConnToDb();
+                    final conn = await onConnToSqliteDb();
                     int appointmentID;
-                    final aptIdResult = await conn.query(
+                    final aptIdResult = await conn.rawQuery(
                         'SELECT apt_ID FROM appointments WHERE meet_date = ? AND service_ID = ? AND round = ? AND pat_ID = ?',
                         [
                           ServiceInfo.meetingDate,
@@ -292,7 +291,7 @@ class _NewAppointmentState extends State<NewAppointment> {
 
                     if (aptIdResult.isNotEmpty) {
                       final row = aptIdResult.first;
-                      appointmentID = row['apt_ID'];
+                      appointmentID = row['apt_ID'] as int;
                     } else {
                       appointmentID = 0;
                     }
@@ -327,9 +326,9 @@ class AppointmentFunction {
   static Future<bool> onAddServiceReq(
       int patientId, int serviceId, String? desc, int appointmentID) async {
     try {
-      final conn = await onConnToDb();
+      final conn = await onConnToSqliteDb();
       if (ServiceInfo.selectedServiceID == 1) {
-        await conn.query(
+        await conn.rawInsert(
             'INSERT INTO patient_services ( apt_ID, pat_ID, ser_ID, req_ID, value) VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)',
             [
               appointmentID,
@@ -346,7 +345,7 @@ class AppointmentFunction {
               desc
             ]);
       } else if (ServiceInfo.selectedServiceID == 2) {
-        await conn.query(
+        await conn.rawInsert(
             'INSERT INTO patient_services ( apt_ID, pat_ID, ser_ID, req_ID, value) VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)',
             [
               appointmentID,
@@ -373,7 +372,7 @@ class AppointmentFunction {
               ServiceInfo.defaultFilling
             ]);
       } else if (ServiceInfo.selectedServiceID == 3) {
-        await conn.query(
+        await conn.rawInsert(
             'INSERT INTO patient_services ( apt_ID, pat_ID, ser_ID, req_ID, value) VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)',
             [
               appointmentID,
@@ -388,7 +387,7 @@ class AppointmentFunction {
               ServiceInfo.defaultBleachValue
             ]);
       } else if (ServiceInfo.selectedServiceID == 4) {
-        await conn.query(
+        await conn.rawInsert(
             'INSERT INTO patient_services ( apt_ID, pat_ID, ser_ID, req_ID, value) VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)',
             [
               appointmentID,
@@ -403,7 +402,7 @@ class AppointmentFunction {
               ServiceInfo.spGroupValue
             ]);
       } else if (ServiceInfo.selectedServiceID == 5) {
-        await conn.query(
+        await conn.rawInsert(
             'INSERT INTO patient_services ( apt_ID, pat_ID, ser_ID, req_ID, value) VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)',
             [
               appointmentID,
@@ -419,7 +418,7 @@ class AppointmentFunction {
             ]);
       } else if (ServiceInfo.selectedServiceID == 7) {
         if (ServiceInfo.defaultMaxillo == 'Tooth Extraction') {
-          await conn.query(
+          await conn.rawInsert(
               'INSERT INTO patient_services ( apt_ID, pat_ID, ser_ID, req_ID, value) VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)',
               [
                 appointmentID,
@@ -441,7 +440,7 @@ class AppointmentFunction {
                 desc
               ]);
         } else if (ServiceInfo.defaultMaxillo == 'Abscess Treatment') {
-          await conn.query(
+          await conn.rawInsert(
               'INSERT INTO patient_services ( apt_ID, pat_ID, ser_ID, req_ID, value) VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)',
               [
                 appointmentID,
@@ -463,7 +462,7 @@ class AppointmentFunction {
                 desc
               ]);
         } else if (ServiceInfo.defaultMaxillo == 'T.M.J') {
-          await conn.query(
+          await conn.rawInsert(
               'INSERT INTO patient_services ( apt_ID, pat_ID, ser_ID, req_ID, value) VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)',
               [
                 appointmentID,
@@ -483,7 +482,7 @@ class AppointmentFunction {
                 desc
               ]);
         } else if (ServiceInfo.defaultMaxillo == 'Tooth Reimplantation') {
-          await conn.query(
+          await conn.rawInsert(
               'INSERT INTO patient_services ( apt_ID, pat_ID, ser_ID, req_ID, value) VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)',
               [
                 appointmentID,
@@ -505,13 +504,13 @@ class AppointmentFunction {
                 desc
               ]);
         } else {
-          await conn.query(
+          await conn.rawInsert(
               'INSERT INTO patient_services ( apt_ID, pat_ID, ser_ID, req_ID, value) VALUES (?, ?, ?, ?, ?)',
               [appointmentID, patientId, serviceId, 2, desc]);
         }
       } else if (ServiceInfo.selectedServiceID == 9) {
         if (ServiceInfo.dentureGroupValue == 'Partial Denture') {
-          await conn.query(
+          await conn.rawInsert(
               'INSERT INTO patient_services ( apt_ID, pat_ID, ser_ID, req_ID, value) VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)',
               [
                 appointmentID,
@@ -533,7 +532,7 @@ class AppointmentFunction {
                 desc
               ]);
         } else {
-          await conn.query(
+          await conn.rawInsert(
               'INSERT INTO patient_services ( apt_ID, pat_ID, ser_ID, req_ID, value) VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)',
               [
                 appointmentID,
@@ -554,7 +553,7 @@ class AppointmentFunction {
               ]);
         }
       } else if (ServiceInfo.selectedServiceID == 11) {
-        await conn.query(
+        await conn.rawInsert(
             'INSERT INTO patient_services ( apt_ID, pat_ID, ser_ID, req_ID, value) VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)',
             [
               appointmentID,
@@ -581,7 +580,7 @@ class AppointmentFunction {
               desc
             ]);
       } else if (ServiceInfo.selectedServiceID == 15) {
-        await conn.query(
+        await conn.rawInsert(
             'INSERT INTO patient_services ( apt_ID, pat_ID, ser_ID, req_ID, value) VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)',
             [
               appointmentID,
@@ -598,11 +597,10 @@ class AppointmentFunction {
               desc
             ]);
       } else {
-        await conn.query(
+        await conn.rawInsert(
             'INSERT INTO patient_services ( apt_ID, pat_ID, ser_ID, req_ID, value) VALUES (?, ?, ?, ?, ?)',
             [appointmentID, patientId, serviceId, 2, desc]);
       }
-      await conn.close();
       return true;
     } catch (e) {
       print('Inserting into patient_services field since: $e');
@@ -614,9 +612,9 @@ class AppointmentFunction {
   static Future<bool> onAddAppointment(
       int patient, int service, String meetDate, int staff) async {
     try {
-      final conn = await onConnToDb();
+      final conn = await onConnToSqliteDb();
       // Now create appointments
-      await conn.query(
+      await conn.rawInsert(
           'INSERT INTO appointments (pat_ID, service_ID, installment, round, discount, total_fee, meet_date, staff_ID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
           [
             patient,
@@ -628,7 +626,6 @@ class AppointmentFunction {
             meetDate,
             staff
           ]);
-      await conn.close();
       return true;
     } catch (e) {
       print('The data failed to insert into appointments since: $e');
@@ -640,8 +637,8 @@ class AppointmentFunction {
   static Future<bool> onAddFeePayment(
       String payDate, int staff, int appointment) async {
     try {
-      final conn = await onConnToDb();
-      await conn.query(
+      final conn = await onConnToSqliteDb();
+      await conn.rawInsert(
           '''INSERT INTO fee_payments (payment_date, paid_amount, due_amount, staff_ID, apt_ID)
     VALUES (?, ?, ?, ?, ?)''',
           [
@@ -651,7 +648,6 @@ class AppointmentFunction {
             staff,
             appointment
           ]);
-      await conn.close();
       return true;
     } catch (e) {
       print('Inserting into fee_payments failed since $e');

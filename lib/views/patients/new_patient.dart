@@ -10,6 +10,7 @@ import 'package:flutter_dentistry/views/patients/tooth_selection_info.dart';
 import 'package:flutter_dentistry/views/services/service_related_fields.dart';
 import 'package:intl/intl.dart' as intl2;
 import 'package:provider/provider.dart';
+import 'package:sqflite/sqflite.dart';
 
 void main() {
   return runApp(const NewPatient());
@@ -937,7 +938,7 @@ class _NewPatientState extends State<NewPatient> {
   Future<bool> _onAddPatientHistory(int patientID) async {
     try {
       // Connect to the database
-      final conn = await onConnToDb();
+      final conn = await onConnToSqliteDb();
 
       // Start a transaction
       await conn.transaction((ctx) async {
@@ -953,7 +954,7 @@ class _NewPatientState extends State<NewPatient> {
             var histDuration = _durationGroupValue[condID];
             var histNotes = _histNoteController[condID]?.text;
 
-            await conn.query(query, [
+            await ctx.rawInsert(query, [
               condID,
               selectedResult.toInt(),
               histSeverty,
@@ -967,9 +968,6 @@ class _NewPatientState extends State<NewPatient> {
           }
         }
       });
-
-      // Close the connection
-      await conn.close();
       return true;
     } catch (e) {
       return false;
@@ -978,85 +976,90 @@ class _NewPatientState extends State<NewPatient> {
 
 // Add a new patient
   Future<void> onAddNewPatient(BuildContext context) async {
-    var firstName = _nameController.text;
-    var lastName = _lNameController.text;
-    var sex = _sexGroupValue;
-    var age = ageDropDown;
-    var maritalStatus = maritalStatusDD;
-    var phone = _phoneController.text;
-    var bGrop = bloodDropDown;
-    var addr = _addrController.text;
+    try {
+      var firstName = _nameController.text;
+      var lastName = _lNameController.text;
+      var sex = _sexGroupValue;
+      var age = ageDropDown;
+      var maritalStatus = maritalStatusDD;
+      var phone = _phoneController.text;
+      var bGrop = bloodDropDown;
+      var addr = _addrController.text;
 
-    var conn = await onConnToDb();
-    int? serviceID = ServiceInfo.selectedServiceID;
-    // First Check the patient where it already exists
-    var queryCheck = await conn
-        .query('SELECT pat_ID, phone FROM patients WHERE phone = ?', [phone]);
-    if (queryCheck.isNotEmpty) {
-      _onShowSnack(
-          Colors.red, translations[selectedLanguage]?['DupPatient'] ?? '');
-      setState(() {
-        _currentStep = 0;
-      });
-    } else {
-      // Firstly insert a patient into patients table
-      var insertPatQuery = await conn.query(
-          'INSERT INTO patients (staff_ID, firstname, lastname, sex, age, marital_status, phone, blood_group, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          [
-            ServiceInfo.selectedDentistID,
-            firstName,
-            lastName,
-            sex,
-            age,
-            maritalStatus,
-            phone,
-            bGrop,
-            addr
-          ]);
+      var conn = await onConnToSqliteDb();
+      int? serviceID = ServiceInfo.selectedServiceID;
+      // First Check the patient where it already exists
+      var queryCheck = await conn.rawQuery(
+          'SELECT pat_ID, phone FROM patients WHERE phone = ?', [phone]);
+      if (queryCheck.isNotEmpty) {
+        _onShowSnack(
+            Colors.red, translations[selectedLanguage]?['DupPatient'] ?? '');
+        setState(() {
+          _currentStep = 0;
+        });
+      } else {
+        // Firstly insert a patient into patients table
+        var insertPatQuery = await conn.rawInsert(
+            'INSERT INTO patients (staff_ID, firstname, lastname, sex, age, marital_status, phone, blood_group, address, reg_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [
+              ServiceInfo.selectedDentistID,
+              firstName,
+              lastName,
+              sex,
+              age,
+              maritalStatus,
+              phone,
+              bGrop,
+              addr,
+              DateTime.now().toIso8601String()
+            ]);
 // Choose a specific patient to fetch his/here ID
-      if (insertPatQuery.affectedRows! > 0) {
-        String? meetDate = ServiceInfo.meetingDate;
-        String? note = ServiceInfo.serviceNote;
-        var fetchPatQuery = await conn.query(
-            'SELECT * FROM patients WHERE firstname = ? AND sex = ? AND age = ? AND phone = ?',
-            [firstName, sex, age, phone]);
-        final row = fetchPatQuery.first;
-        final patId = row['pat_ID'];
+        if (insertPatQuery > 0) {
+          String? meetDate = ServiceInfo.meetingDate;
+          String? note = ServiceInfo.serviceNote;
+          var fetchPatQuery = await conn.rawQuery(
+              'SELECT * FROM patients WHERE firstname = ? AND sex = ? AND age = ? AND phone = ?',
+              [firstName, sex, age, phone]);
+          final row = fetchPatQuery.first;
+          final patId = row['pat_ID'] as int;
 
 // Now insert patient health histories into condition_details
-        if (await _onAddPatientHistory(patId)) {
-          // Now create appointments
-          if (await AppointmentFunction.onAddAppointment(
-              patId, serviceID!, meetDate!, ServiceInfo.selectedDentistID!)) {
-            // Here i fetch apt_ID (appointment ID) which needs to be passed.
-            int appointmentID;
-            final aptIdResult = await conn.query(
-                'SELECT apt_ID FROM appointments WHERE meet_date = ? AND service_ID = ? AND round = ? AND pat_ID = ?',
-                [meetDate, serviceID, 1, patId]);
+          if (await _onAddPatientHistory(patId)) {
+            // Now create appointments
+            if (await AppointmentFunction.onAddAppointment(
+                patId, serviceID!, meetDate!, ServiceInfo.selectedDentistID!)) {
+              // Here i fetch apt_ID (appointment ID) which needs to be passed.
+              int appointmentID;
+              final aptIdResult = await conn.rawQuery(
+                  'SELECT apt_ID FROM appointments WHERE meet_date = ? AND service_ID = ? AND round = ? AND pat_ID = ?',
+                  [meetDate, serviceID, 1, patId]);
 
-            if (aptIdResult.isNotEmpty) {
-              final row = aptIdResult.first;
-              appointmentID = row['apt_ID'];
-            } else {
-              appointmentID = 0;
-            }
+              if (aptIdResult.isNotEmpty) {
+                final row = aptIdResult.first;
+                appointmentID = row['apt_ID'] as int;
+              } else {
+                appointmentID = 0;
+              }
 
-            if (await AppointmentFunction.onAddServiceReq(
-                patId, ServiceInfo.selectedServiceID!, note, appointmentID)) {
-              // if it is inserted into the final tables which is fee_payments, it navigates to patients page.
-              if (await AppointmentFunction.onAddFeePayment(
-                  meetDate, ServiceInfo.selectedDentistID!, appointmentID)) {
-                // ignore: use_build_context_synchronously
-                Navigator.pop(context);
+              if (await AppointmentFunction.onAddServiceReq(
+                  patId, ServiceInfo.selectedServiceID!, note, appointmentID)) {
+                // if it is inserted into the final tables which is fee_payments, it navigates to patients page.
+                if (await AppointmentFunction.onAddFeePayment(
+                    meetDate, ServiceInfo.selectedDentistID!, appointmentID)) {
+                  // ignore: use_build_context_synchronously
+                  Navigator.pop(context);
+                }
               }
             }
+          } else {
+            print('Inserting patient health histories failed');
           }
         } else {
-          print('Inserting patient health histories failed');
+          print('Patient registration faield.');
         }
-      } else {
-        print('Patient registration faield.');
       }
+    } catch (e) {
+      print('New Patient not added: $e');
     }
   }
 
@@ -1159,11 +1162,11 @@ class _NewPatientState extends State<NewPatient> {
                   onPressed: () async {
                     if (_condFormKey.currentState!.validate()) {
                       var condText = condNameController.text;
-                      final conn = await onConnToDb();
-                      final insertResults = await conn.query(
+                      final conn = await onConnToSqliteDb();
+                      final insertResults = await conn.rawInsert(
                           'INSERT INTO conditions (name) VALUES (?)',
                           [condText]);
-                      if (insertResults.affectedRows! > 0) {
+                      if (insertResults > 0) {
                         _onShowSnack(
                             Colors.green,
                             translations[selectedLanguage]
@@ -1178,7 +1181,6 @@ class _NewPatientState extends State<NewPatient> {
                                 '');
                       }
                       Navigator.of(context, rootNavigator: true).pop();
-                      await conn.close();
                     }
                   },
                   child: Text(translations[selectedLanguage]?['AddBtn'] ?? '')),
@@ -1274,11 +1276,11 @@ class _NewPatientState extends State<NewPatient> {
                     print('Editing $condID');
                     if (_condEditFormKey.currentState!.validate()) {
                       var condText = condNameController.text;
-                      final conn = await onConnToDb();
-                      final editResults = await conn.query(
+                      final conn = await onConnToSqliteDb();
+                      final editResults = await conn.rawInsert(
                           'UPDATE conditions SET name = ? WHERE cond_ID = ?',
                           [condText, condID]);
-                      if (editResults.affectedRows! > 0) {
+                      if (editResults > 0) {
                         _onShowSnack(
                             Colors.green,
                             translations[selectedLanguage]?['StaffEditMsg'] ??
@@ -1293,7 +1295,6 @@ class _NewPatientState extends State<NewPatient> {
                       }
                       // ignore: use_build_context_synchronously
                       Navigator.of(context, rootNavigator: true).pop();
-                      await conn.close();
                     }
                   },
                   child: Text(translations[selectedLanguage]?['Edit'] ?? '')),
@@ -1306,15 +1307,14 @@ class _NewPatientState extends State<NewPatient> {
 
 // Fetch patient condidtions
   Future<List<PatientCondition>> _onFetchHealthHistory() async {
-    final conn = await onConnToDb();
-    final results = await conn.query('SELECT cond_ID, name FROM conditions');
+    final conn = await onConnToSqliteDb();
+    final results = await conn.rawQuery('SELECT cond_ID, name FROM conditions');
     final conditions = results
         .map(
-          (row) =>
-              PatientCondition(condID: row[0], CondName: row[1].toString()),
+          (row) => PatientCondition(
+              condID: row["cond_ID"] as int, CondName: row["name"].toString()),
         )
         .toList();
-    await conn.close();
     return conditions;
   }
 
@@ -1348,10 +1348,10 @@ class _NewPatientState extends State<NewPatient> {
                       Text(translations[selectedLanguage]?['CancelBtn'] ?? '')),
               ElevatedButton(
                 onPressed: () async {
-                  final conn = await onConnToDb();
-                  final deleteResults = await conn.query(
+                  final conn = await onConnToSqliteDb();
+                  final deleteResults = await conn.rawDelete(
                       'DELETE FROM conditions WHERE cond_ID = ?', [condID]);
-                  if (deleteResults.affectedRows! > 0) {
+                  if (deleteResults > 0) {
                     _onShowSnack(
                         Colors.green,
                         translations[selectedLanguage]?['HistDelSuccess'] ??
@@ -1362,7 +1362,6 @@ class _NewPatientState extends State<NewPatient> {
                         translations[selectedLanguage]?['HistDelErr'] ?? '');
                   }
                   Navigator.of(context, rootNavigator: true).pop();
-                  await conn.close();
                 },
                 child: Text(translations[selectedLanguage]?['Delete'] ?? ''),
               ),
@@ -1897,7 +1896,8 @@ class _NewPatientState extends State<NewPatient> {
                               }
                             }
                           } else if (ServiceInfo.selectedServiceID == 9) {
-                            if (ServiceInfo.dentureGroupValue == 'Partial Denture') {
+                            if (ServiceInfo.dentureGroupValue ==
+                                'Partial Denture') {
                               if (ageDropDown > 13) {
                                 if (Tooth.adultToothSelected) {
                                   setState(() {
