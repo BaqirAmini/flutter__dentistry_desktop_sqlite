@@ -1,17 +1,13 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:convert';
 import 'package:archive/archive.dart';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_dentistry/config/developer_options.dart';
-import 'package:flutter_dentistry/config/private/private.dart';
 import 'dart:io';
 import 'package:flutter_dentistry/views/staff/staff_info.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart' as INTL;
 import 'package:flutter_dentistry/config/translations.dart';

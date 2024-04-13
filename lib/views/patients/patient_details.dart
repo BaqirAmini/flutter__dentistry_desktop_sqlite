@@ -231,12 +231,12 @@ class _PatientProfileState extends State<_PatientProfile> {
     final result = await conn.rawQuery(
         'SELECT photo FROM patients WHERE pat_ID = ?', [PatientInfo.patID]);
 
-    Blob? staffPhoto =
-        result.first['photo'] != null ? result.first['photo'] as Blob : null;
+    Uint8List? staffPhoto =
+        result.first['photo'] != null ? result.first['photo'] as Uint8List : null;
 
     // Convert image of BLOB type to binary first.
     uint8list =
-        staffPhoto != null ? Uint8List.fromList(staffPhoto.toBytes()) : null;
+        staffPhoto != null ? Uint8List.fromList(staffPhoto) : null;
   }
 
   @override

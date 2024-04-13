@@ -1,7 +1,6 @@
 import 'dart:typed_data';
-
 import 'package:flutter_dentistry/models/db_conn.dart';
-import 'package:galileo_mysql/src/blob.dart';
+
 
 class StaffInfo {
   static int? staffID;
@@ -14,7 +13,7 @@ class StaffInfo {
   static String? tazkira;
   static String? address;
   static Function? onUpdateProfile;
-  static Blob? userPhoto;
+  static Uint8List? userPhoto;
   static Uint8List? contractFile;
   static String? fileType;
 
@@ -35,11 +34,11 @@ class StaffInfo {
     final result = await conn
         .rawQuery('SELECT photo FROM staff WHERE staff_ID = ?', [staffID]);
 
-    Blob? staffPhoto =
-        result.first['photo'] != null ? result.first['photo'] as Blob : null;
+    Uint8List? staffPhoto =
+        result.first['photo'] != null ? result.first['photo'] as Uint8List : null;
 
     // Convert image of BLOB type to binary first.
     uint8list =
-        staffPhoto != null ? Uint8List.fromList(staffPhoto.toBytes()) : null;
+        staffPhoto != null ? Uint8List.fromList(staffPhoto) : null;
   }
 }

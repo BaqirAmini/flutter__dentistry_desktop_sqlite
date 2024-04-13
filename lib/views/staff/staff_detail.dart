@@ -178,7 +178,6 @@ class _StaffProfileState extends State<_StaffProfile> {
         });
         return;
       }
-      // final photo = MySQL.escapeBuffer(bytes);
       var results = await conn.rawUpdate(
           'UPDATE staff SET photo = ? WHERE staff_ID = ?', [bytes, gStaffID]);
       setState(() {

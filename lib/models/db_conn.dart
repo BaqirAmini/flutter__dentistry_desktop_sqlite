@@ -206,7 +206,7 @@ Future<Database> onConnToSqliteDb() async {
             retreat_cost REAL NOT NULL,
             retreat_reason TEXT NOT NULL,
             retreat_outcome TEXT NOT NULL,
-            retreat_details TEXT,
+            outcome_details TEXT,
             FOREIGN KEY(apt_ID) REFERENCES appointments(apt_ID) ON DELETE CASCADE ON UPDATE CASCADE,
             FOREIGN KEY(pat_ID) REFERENCES patients(pat_ID) ON DELETE CASCADE ON UPDATE CASCADE,
             FOREIGN KEY(help_service_ID) REFERENCES services(ser_ID) ON DELETE CASCADE ON UPDATE CASCADE,

@@ -152,7 +152,7 @@ class _SidebarState extends State<Sidebar> {
 
 // Convert image of BLOB type to binary first.
   Uint8List? uint8list = StaffInfo.userPhoto != null
-      ? Uint8List.fromList(StaffInfo.userPhoto!.toBytes())
+      ? Uint8List.fromList(StaffInfo.userPhoto!)
       : null;
 
 // Use this function to update user profile photo

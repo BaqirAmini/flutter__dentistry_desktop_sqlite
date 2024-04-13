@@ -254,7 +254,9 @@ class _MyDataTableState extends State<MyDataTable> {
 
     _data = queryResult.map((row) {
       return MyStaff(
-        photo: row["photo"] == null ? null : row["photo"] as Blob,
+        photo: row["photo"] == null
+            ? null
+            : Uint8List.fromList(row["photo"] as Uint8List),
         firstName: row["firstname"].toString(),
         lastName: row["lastname"] == null ? '' : row["lastname"].toString(),
         position: row["position"] == null ? '' : row["position"].toString(),
@@ -631,7 +633,7 @@ class MyData extends DataTableSource {
   DataRow getRow(int index) {
     late ImageProvider _image;
     Uint8List? uint8list = data[index].photo != null
-        ? Uint8List.fromList((data[index].photo)!.toBytes())
+        ? Uint8List.fromList((data[index].photo)!)
         : null;
     return DataRow(cells: [
       DataCell(
@@ -2551,7 +2553,7 @@ onUpdateUserAccount(
 }
 
 class MyStaff {
-  final Blob? photo;
+  final Uint8List? photo;
   final String firstName;
   final String lastName;
   final String position;

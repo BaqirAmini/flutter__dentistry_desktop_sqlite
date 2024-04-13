@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
-import 'package:flutter_dentistry/views/main/dashboard.dart';
 import 'package:provider/provider.dart';
 import '/views/settings/settings_menu.dart';
 
