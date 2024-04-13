@@ -255,7 +255,7 @@ onCreatePrescription(BuildContext context) {
                                                       columnWidths: {
                                                         0: const pw
                                                             .FixedColumnWidth(
-                                                            100),
+                                                            150),
                                                         1: const pw
                                                             .FixedColumnWidth(
                                                             150),
@@ -374,7 +374,6 @@ onCreatePrescription(BuildContext context) {
                             await Printing.layoutPdf(
                               onLayout: (PdfPageFormat format) async => bytes,
                             ); */
-                                  await conn.close();
                                 }
                               },
                               child: Text(translations[selectedLanguage]
@@ -498,14 +497,13 @@ onCreatePrescription(BuildContext context) {
                                           // Convert the results into a list of Patient objects
                                           var suggestions = results
                                               .map((row) => PatientDataModel(
-                                                  patientId: row[0] as int,
+                                                  patientId: row["pat_ID"] as int,
                                                   patientFName: row["firstname"].toString(),
                                                   patientLName: row["lastname"] == null ? '' : row["lastname"].toString(),
                                                   patientPhone: row["phone"].toString(),
                                                   patientAge: row["age"] as int,
                                                   patientGender: row["sex"].toString()))
                                               .toList();
-                                          await conn.close();
                                           return suggestions;
                                         } catch (e) {
                                           print(
@@ -981,11 +979,11 @@ int pdfOutputCounter = 1;
 int excelOutputCounter = 1;
 // This function create excel output when called.
 void createExcelForPatients() async {
-  final conn = await onConnToDb();
+  final conn = await onConnToSqliteDb();
 
   // Query data from the database.
-  var results = await conn.query(
-      'SELECT firstname, lastname, CONCAT(age, \' سال \'), sex, marital_status, phone, pat_ID, DATE_FORMAT(reg_date, "%Y-%m-%d"), blood_group, COALESCE(address, \' \') FROM patients ORDER BY reg_date DESC');
+  var results = await conn.rawQuery(
+      'SELECT firstname, lastname, CONCAT(age, \' سال \'), sex, marital_status, phone, pat_ID, strftime("%Y-%m-%d", reg_date), blood_group, COALESCE(address, \' \') FROM patients ORDER BY reg_date DESC');
 
   // Create a new Excel document.
   final xls.Workbook workbook = xls.Workbook();
@@ -1033,18 +1031,15 @@ void createExcelForPatients() async {
 
   // Open the file
   await OpenFile.open(file.path);
-
-  // Close the database connection.
-  await conn.close();
 }
 
 // This function generates PDF output when called.
 void createPdfForPatients() async {
-  final conn = await onConnToDb();
+  final conn = await onConnToSqliteDb();
 
   // Query data from the database.
-  var results = await conn.query(
-      'SELECT firstname, lastname, CONCAT(age, \' سال \'), sex, marital_status, phone, pat_ID, DATE_FORMAT(reg_date, "%Y-%m-%d"), blood_group, COALESCE(address, \' \') FROM patients ORDER BY reg_date DESC');
+  var results = await conn.rawQuery(
+      'SELECT firstname, lastname, CONCAT(age, \' سال \'), sex, marital_status, phone, pat_ID, strftime("%Y-%m-%d", reg_date), blood_group, COALESCE(address, \' \') FROM patients ORDER BY reg_date DESC');
 
   // Create a new PDF document.
   final pdf = pw.Document();
@@ -1077,7 +1072,7 @@ void createPdfForPatients() async {
           data: <List<String>>[
             columnTitles,
             ...results
-                .map((row) => row.map((item) => item.toString()).toList()),
+                .map((row) => row.values.map((item) => item?.toString() ?? '--').toList()),
           ],
           border: null, // Remove cell borders
           headerStyle:
@@ -1095,9 +1090,6 @@ void createPdfForPatients() async {
 
   // Open the file
   await OpenFile.open(file.path);
-
-  // Close the database connection.
-  await conn.close();
 }
 
 bool containsPersian(String input) {
@@ -1268,7 +1260,6 @@ onDeletePatient(BuildContext context, Function onRefresh) {
                       _onShowSnack(
                           Colors.red, 'متاسفم، مریض حذف نشد.', context);
                     }
-                    await conn.close();
                   } catch (e) {
                     if (e is SocketException) {
                       // Handle the exception here
@@ -1891,7 +1882,6 @@ class _PatientDataTableState extends State<PatientDataTable> {
     final conn = await onConnToSqliteDb();
     final queryResult = await conn.rawQuery(
         'SELECT firstname, lastname, age, sex, marital_status, phone, pat_ID, strftime("%Y-%m-%d", reg_date) as reg_date, blood_group, address FROM patients ORDER BY reg_date DESC');
-    conn.close();
 
     _data = queryResult.map((row) {
       return PatientData(
