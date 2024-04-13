@@ -19,6 +19,7 @@ import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path/path.dart' as p;
+import 'package:sqflite/sqflite.dart';
 
 FilePickerResult? filePickerResult;
 File? pickedFile;
@@ -954,45 +955,37 @@ onBackUpData() {
                       });
                       return;
                     }
-                    // Database required variable
-                    const String dbName = 'dentistry_db';
-                    const String userName = username;
-                    const String password = pwd;
 
-                    final ProcessResult result = await Process.run(
-                        'mysqldump',
-                        [
-                          '--default-character-set=utf8mb4', // Ensure correct character set
-                          '--hex-blob', // Dump BLOB data in hexadecimal format
-                          '-u',
-                          userName,
-                          '-p$password',
-                          dbName,
-                        ],
-                        stdoutEncoding: utf8,
-                        stderrEncoding: utf8); // Ensure correct encoding
+                    // Database required variable
+                    const String dbName = 'dentistry_db.db';
+
+                    // SQLite database path
+                    String dbPath = await getDatabasesPath();
+                    String path = p.join(dbPath, dbName);
 
                     // User date & time for naming backup file
                     var now = DateTime.now();
                     var formatter = INTL.DateFormat('yyyy-MM-dd HH-mm-ss a');
                     var formattedDate = formatter.format(now);
                     String backupPath =
-                        '$outputDirectory/backup at $formattedDate.sql';
+                        '$outputDirectory/backup at $formattedDate.db';
 
-                    if (result.exitCode == 0) {
-                      final File backupFile = File(backupPath);
-                      await backupFile.writeAsString(result.stdout as String);
+                    // Copy the database file to a new path
+                    final File originalFile = File(path);
+                    final File backupFile = await originalFile.copy(backupPath);
+
+                    if (await backupFile.exists()) {
                       _onShowSnack(Colors.green,
                           '${translations[selectedLanguage]?['BackupCreatMsg'] ?? ''}$outputDirectory');
                     } else {
-                      print('Backup not created: ${result.stderr}');
+                      print('Backup not created');
                     }
 
                     setState(() {
                       isWholeBackupInProg = false;
                     });
                   } catch (e) {
-                    print('Backing up the tables failed. $e');
+                    print('Backing up the database failed. $e');
                   }
                 },
                 icon: isWholeBackupInProg
@@ -1077,8 +1070,7 @@ onBackUpData() {
                     }
 
                     // Output directory where zip file created.
-                    String zipPath =
-                        '$outputDirectory\\CROWN.zip';
+                    String zipPath = '$outputDirectory\\CROWN.zip';
 
                     // Create the Archive object
                     Archive archive = Archive();
@@ -1390,76 +1382,37 @@ onRestoreData() {
                         isRestoreInProg = true;
                       });
 
+                      // Database required variable
                       const String dbName = 'dentistry_db';
-                      const String userName = username;
-                      const String password = pwd;
+
+                      // SQLite database path
+                      String dbPath = await getDatabasesPath();
+                      String path = p.join(dbPath, dbName);
 
                       // Show file picker
                       filePickerResult = await FilePicker.platform.pickFiles(
                         type: FileType.custom,
-                        allowedExtensions: ['sql'],
+                        allowedExtensions: ['db'],
                       );
 
                       if (filePickerResult != null) {
                         String backupPath =
                             filePickerResult!.files.single.path!;
 
-                        // Read the backup file
-                        String contents = await File(backupPath).readAsString();
-                        // Generate a hash of the backup file contents
-                        var backupHash = md5.convert(utf8.encode(contents));
+                        // Delete the current database
+                        var database = await openDatabase(path);
+                        await database.close();
+                        await deleteDatabase(path);
 
-                        // Generate a dump of the current database state
-                        final ProcessResult currentDump =
-                            await Process.run('mysqldump', [
-                          '-u',
-                          userName,
-                          '-p$password',
-                          dbName,
-                        ]);
-                        // Generate a hash of the current database state
-                        var currentHash =
-                            md5.convert(utf8.encode(currentDump.stdout));
+                        // Copy the backup database file to the original location
+                        final File backupFile = File(backupPath);
+                        await backupFile.copy(path);
 
-                        if (backupHash == currentHash) {
-                          _onShowSnack(
-                              Colors.red,
-                              translations[selectedLanguage]
-                                      ?['RestoreNotNeeded'] ??
-                                  '');
-                        } else {
-                          // Start the mysql process
-                          Process process = await Process.start(
-                              'mysql',
-                              [
-                                '-u',
-                                userName,
-                                '-p$password',
-                                dbName,
-                              ],
-                              runInShell: true);
-
-                          // Write the contents of the backup file to the stdin of the mysql process
-                          process.stdin.write(contents);
-                          await process.stdin
-                              .close(); // Wait until all data has been written to stdin
-
-                          // Wait for the mysql process to finish
-                          int exitCode = await process.exitCode;
-
-                          if (exitCode == 0) {
-                            _onShowSnack(
-                                Colors.green,
-                                translations[selectedLanguage]
-                                        ?['RestoreSuccessMsg'] ??
-                                    '');
-                          } else {
-                            print('Error occurred during restore');
-                            print(await process.stderr
-                                .transform(utf8.decoder)
-                                .join());
-                          }
-                        }
+                        _onShowSnack(
+                            Colors.green,
+                            translations[selectedLanguage]
+                                    ?['RestoreSuccessMsg'] ??
+                                '');
                       }
 
                       setState(() {
