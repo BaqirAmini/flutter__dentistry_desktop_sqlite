@@ -160,7 +160,7 @@ class _StaffProfileState extends State<_StaffProfile> {
         type: FileType.custom,
         allowedExtensions: ['jpg', 'jpeg', 'png']);
     if (result != null) {
-      final conn = await onConnToDb();
+      final conn = await onConnToSqliteDb();
       pickedFile = File(result.files.single.path.toString());
       final bytes = await pickedFile!.readAsBytes();
       // Check if the file size is larger than 1MB
@@ -179,10 +179,10 @@ class _StaffProfileState extends State<_StaffProfile> {
         return;
       }
       // final photo = MySQL.escapeBuffer(bytes);
-      var results = await conn.query(
+      var results = await conn.rawUpdate(
           'UPDATE staff SET photo = ? WHERE staff_ID = ?', [bytes, gStaffID]);
       setState(() {
-        if (results.affectedRows! > 0) {
+        if (results > 0) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               backgroundColor: Colors.green,

@@ -2,11 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
-import 'package:flutter_dentistry/views/settings/settings_menu.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:path/path.dart';
 import 'package:syncfusion_flutter_xlsio/xlsio.dart' hide Column;
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
@@ -16,11 +13,11 @@ class ProductionReport extends StatelessWidget {
   const ProductionReport({super.key});
 
   void createExcel() async {
-    final conn = await onConnToDb();
+    final conn = await onConnToSqliteDb();
 
     // Query data from the database.
-    var results = await conn.query(
-        'SELECT firstname, lastname, age, sex, marital_status, phone, pat_ID, DATE_FORMAT(reg_date, "%Y-%m-%d"), blood_group, address FROM patients ORDER BY reg_date DESC');
+    var results = await conn.rawQuery(
+        'SELECT firstname, lastname, age, sex, marital_status, phone, pat_ID, strftime("%Y-%m-%d", reg_date), blood_group, address FROM patients ORDER BY reg_date DESC');
 
     // Create a new Excel document.
     final Workbook workbook = Workbook();
@@ -49,8 +46,9 @@ class ProductionReport extends StatelessWidget {
     var rowIndex =
         1; // Start from the second row as the first row is used for column titles.
     for (var row in results) {
+      var columnValues = row.values.toList();
       for (var i = 0; i < row.length; i++) {
-        sheet.getRangeByIndex(rowIndex + 1, i + 1).setText(row[i].toString());
+        sheet.getRangeByIndex(rowIndex + 1, i + 1).setText(columnValues[i].toString());
       }
       rowIndex++;
     }
@@ -68,9 +66,6 @@ class ProductionReport extends StatelessWidget {
 
     // Open the file
     await OpenFile.open(file.path);
-
-    // Close the database connection.
-    await conn.close();
   }
 
   void createPdf() async {
@@ -89,11 +84,11 @@ class ProductionReport extends StatelessWidget {
       format.textDirection = PdfTextDirection.rightToLeft;
       format.alignment = PdfTextAlignment.right;
 
-      final conn = await onConnToDb();
+      final conn = await onConnToSqliteDb();
 
       // Query data from the database.
       var results =
-          await conn.query('SELECT firstname, lastname FROM patients');
+          await conn.rawQuery('SELECT firstname, lastname FROM patients');
       final ByteData fontData =
           (await rootBundle.load('assets/fonts/per_sans_font.ttf'));
       final PdfTrueTypeFont ttfFont =
@@ -138,9 +133,6 @@ class ProductionReport extends StatelessWidget {
 
       // Open the file
       await OpenFile.open(file.path);
-
-      // Close the database connection.
-      await conn.close();
     } catch (e) {
       print('Error with PDF: $e');
     }

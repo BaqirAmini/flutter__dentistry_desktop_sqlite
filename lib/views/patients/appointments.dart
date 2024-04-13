@@ -919,8 +919,8 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                         double serFee = feeController.text.isNotEmpty
                             ? double.parse(feeController.text)
                             : 0;
-                        final conn = await onConnToDb();
-                        final results = await conn.query(
+                        final conn = await onConnToSqliteDb();
+                        final results = await conn.rawQuery(
                             'UPDATE services SET ser_name = ?, ser_fee = ? WHERE ser_ID = ?',
                             [serName, serFee, serviceId]);
                         if (results.affectedRows! > 0) {
@@ -933,7 +933,6 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                         }
                         // ignore: use_build_context_synchronously
                         Navigator.of(context, rootNavigator: true).pop();
-                        await conn.close();
                       }
                     },
                     child: const Text(' تغییر دادن'),

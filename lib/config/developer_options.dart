@@ -411,9 +411,9 @@ class Features {
 // This function gets number of user acounts and checks if limit has reached.
   static Future<bool> userLimitReached() async {
     try {
-      final conn = await onConnToDb();
-      var result = await conn.query('SELECT COUNT(*) FROM staff_auth');
-      int numOfUsers = result.first[0];
+      final conn = await onConnToSqliteDb();
+      var result = await conn.rawQuery('SELECT COUNT(*) AS num_of_user FROM staff_auth');
+      int numOfUsers = result.first["num_of_user"] as int;
       if (numOfUsers >= allowedUsersLimit && allowedUsersLimit != 0) {
         return true;
       } else {
@@ -428,9 +428,9 @@ class Features {
   // This function gets number of patients and checks if limit has reached.
   static Future<bool> patientLimitReached() async {
     try {
-      final conn = await onConnToDb();
-      var result = await conn.query('SELECT COUNT(*) FROM patients');
-      int numOfPatients = result.first[0];
+      final conn = await onConnToSqliteDb();
+      var result = await conn.query('SELECT COUNT(*) AS num_of_patients FROM patients');
+      int numOfPatients = result.first["num_of_patients"] as int;
       if (numOfPatients >= allowedPatientsLimit && allowedPatientsLimit != -1) {
         return true;
       } else {
@@ -445,9 +445,9 @@ class Features {
   // This function gets number of staff and checks if limit has reached.
   static Future<bool> staffLimitReached() async {
     try {
-      final conn = await onConnToDb();
-      var result = await conn.query('SELECT COUNT(*) FROM staff');
-      int numOfStaff = result.first[0];
+      final conn = await onConnToSqliteDb();
+      var result = await conn.rawQuery('SELECT COUNT(*) AS num_of_staff FROM staff');
+      int numOfStaff = result.first["num_of_staff"] as int;
       if (numOfStaff >= allowedStaffLimit && allowedStaffLimit != 0) {
         return true;
       } else {
@@ -462,9 +462,9 @@ class Features {
   // This function gets number of expenses and checks if limit has reached.
   static Future<bool> expenseLimitReached() async {
     try {
-      final conn = await onConnToDb();
-      var result = await conn.query('SELECT COUNT(*) FROM expense_detail');
-      int numOfExpenseDetail = result.first[0];
+      final conn = await onConnToSqliteDb();
+      var result = await conn.rawQuery('SELECT COUNT(*) AS num_of_exp_detail FROM expense_detail');
+      int numOfExpenseDetail = result.first["num_of_exp_detail"] as int;
       if (numOfExpenseDetail >= allowedExpenseLimit && allowedExpenseLimit != -1) {
         return true;
       } else {

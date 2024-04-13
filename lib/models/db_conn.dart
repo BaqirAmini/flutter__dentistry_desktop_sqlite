@@ -1,29 +1,8 @@
-import 'dart:io';
-import 'package:galileo_mysql/galileo_mysql.dart';
-import 'package:flutter_dentistry/config/private/private.dart';
 // For only Android & IOS this package is enough
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 // This package is only required by flutter web & desktop in addtion to sqflite
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
-Future<MySqlConnection> onConnToDb() async {
-  try {
-    final conn = await MySqlConnection.connect(ConnectionSettings(
-        host: 'localhost',
-        port: 3306,
-        user: username,
-        password: pwd,
-        db: 'dentistry_db'));
-    return conn;
-  } on SocketException catch (e) {
-    print('Could not connect to the database. Error: ${e.message}');
-    return Future.error(e);
-  } catch (e) {
-    print(e);
-    return Future.error(e);
-  }
-}
 
 // This function connects to SQLite database
 void initSqflite() {

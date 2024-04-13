@@ -1103,23 +1103,23 @@ class _CalendarPageState extends State<CalendarPage> {
   // This function fetches the scheduled appointments from database
   Future<List<PatientAppointment>> _fetchAppointments() async {
     try {
-      final conn = await onConnToDb();
-      final results = await conn.query(
-          '''SELECT firstname, lastname, ser_name, details, meet_date, apt_ID, notification, a.service_ID, a.staff_ID FROM staff st 
+      final conn = await onConnToSqliteDb();
+      final results = await conn.rawQuery(
+          '''SELECT firstname, lastname, ser_name, details, meet_date, apt_ID, notification, a.service_ID AS ser_id, a.staff_ID AS staff_id FROM staff st 
              INNER JOIN appointments a ON st.staff_ID = a.staff_ID 
              INNER JOIN services s ON a.service_ID = s.ser_ID WHERE a.status = ? AND a.pat_ID = ?''',
           ['Pending', PatientInfo.patID]);
       return results
           .map((row) => PatientAppointment(
-              dentistFName: row[0].toString(),
-              dentistLName: row[1].toString(),
-              serviceName: row[2].toString(),
-              comments: row[3] == null ? '' : row[3].toString(),
-              visitTime: row[4] as DateTime,
-              apptId: row[5] as int,
-              notifFreq: row[6].toString(),
-              serviceID: row[7] as int,
-              staffID: row[8] as int))
+              dentistFName: row["firstname"].toString(),
+              dentistLName: row["lastname"].toString(),
+              serviceName: row["ser_name"].toString(),
+              comments: row["details"] == null ? '' : row["details"].toString(),
+              visitTime: row["meet_date"] as DateTime,
+              apptId: row["apt_ID"] as int,
+              notifFreq: row["notification"].toString(),
+              serviceID: row["ser_id"] as int,
+              staffID: row["staff_id"] as int))
           .toList();
     } catch (e) {
       print('The scheduled appoinments cannot be retrieved: $e');
