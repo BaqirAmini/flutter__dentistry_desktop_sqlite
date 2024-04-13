@@ -11,8 +11,7 @@ var selectedLanguage;
 var isEnglish;
 
 void updateSelectedTeeth(List<String> selectedTeeth) async {
-  final conn = await onConnToDb();
-  await conn.close();
+  final conn = await onConnToSqliteDb();
 
   // Convert the list of selected teeth to a string
   var selectedTeethString = selectedTeeth.join(',');

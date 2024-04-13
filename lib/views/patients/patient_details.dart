@@ -164,7 +164,7 @@ class _PatientProfileState extends State<_PatientProfile> {
         type: FileType.custom,
         allowedExtensions: ['jpg', 'jpeg', 'png']);
     if (result != null) {
-      final conn = await onConnToDb();
+      final conn = await onConnToSqliteDb();
       pickedFile = File(result.files.single.path.toString());
       final bytes = await pickedFile!.readAsBytes();
       // Check if the file size is larger than 1MB
@@ -184,11 +184,11 @@ class _PatientProfileState extends State<_PatientProfile> {
         return;
       }
       // final photo = MySQL.escapeBuffer(bytes);
-      var results = await conn.query(
+      var results = await conn.rawUpdate(
           'UPDATE patients SET photo = ? WHERE pat_ID = ?',
           [bytes, PatientInfo.patID]);
       setState(() {
-        if (results.affectedRows! > 0) {
+        if (results > 0) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               backgroundColor: Colors.green,
@@ -227,8 +227,8 @@ class _PatientProfileState extends State<_PatientProfile> {
   Uint8List? uint8list;
   // This function fetches patient photo
   Future<void> _onFetchPatientPhoto(int staffID) async {
-    final conn = await onConnToDb();
-    final result = await conn.query(
+    final conn = await onConnToSqliteDb();
+    final result = await conn.rawQuery(
         'SELECT photo FROM patients WHERE pat_ID = ?', [PatientInfo.patID]);
 
     Blob? staffPhoto =
@@ -237,7 +237,6 @@ class _PatientProfileState extends State<_PatientProfile> {
     // Convert image of BLOB type to binary first.
     uint8list =
         staffPhoto != null ? Uint8List.fromList(staffPhoto.toBytes()) : null;
-    await conn.close();
   }
 
   @override

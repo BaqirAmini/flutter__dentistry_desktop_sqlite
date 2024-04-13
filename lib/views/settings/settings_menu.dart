@@ -234,7 +234,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
         type: FileType.custom,
         allowedExtensions: ['jpg', 'jpeg', 'png']);
     if (result != null) {
-      final conn = await onConnToDb();
+      final conn = await onConnToSqliteDb();
       pickedFile = File(result.files.single.path.toString());
       final bytes = await pickedFile!.readAsBytes();
       // Check if the file size is larger than 1MB
@@ -253,11 +253,11 @@ class _SettingsMenuState extends State<SettingsMenu> {
         return;
       }
       // final photo = MySQL.escapeBuffer(bytes);
-      var results = await conn.query(
+      var results = await conn.rawUpdate(
           'UPDATE staff SET photo = ? WHERE staff_ID = ?',
           [bytes, StaffInfo.staffID]);
       setState(() {
-        if (results.affectedRows! > 0) {
+        if (results > 0) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               backgroundColor: Colors.green,
@@ -540,17 +540,17 @@ onChangePwd() {
                         if (formKeyChangePwd.currentState!.validate()) {
                           String currentPwd = currentPwdController.text;
                           String newPwd = newPwdController.text;
-                          final conn = await onConnToDb();
+                          final conn = await onConnToSqliteDb();
                           // First make sure the current password matches.
-                          var results = await conn.query(
+                          var results = await conn.rawQuery(
                               'SELECT * FROM staff_auth WHERE password = PASSWORD(?)',
                               [currentPwd]);
 
                           if (results.isNotEmpty) {
-                            var updatedResult = await conn.query(
+                            var updatedResult = await conn.rawUpdate(
                                 'UPDATE staff_auth SET password = PASSWORD(?) WHERE staff_ID = ?',
                                 [newPwd, StaffInfo.staffID]);
-                            if (updatedResult.affectedRows! > 0) {
+                            if (updatedResult > 0) {
                               _onShowSnack(
                                   Colors.green,
                                   translations[selectedLanguage]
@@ -1860,8 +1860,8 @@ onEditProfileInfo(BuildContext context) {
                                 ? ''
                                 : addressController.text;
 
-                            final conn = await onConnToDb();
-                            var updateResult = await conn.query(
+                            final conn = await onConnToSqliteDb();
+                            var updateResult = await conn.rawUpdate(
                                 'UPDATE staff SET firstname = ?, lastname = ?, salary = ?, phone = ?, tazkira_ID = ?, address = ? WHERE staff_ID = ?',
                                 [
                                   firstName,
@@ -1872,8 +1872,7 @@ onEditProfileInfo(BuildContext context) {
                                   address,
                                   StaffInfo.staffID
                                 ]);
-                            await conn.close();
-                            if (updateResult.affectedRows! > 0) {
+                            if (updateResult > 0) {
                               _onShowSnack(
                                   Colors.green,
                                   translations[selectedLanguage]

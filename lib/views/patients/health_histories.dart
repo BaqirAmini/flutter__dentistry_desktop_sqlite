@@ -434,11 +434,11 @@ class HealthHistoriesState extends State<HealthHistories> {
                   onPressed: () async {
                     if (_condFormKey.currentState!.validate()) {
                       var condText = condNameController.text;
-                      final conn = await onConnToDb();
-                      final insertResults = await conn.query(
+                      final conn = await onConnToSqliteDb();
+                      final insertResults = await conn.rawInsert(
                           'INSERT INTO conditions (name) VALUES (?)',
                           [condText]);
-                      if (insertResults.affectedRows! > 0) {
+                      if (insertResults > 0) {
                         _onShowSnack(Colors.green, 'سوال موفقانه ثبت گردید.');
                         setState(() {
                           PatientInfo.showElevatedBtn = true;
@@ -448,7 +448,6 @@ class HealthHistoriesState extends State<HealthHistories> {
                       }
                       // ignore: use_build_context_synchronously
                       Navigator.of(context, rootNavigator: true).pop();
-                      await conn.close();
                     }
                   },
                   child: Text(translations[selectedLanguage]?['AddBtn'] ?? '')),
@@ -461,15 +460,14 @@ class HealthHistoriesState extends State<HealthHistories> {
 
 // Fetch patient condidtions
   Future<List<PatientCondition>> _onFetchHealthHistory() async {
-    final conn = await onConnToDb();
-    final results = await conn.query('SELECT cond_ID, name FROM conditions');
+    final conn = await onConnToSqliteDb();
+    final results = await conn.rawQuery('SELECT cond_ID, name FROM conditions');
     final conditions = results
         .map(
           (row) =>
-              PatientCondition(condID: row[0], CondName: row[1].toString()),
+              PatientCondition(condID: row["cond_ID"] as int, CondName: row["name"].toString()),
         )
         .toList();
-    await conn.close();
     return conditions;
   }
 
@@ -931,11 +929,11 @@ class HealthHistoriesState extends State<HealthHistories> {
                 print('Editing $condID');
                 if (_condEditFormKey.currentState!.validate()) {
                   var condText = condNameController.text;
-                  final conn = await onConnToDb();
-                  final editResults = await conn.query(
+                  final conn = await onConnToSqliteDb();
+                  final editResults = await conn.rawUpdate(
                       'UPDATE conditions SET name = ? WHERE cond_ID = ?',
                       [condText, condID]);
-                  if (editResults.affectedRows! > 0) {
+                  if (editResults > 0) {
                     _onShowSnack(
                         Colors.green, 'تاریخچه صحی مریض موفقانه تغییر کرد.');
                     setState(() {});
@@ -943,7 +941,6 @@ class HealthHistoriesState extends State<HealthHistories> {
                     _onShowSnack(Colors.red, 'هیچ تغییراتی نیاورده اید.');
                   }
                   Navigator.of(context, rootNavigator: true).pop();
-                  await conn.close();
                 }
               },
               child: const Text('تغییر دادن')),
@@ -971,17 +968,16 @@ class HealthHistoriesState extends State<HealthHistories> {
               child: const Text('لغو')),
           ElevatedButton(
             onPressed: () async {
-              final conn = await onConnToDb();
+              final conn = await onConnToSqliteDb();
               final deleteResults = await conn
-                  .query('DELETE FROM conditions WHERE cond_ID = ?', [condID]);
-              if (deleteResults.affectedRows! > 0) {
+                  .rawDelete('DELETE FROM conditions WHERE cond_ID = ?', [condID]);
+              if (deleteResults > 0) {
                 _onShowSnack(Colors.green, 'تاریخچه صحی موفقانه حذف گردید.');
                 setState(() {});
               } else {
                 _onShowSnack(Colors.red, 'حذف تاریخچه صحی ناکام شد.');
               }
               Navigator.of(context, rootNavigator: true).pop();
-              await conn.close();
             },
             child: const Text('حذف'),
           ),
@@ -994,7 +990,7 @@ class HealthHistoriesState extends State<HealthHistories> {
   Future<bool> onAddPatientHistory(int? patientID) async {
     try {
       // Connect to the database
-      final conn = await onConnToDb();
+      final conn = await onConnToSqliteDb();
 
       // Start a transaction
       await conn.transaction((ctx) async {
@@ -1009,7 +1005,7 @@ class HealthHistoriesState extends State<HealthHistories> {
           var histDuration = _durationGroupValue[condID];
           var histNotes = _histNoteController[condID]?.text;
 
-          await conn.query(query, [
+          await ctx.rawInsert(query, [
             condID,
             selectedResult.toInt(),
             histSeverty,
@@ -1020,9 +1016,6 @@ class HealthHistoriesState extends State<HealthHistories> {
           ]);
         }
       });
-
-      // Close the connection
-      await conn.close();
       return true;
     } catch (e) {
       return false;

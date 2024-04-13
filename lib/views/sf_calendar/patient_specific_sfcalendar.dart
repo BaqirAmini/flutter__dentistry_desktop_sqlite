@@ -499,8 +499,8 @@ class _CalendarPageState extends State<CalendarPage> {
                               onPressed: () async {
                                 if (_calFormKey.currentState!.validate()) {
                                   try {
-                                    final conn = await onConnToDb();
-                                    final results = await conn.query(
+                                    final conn = await onConnToSqliteDb();
+                                    final results = await conn.rawInsert(
                                         'INSERT INTO appointments (pat_ID, service_ID, meet_date, staff_ID, status, notification, details) VALUES (?, ?, ?, ?, ?, ?, ?)',
                                         [
                                           patientId,
@@ -514,7 +514,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                               ? null
                                               : commentController.text
                                         ]);
-                                    if (results.affectedRows! > 0) {
+                                    if (results > 0) {
                                       // ignore: use_build_context_synchronously
                                       Navigator.of(context).pop();
                                       // ignore: use_build_context_synchronously
@@ -526,7 +526,6 @@ class _CalendarPageState extends State<CalendarPage> {
                                           context);
                                       refresh();
                                     }
-                                    await conn.close();
                                   } catch (e) {
                                     print('Appointment scheduling failed: $e');
                                   }
@@ -1001,8 +1000,8 @@ class _CalendarPageState extends State<CalendarPage> {
                     onPressed: () async {
                       if (_calFormKey.currentState!.validate()) {
                         try {
-                          final conn = await onConnToDb();
-                          final results = await conn.query(
+                          final conn = await onConnToSqliteDb();
+                          final results = await conn.rawUpdate(
                               'UPDATE appointments SET service_ID = ?, staff_ID = ?, meet_date = ?, notification = ?, details = ? WHERE apt_ID = ?',
                               [
                                 selectedServiceId,
@@ -1014,7 +1013,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                     : editCommentController.text,
                                 apptId
                               ]);
-                          if (results.affectedRows! > 0) {
+                          if (results > 0) {
                             // ignore: use_build_context_synchronously
                             Navigator.of(context).pop();
                             // ignore: use_build_context_synchronously
@@ -1037,7 +1036,6 @@ class _CalendarPageState extends State<CalendarPage> {
                                 context);
                           }
 
-                          await conn.close();
                         } catch (e) {
                           print('Appointment scheduling failed: $e');
                         }
@@ -1078,10 +1076,10 @@ class _CalendarPageState extends State<CalendarPage> {
               ),
               TextButton(
                 onPressed: () async {
-                  final conn = await onConnToDb();
-                  final deleteResult = await conn.query(
+                  final conn = await onConnToSqliteDb();
+                  final deleteResult = await conn.rawDelete(
                       'DELETE FROM appointments WHERE apt_ID = ?', [apptId]);
-                  if (deleteResult.affectedRows! > 0) {
+                  if (deleteResult > 0) {
                     // ignore: use_build_context_synchronously
                     Navigator.of(context).pop();
                     // ignore: use_build_context_synchronously
@@ -1092,7 +1090,6 @@ class _CalendarPageState extends State<CalendarPage> {
                         context);
                     refresh();
                   }
-                  await conn.close();
                 },
                 child: Text(translations[selectedLanguage]?['Delete'] ?? ''),
               ),

@@ -214,18 +214,17 @@ class _ServiceState extends State<Service> {
                       double serviceFee = feeController.text.isEmpty
                           ? 0
                           : double.parse(feeController.text);
-                      final conn = await onConnToDb();
-                      final results = await conn.query(
+                      final conn = await onConnToSqliteDb();
+                      final results = await conn.rawInsert(
                         'INSERT INTO services (ser_name, ser_fee) VALUES(?, ?)',
                         [serviceName, serviceFee],
                       );
-                      if (results.affectedRows! > 0) {
+                      if (results > 0) {
                         _onShowSnack(Colors.green, 'سرویس موفقانه ثبت شد.');
                       } else {
                         _onShowSnack(Colors.red, 'متأسفم، ثبت سرویس ناکام شد.');
                       }
                       Navigator.pop(context);
-                      await conn.close();
                     },
                     child: const Text('ایجاد کردن'),
                   ),

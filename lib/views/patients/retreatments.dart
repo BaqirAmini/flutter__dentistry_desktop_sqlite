@@ -207,10 +207,10 @@ class _AppointmentContentState extends State<_AppointmentContent> {
               TextButton(
                 onPressed: () async {
                   try {
-                    final conn = await onConnToDb();
-                    final deleteResult = await conn.query(
+                    final conn = await onConnToSqliteDb();
+                    final deleteResult = await conn.rawDelete(
                         'DELETE FROM retreatments WHERE retreat_ID = ?', [id]);
-                    if (deleteResult.affectedRows! > 0) {
+                    if (deleteResult > 0) {
                       // ignore: use_build_context_synchronously
                       Navigator.of(context).pop();
                       // ignore: use_build_context_synchronously
@@ -218,7 +218,6 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                           Colors.green, 'عودی مریض حذف گردید.', context);
                       refresh();
                     }
-                    await conn.close();
                   } catch (e) {
                     print('Deleting retreatment: $e');
                   }
@@ -563,43 +562,41 @@ class ExpandableCard extends StatelessWidget {
 // This function fetches records of patients, retreatments, staff and services using JOIN
 Future<List<Map>> _getRetreatment() async {
   try {
-    final conn = await onConnToDb();
+    final conn = await onConnToSqliteDb();
 
     const query =
-        '''SELECT r.apt_ID, r.help_service_ID, r.retreat_date, hs.ser_name, r.retreat_cost, r.retreat_reason, 
-        r.retreat_outcome, r.outcome_details, st.staff_ID, st.firstname, st.lastname, r.retreat_ID, ds.ser_ID, 
-        ds.ser_name FROM retreatments r 
+        '''SELECT r.apt_ID AS apt_id, r.help_service_ID AS help_sid, r.retreat_date AS rdate, hs.ser_name AS hsname, r.retreat_cost AS rcost, r.retreat_reason AS reason, 
+        r.retreat_outcome AS outcome, r.outcome_details AS outdetails, st.staff_ID AS sid, st.firstname AS sfname, st.lastname AS slname, r.retreat_ID AS rid, ds.ser_ID AS dsid, 
+        ds.ser_name AS dsname FROM retreatments r 
                     INNER JOIN staff st ON r.staff_ID = st.staff_ID
                     INNER JOIN services hs ON r.help_service_ID = hs.ser_ID 
                     INNER JOIN services ds ON r.damage_service_ID = ds.ser_ID
                     WHERE r.pat_ID = ? ORDER BY r.retreat_date DESC''';
 
 // a.status = 'Pending' means it is scheduled in calendar not completed.
-    final results = await conn.query(query, [PatientInfo.patID]);
+    final results = await conn.rawQuery(query, [PatientInfo.patID]);
 
     List<Map> retreatments = [];
 
     for (var row in results) {
       retreatments.add({
         'retreatDate': intl2.DateFormat('yyyy-MM-dd hh:mm a')
-            .format(DateTime.parse(row[2].toString())),
-        'apptID': row[0],
-        'helpSName': row[3].toString(),
-        'helpServiceID': row[1],
-        'retreatFee': row[4],
-        'retreatReason': row[5],
-        'retreatOutcome': row[6],
-        'retreatDetails': row[7],
-        'staffID': row[8],
-        'staffFirstName': row[9],
-        'staffLastName': row[10],
-        'retreatID': row[11],
-        'damageServiceID': row[12],
-        'damageSName': row[13],
+            .format(DateTime.parse(row["rdate"].toString())),
+        'apptID': row["apt_id"],
+        'helpSName': row["hsname"].toString(),
+        'helpServiceID': row["help_sid"],
+        'retreatFee': row["rcost"],
+        'retreatReason': row['reason'],
+        'retreatOutcome': row['outcome'],
+        'retreatDetails': row['outdetails'],
+        'staffID': row['sid'],
+        'staffFirstName': row['sfname'],
+        'staffLastName': row['slname'],
+        'retreatID': row['rid'],
+        'damageServiceID': row['dsid'],
+        'damageSName': row['dsname'],
       });
     }
-
-    await conn.close();
     return retreatments;
   } catch (e) {
     print('Error with retrieving retreatments: $e');

@@ -58,16 +58,15 @@ class GlobalUsage {
 
 // Declare this function to fetch services from services table to be used globally
   Future<List<Map<String, dynamic>>> fetchServices() async {
-    var conn = await onConnToDb();
+    var conn = await onConnToSqliteDb();
     var queryService =
-        await conn.query('SELECT ser_ID, ser_name FROM services WHERE ser_ID');
+        await conn.rawQuery('SELECT ser_ID, ser_name FROM services WHERE ser_ID');
 
     List<Map<String, dynamic>> services = queryService
         .map(
-            (result) => {'ser_ID': result[0].toString(), 'ser_name': result[1]})
+            (result) => {'ser_ID': result["ser_ID"].toString(), 'ser_name': result["ser_name"]})
         .toList();
 
-    await conn.close();
     return services;
   }
 

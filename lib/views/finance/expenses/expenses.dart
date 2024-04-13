@@ -102,37 +102,35 @@ class _ExpenseListState extends State<ExpenseList> {
   String? selectedExpType;
   List<Map<String, dynamic>> expenseTypes = [];
   Future<void> fetchExpenseTypes() async {
-    var conn = await onConnToDb();
-    var results = await conn.query('SELECT exp_ID, exp_name FROM expenses');
+    var conn = await onConnToSqliteDb();
+    var results = await conn.rawQuery('SELECT exp_ID, exp_name FROM expenses');
     setState(() {
       expenseTypes = results
           .map((result) =>
-              {'exp_ID': result[0].toString(), 'exp_name': result[1]})
+              {'exp_ID': result["exp_ID"].toString(), 'exp_name': result["exp_name"].toString()})
           .toList();
     });
     selectedExpType =
         expenseTypes.isNotEmpty ? expenseTypes[0]['exp_ID'] : null;
-    await conn.close();
   }
 
   // Fetch staff for purchased by fields
   String? selectedStaffId;
   List<Map<String, dynamic>> staffList = [];
   Future<void> fetchStaff() async {
-    var conn = await onConnToDb();
+    var conn = await onConnToSqliteDb();
     var results =
-        await conn.query('SELECT staff_ID, firstname, lastname FROM staff');
+        await conn.rawQuery('SELECT staff_ID, firstname, lastname FROM staff');
     setState(() {
       staffList = results
           .map((result) => {
-                'staff_ID': result[0].toString(),
-                'firstname': result[1],
-                'lastname': result[2]
+                'staff_ID': result["staff_ID"].toString(),
+                'firstname': result["firstname"],
+                'lastname': result["lastname"]
               })
           .toList();
     });
     selectedStaffId = staffList.isNotEmpty ? staffList[0]['staff_ID'] : null;
-    await conn.close();
   }
 
 // The text editing controllers for the TextFormFields
@@ -696,9 +694,9 @@ class _ExpenseListState extends State<ExpenseList> {
                                   purchaseDateController.text;
                               String notes = descriptionController.text;
                               // Do connection with the database
-                              var conn = await onConnToDb();
+                              var conn = await onConnToSqliteDb();
                               // Insert the item into expense_detail table
-                              var result = await conn.query(
+                              var result = await conn.rawInsert(
                                   'INSERT INTO expense_detail (exp_ID, purchased_by, item_name, quantity, qty_unit, unit_price, total, purchase_date, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
                                   [
                                     expID,
@@ -711,7 +709,7 @@ class _ExpenseListState extends State<ExpenseList> {
                                     datePurchased,
                                     notes
                                   ]);
-                              if (result.affectedRows! > 0) {
+                              if (result > 0) {
                                 _onShowSnack(
                                     Colors.green,
                                     translations[selectedLanguage]
@@ -732,7 +730,6 @@ class _ExpenseListState extends State<ExpenseList> {
                                             ?['ExpAddError'] ??
                                         '');
                               }
-                              await conn.close();
                               // ignore: use_build_context_synchronously
                               Navigator.pop(context);
                             }
@@ -843,9 +840,9 @@ onCreateExpenseType(BuildContext context) {
                         onPressed: () async {
                           if (formKey1.currentState!.validate()) {
                             String expName = itemNameController.text;
-                            var conn = await onConnToDb();
+                            var conn = await onConnToSqliteDb();
                             // Avoid duplicate entry of expenses category
-                            var results1 = await conn.query(
+                            var results1 = await conn.rawQuery(
                                 'SELECT * FROM expenses WHERE exp_name = ?',
                                 [expName]);
                             if (results1.isNotEmpty) {
@@ -858,10 +855,10 @@ onCreateExpenseType(BuildContext context) {
                               Navigator.pop(context);
                             } else {
                               // Insert into expenses
-                              var result2 = await conn.query(
+                              var result2 = await conn.rawInsert(
                                   'INSERT INTO expenses (exp_name) VALUES (?)',
                                   [expName]);
-                              if (result2.affectedRows! > 0) {
+                              if (result2 > 0) {
                                 _onShowSnack(
                                     Colors.green,
                                     translations[selectedLanguage]
@@ -878,7 +875,6 @@ onCreateExpenseType(BuildContext context) {
                                 // ignore: use_build_context_synchronously
                                 Navigator.pop(context);
                               }
-                              await conn.close();
                             }
                           }
                         },

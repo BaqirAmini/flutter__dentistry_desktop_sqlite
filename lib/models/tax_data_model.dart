@@ -32,11 +32,11 @@ int excelOutputCounter = 1;
 int pdfOutputCounter = 1;
 // This function create excel output when called.
 void createExcelForTaxes() async {
-  final conn = await onConnToDb();
+  final conn = await onConnToSqliteDb();
 
   // Query data from the database.
-  var results = await conn.query(
-      'SELECT A.TIN, CONCAT(A.annual_income, \' افغانی \'), CONCAT(A.tax_rate, \'%\'), CONCAT(A.total_annual_tax, \' افغانی \'), CONCAT(B.paid_amount, \' افغانی \'), CONCAT(B.due_amount, \' افغانی \'), DATE_FORMAT(B.paid_date, "%Y-%m-%d"), CONCAT(A.tax_for_year, \' ه.ش \'), CONCAT(C.firstname, \' \', C.lastname), B.note FROM taxes A INNER JOIN tax_payments B ON A.tax_ID = B.tax_ID INNER JOIN staff C ON B.paid_by = C.staff_ID ORDER BY B.modified_at DESC');
+  var results = await conn.rawQuery(
+      'SELECT A.TIN, A.annual_income || \' افغانی \', A.tax_rate || \'%\', A.total_annual_tax || \' افغانی \', B.paid_amount || \' افغانی \', B.due_amount || \' افغانی \', strftime("%Y-%m-%d", B.paid_date), A.tax_for_year || \' ه.ش \', C.firstname || \' \' || C.lastname, B.note FROM taxes A INNER JOIN tax_payments B ON A.tax_ID = B.tax_ID INNER JOIN staff C ON B.paid_by = C.staff_ID ORDER BY B.modified_at DESC');
 
   // Create a new Excel document.
   final xls.Workbook workbook = xls.Workbook();
@@ -65,8 +65,9 @@ void createExcelForTaxes() async {
   var rowIndex =
       1; // Start from the second row as the first row is used for column titles.
   for (var row in results) {
-    for (var i = 0; i < row.length; i++) {
-      sheet.getRangeByIndex(rowIndex + 1, i + 1).setText(row[i].toString());
+    var columnValues = row.values!.toList();
+    for (var i = 0; i < columnValues.length; i++) {
+      sheet.getRangeByIndex(rowIndex + 1, i + 1).setText(columnValues[i].toString());
     }
     rowIndex++;
   }
@@ -84,18 +85,15 @@ void createExcelForTaxes() async {
 
   // Open the file
   await OpenFile.open(file.path);
-
-  // Close the database connection.
-  await conn.close();
 }
 
 // This function generates PDF output when called.
 void createPdfForTaxes() async {
-  final conn = await onConnToDb();
+  final conn = await onConnToSqliteDb();
 
   // Query data from the database.
-  var results = await conn.query(
-      'SELECT A.TIN, CONCAT(A.annual_income, \' افغانی \'), CONCAT(A.tax_rate, \'%\'), CONCAT(A.total_annual_tax, \' افغانی \'), CONCAT(B.paid_amount, \' افغانی \'), CONCAT(B.due_amount, \' افغانی \'), DATE_FORMAT(B.paid_date, "%Y-%m-%d"), CONCAT(A.tax_for_year, \' ه.ش \'), CONCAT(C.firstname, \' \', C.lastname), B.note FROM taxes A INNER JOIN tax_payments B ON A.tax_ID = B.tax_ID INNER JOIN staff C ON B.paid_by = C.staff_ID ORDER BY B.modified_at DESC');
+  var results = await conn.rawQuery(
+      'SELECT A.TIN, A.annual_income || \' افغانی \', A.tax_rate || \'%\', A.total_annual_tax || \' افغانی \', B.paid_amount || \' افغانی \', B.due_amount || \' افغانی \', strftime("%Y-%m-%d", B.paid_date), A.tax_for_year || \' ه.ش \', C.firstname || \' \' || C.lastname, B.note FROM taxes A INNER JOIN tax_payments B ON A.tax_ID = B.tax_ID INNER JOIN staff C ON B.paid_by = C.staff_ID ORDER BY B.modified_at DESC');
 
   // Create a new PDF document.
   final pdf = pw.Document();
@@ -128,7 +126,7 @@ void createPdfForTaxes() async {
           data: <List<String>>[
             columnTitles,
             ...results
-                .map((row) => row.map((item) => item.toString()).toList()),
+                .map((row) => row.values.map((item) => item.toString()).toList()),
           ],
           border: null, // Remove cell borders
           headerStyle: pw.TextStyle(
@@ -155,9 +153,6 @@ void createPdfForTaxes() async {
 
   // Open the file
   await OpenFile.open(file.path);
-
-  // Close the database connection.
-  await conn.close();
 }
 
 // This is shows snackbar when called
@@ -197,20 +192,19 @@ class TaxDataTableState extends State<TaxDataTable> {
   String? selectedStaffId;
   List<Map<String, dynamic>> staffList = [];
   Future<void> fetchStaff() async {
-    var conn = await onConnToDb();
+    var conn = await onConnToSqliteDb();
     var results =
-        await conn.query('SELECT staff_ID, firstname, lastname FROM staff');
+        await conn.rawQuery('SELECT staff_ID, firstname, lastname FROM staff');
     staffList = results
         .map((result) => {
-              'staff_ID': result[0].toString(),
-              'firstname': result[1],
-              'lastname': result[2]
+              'staff_ID': result["staff_ID"].toString(),
+              'firstname': result["firstname"],
+              'lastname': result["lastname"]
             })
         .toList();
     selectedStaffId = staffList.isNotEmpty ? staffList[0]['staff_ID'] : null;
     TaxInfo.StaffList = staffList;
     TaxInfo.selectedStaff = selectedStaffId;
-    await conn.close();
   }
 
   // This dialog create a new tax
@@ -670,9 +664,8 @@ class TaxDataTableState extends State<TaxDataTable> {
                                 readOnly: true,
                                 decoration: InputDecoration(
                                   border: const OutlineInputBorder(),
-                                  labelText: '${translations[selectedLanguage]
-                                          ?['TaxDue'] ??
-                                      ''} (${translations[selectedLanguage]?['Afn'] ?? ''})',
+                                  labelText:
+                                      '${translations[selectedLanguage]?['TaxDue'] ?? ''} (${translations[selectedLanguage]?['Afn'] ?? ''})',
                                   suffixIcon:
                                       const Icon(Icons.attach_money_outlined),
                                   enabledBorder: const OutlineInputBorder(
@@ -913,18 +906,21 @@ class TaxDataTableState extends State<TaxDataTable> {
                               int taxYear = selectedYear;
                               int staffID = int.parse(selectedStaffId!);
                               String note = noteController.text;
-                              final conn = await onConnToDb();
+                              final conn = await onConnToSqliteDb();
 
                               // First ensure not to add duplicate years
-                              var results1 = await conn.query(
+                              var results1 = await conn.rawQuery(
                                   'SELECT * FROM taxes WHERE tax_for_year = ?',
                                   [taxYear]);
                               if (results1.isNotEmpty) {
-                                _onShowSnack(Colors.red,
-                                    translations[selectedLanguage]?['TYDuplicated'] ?? '');
+                                _onShowSnack(
+                                    Colors.red,
+                                    translations[selectedLanguage]
+                                            ?['TYDuplicated'] ??
+                                        '');
                               } else {
                                 // Secondly add a record into taxes first
-                                var results2 = await conn.query(
+                                var results2 = await conn.rawInsert(
                                     'INSERT INTO taxes (annual_income, tax_rate, total_annual_tax, TIN, tax_for_year) VALUES(?, ?, ?, ?, ?)',
                                     [
                                       annualIncome,
@@ -933,15 +929,15 @@ class TaxDataTableState extends State<TaxDataTable> {
                                       tin,
                                       taxYear
                                     ]);
-                                if (results2.affectedRows! > 0) {
+                                if (results2 > 0) {
                                   // Fetch tax ID to insert details of it into tax_payments
-                                  var results3 = await conn.query(
+                                  var results3 = await conn.rawQuery(
                                       'SELECT * FROM taxes WHERE tax_for_year = ?',
                                       [taxYear]);
                                   var row = results3.first;
-                                  int taxID = row['tax_ID'];
+                                  int taxID = row['tax_ID'] as int;
 
-                                  var results4 = await conn.query(
+                                  var results4 = await conn.rawInsert(
                                       'INSERT INTO tax_payments (tax_ID, paid_date, paid_by, paid_amount, due_amount, note) VALUES (?, ?, ?, ?, ?, ?)',
                                       [
                                         taxID,
@@ -951,7 +947,7 @@ class TaxDataTableState extends State<TaxDataTable> {
                                         dueAmount,
                                         note
                                       ]);
-                                  if (results4.affectedRows! > 0) {
+                                  if (results4 > 0) {
                                     _onShowSnack(
                                         Colors.green,
                                         translations[selectedLanguage]
@@ -993,34 +989,33 @@ class TaxDataTableState extends State<TaxDataTable> {
 
 // Fetch expenses records from the database
   Future<void> _fetchData() async {
-    final conn = await onConnToDb();
+    final conn = await onConnToSqliteDb();
     // if expFilterValue = 'همه' then it should not use WHERE to filter.
-    final results = await conn.query(
-        'SELECT A.tax_ID, A.annual_income, A.tax_rate, A.total_annual_tax, B.paid_amount, B.due_amount, A.TIN, DATE_FORMAT(B.paid_date, "%Y-%m-%d"), A.tax_for_year, B.paid_by, C.firstname, C.lastname, B.note, B.tax_pay_ID FROM taxes A INNER JOIN tax_payments B ON A.tax_ID = B.tax_ID INNER JOIN staff C ON B.paid_by = C.staff_ID ORDER BY B.modified_at DESC');
+    final results = await conn.rawQuery(
+        'SELECT A.tax_ID AS tax_id, A.annual_income AS a_income, A.tax_rate AS rate, A.total_annual_tax AS tot_atax, B.paid_amount AS pamount, B.due_amount AS damount, A.TIN as tin, strftime("%Y-%m-%d", B.paid_date) AS paid_date, A.tax_for_year AS t4year, B.paid_by AS paid_by, C.firstname AS sfname, C.lastname AS slname, B.note AS note, B.tax_pay_ID AS taxpid FROM taxes A INNER JOIN tax_payments B ON A.tax_ID = B.tax_ID INNER JOIN staff C ON B.paid_by = C.staff_ID ORDER BY B.modified_at DESC');
 
     _data = results.map((row) {
       return Tax(
-        taxID: row[0],
-        annualIncom: row[1],
-        taxRate: row[2],
-        annualTaxes: row[3],
-        deliveredTax: row[4],
-        dueTax: row[5],
-        taxTin: row[6],
-        deliverDate: row[7].toString(),
-        taxOfYear: row[8].toString(),
-        staffID: row[9],
-        firstName: row[10],
-        lastName: row[11],
-        notes: row[12].toString(),
-        taxPayID: row[13],
+        taxID: row["tax_id"] as int,
+        annualIncom: row["a_income"] as double,
+        taxRate: row["rate"] as double,
+        annualTaxes: row["tot_atax"] as double,
+        deliveredTax: row["pamount"] as double,
+        dueTax: row["damount"] as double,
+        taxTin: row["tin"].toString(),
+        deliverDate: row["paid_date"].toString(),
+        taxOfYear: row["t4year"].toString(),
+        staffID: row["paid_by"] as int,
+        firstName: row["sfname"].toString(),
+        lastName: row["slname"].toString(),
+        notes: row["note"].toString(),
+        taxPayID: row["taxpid"] as int,
         taxDetail: const Icon(Icons.list),
         editTax: const Icon(Icons.edit),
         deleteTax: const Icon(Icons.delete),
       );
     }).toList();
     _filteredData = List.from(_data);
-    await conn.close();
     // Notify the framework that the state of the widget has changed
     setState(() {});
     // Print the data that was fetched from the database
@@ -1415,12 +1410,12 @@ class MyDataSource extends DataTableSource {
               TaxInfo.firstName = data[index].firstName;
               TaxInfo.lastName = data[index].lastName;
 // This is find out if there are due taxes (due tax is not get zero)
-              final conn = await onConnToDb();
-              var dueResult = await conn.query(
+              final conn = await onConnToSqliteDb();
+              var dueResult = await conn.rawQuery(
                   'SELECT * FROM tax_payments WHERE tax_ID = ? ORDER BY modified_at DESC',
                   [TaxInfo.taxID]);
               var row = dueResult.first;
-              double dueTax = row["due_amount"];
+              double dueTax = row["due_amount"] as double;
               if (dueTax <= 0) {
                 TaxInfo.isDueTax = false;
               } else {
@@ -1517,10 +1512,10 @@ onDeleteTax(BuildContext context, Function onDelete) {
                     Text(translations[selectedLanguage]?['CancelBtn'] ?? '')),
             TextButton(
                 onPressed: () async {
-                  final conn = await onConnToDb();
-                  final results = await conn.query(
+                  final conn = await onConnToSqliteDb();
+                  final results = await conn.rawDelete(
                       'DELETE FROM taxes WHERE tax_ID = ?', [TaxInfo.taxID]);
-                  if (results.affectedRows! > 0) {
+                  if (results > 0) {
                     // ignore: use_build_context_synchronously
                     Navigator.of(context, rootNavigator: true).pop();
                     _onShowSnack(Colors.green,
@@ -1528,7 +1523,6 @@ onDeleteTax(BuildContext context, Function onDelete) {
                     // Refresh the screen
                     onDelete();
                   }
-                  await conn.close();
                 },
                 child: Text(translations[selectedLanguage]?['Delete'] ?? '')),
           ],
@@ -2182,9 +2176,9 @@ onEditTax(BuildContext context, Function onUpdate) {
                             double editDueAmount = dueTaxes;
                             String editNotes = noteController.text;
 
-                            final conn = await onConnToDb();
+                            final conn = await onConnToSqliteDb();
                             // First update taxes table (parent table)
-                            var editResult1 = await conn.query(
+                            var editResult1 = await conn.rawUpdate(
                                 'UPDATE taxes SET annual_income = ?, tax_rate = ?, total_annual_tax = ?, TIN = ?, tax_for_year = ? WHERE tax_ID = ?',
                                 [
                                   editAnnIncome,
@@ -2195,7 +2189,7 @@ onEditTax(BuildContext context, Function onUpdate) {
                                   TaxInfo.taxID
                                 ]);
                             // Then update tax_payments table (the child table)
-                            var editResult2 = await conn.query(
+                            var editResult2 = await conn.rawUpdate(
                                 'UPDATE tax_payments SET paid_date = ?, paid_by = ?, paid_amount = ?, due_amount = ?, note = ? WHERE tax_pay_ID = ?',
                                 [
                                   editPaidDate,
@@ -2205,8 +2199,8 @@ onEditTax(BuildContext context, Function onUpdate) {
                                   editNotes,
                                   TaxInfo.taxPayID
                                 ]);
-                            if (editResult1.affectedRows! > 0 ||
-                                editResult2.affectedRows! > 0) {
+                            if (editResult1 > 0 ||
+                                editResult2 > 0) {
                               _onShowSnack(
                                   Colors.green,
                                   translations[selectedLanguage]
@@ -2220,7 +2214,6 @@ onEditTax(BuildContext context, Function onUpdate) {
                                           ?['StaffEditErrMsg'] ??
                                       '');
                             }
-                            await conn.close();
                             Navigator.pop(context);
                           }
                         },
@@ -2542,8 +2535,8 @@ onPayDueTaxes(BuildContext context) {
                             double dueAmount = 0;
                             String notes = noteController.text;
 // Insert tax_payments table to make the due taxes zero.
-                            final conn = await onConnToDb();
-                            var dueResults = await conn.query(
+                            final conn = await onConnToSqliteDb();
+                            var dueResults = await conn.rawInsert(
                                 'INSERT INTO tax_payments (tax_ID, paid_date, paid_by, paid_amount, due_amount, note) VALUES (?, ?, ?, ?, ?, ?)',
                                 [
                                   taxId,
@@ -2554,7 +2547,7 @@ onPayDueTaxes(BuildContext context) {
                                   notes
                                 ]);
 
-                            if (dueResults.affectedRows! > 0) {
+                            if (dueResults > 0) {
                               _onShowSnack(
                                   Colors.green,
                                   translations[selectedLanguage]
@@ -2686,7 +2679,8 @@ onShowTaxDetails(BuildContext context) {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Text(
-                                translations[selectedLanguage]?['TaxRate'] ?? '',
+                                translations[selectedLanguage]?['TaxRate'] ??
+                                    '',
                                 style: const TextStyle(
                                   fontSize: 14.0,
                                   color: Color.fromARGB(255, 118, 116, 116),
@@ -2712,7 +2706,8 @@ onShowTaxDetails(BuildContext context) {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Text(
-                                translations[selectedLanguage]?['TaxPaidDate'] ??
+                                translations[selectedLanguage]
+                                        ?['TaxPaidDate'] ??
                                     '',
                                 style: const TextStyle(
                                   fontSize: 14.0,

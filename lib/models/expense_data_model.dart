@@ -28,15 +28,15 @@ var isEnglish;
 int outputCounter = 1;
 // This function create excel output when called.
 void createExcelForExpenses() async {
-  final conn = await onConnToDb();
+  final conn = await onConnToSqliteDb();
 
   // Query data from the database.
   // if expFilterValue = 'همه' then it should not use WHERE to filter.
   final results = expFilterValue == 'همه'
-      ? await conn.query(
-          'SELECT  A.exp_name, B.item_name, B.quantity, CONCAT(B.unit_price, \' افغانی \'), CONCAT(B.total, \' افغانی \'), CONCAT(C.firstname, \' \', C.lastname), DATE_FORMAT(B.purchase_date, "%Y-%m-%d"), B.note FROM expenses A INNER JOIN expense_detail B ON A.exp_ID = B.exp_ID INNER JOIN staff C ON B.purchased_by = C.staff_ID ORDER BY B.purchase_date DESC;')
-      : await conn.query(
-          'SELECT  A.exp_name, B.item_name, B.quantity, CONCAT(B.unit_price, \' افغانی \'), CONCAT(B.total, \' افغانی \'), CONCAT(C.firstname, \' \', C.lastname), DATE_FORMAT(B.purchase_date, "%Y-%m-%d"), B.note FROM expenses A INNER JOIN expense_detail B ON A.exp_ID = B.exp_ID INNER JOIN staff C ON B.purchased_by = C.staff_ID WHERE A.exp_ID = ? ORDER BY B.purchase_date DESC;',
+      ? await conn.rawQuery(
+          'SELECT  A.exp_name, B.item_name, B.quantity, B.unit_price || \' افغانی \', B.total || \' افغانی \', C.firstname || \' \' || C.lastname, strftime("%Y-%m-%d", B.purchase_date), B.note FROM expenses A INNER JOIN expense_detail B ON A.exp_ID = B.exp_ID INNER JOIN staff C ON B.purchased_by = C.staff_ID ORDER BY B.purchase_date DESC;')
+      : await conn.rawQuery(
+          'SELECT  A.exp_name, B.item_name, B.quantity, B.unit_price || \' افغانی \', B.total || \' افغانی \', C.firstname || \' \' || C.lastname, strftime("%Y-%m-%d", B.purchase_date), B.note FROM expenses A INNER JOIN expense_detail B ON A.exp_ID = B.exp_ID INNER JOIN staff C ON B.purchased_by = C.staff_ID WHERE A.exp_ID = ? ORDER BY B.purchase_date DESC;',
           [expFilterValue]);
 
   // Create a new Excel document.
@@ -64,8 +64,11 @@ void createExcelForExpenses() async {
   var rowIndex =
       1; // Start from the second row as the first row is used for column titles.
   for (var row in results) {
-    for (var i = 0; i < row.length; i++) {
-      sheet.getRangeByIndex(rowIndex + 1, i + 1).setText(row[i].toString());
+    var columnValues = row.values.toList();
+    for (var i = 0; i < columnValues.length; i++) {
+      sheet
+          .getRangeByIndex(rowIndex + 1, i + 1)
+          .setText(columnValues[i].toString());
     }
     rowIndex++;
   }
@@ -86,22 +89,19 @@ void createExcelForExpenses() async {
 
   // Open the file
   await OpenFile.open(file.path);
-
-  // Close the database connection.
-  await conn.close();
 }
 
 // This function generates PDF output when called.
 void createPdfForExpenses() async {
-  final conn = await onConnToDb();
+  final conn = await onConnToSqliteDb();
 
   // Query data from the database.
   // if expFilterValue = 'همه' then it should not use WHERE to filter.
   final results = expFilterValue == 'همه'
-      ? await conn.query(
-          'SELECT  A.exp_name, B.item_name, B.quantity, CONCAT(B.unit_price, \' افغانی \'), CONCAT(B.total, \' افغانی \'), CONCAT(C.firstname, \' \', C.lastname), DATE_FORMAT(B.purchase_date, "%Y-%m-%d"), B.note FROM expenses A INNER JOIN expense_detail B ON A.exp_ID = B.exp_ID INNER JOIN staff C ON B.purchased_by = C.staff_ID ORDER BY B.purchase_date DESC;')
-      : await conn.query(
-          'SELECT  A.exp_name, B.item_name, B.quantity, CONCAT(B.unit_price, \' افغانی \'), CONCAT(B.total, \' افغانی \'), CONCAT(C.firstname, \' \', C.lastname), DATE_FORMAT(B.purchase_date, "%Y-%m-%d"), B.note FROM expenses A INNER JOIN expense_detail B ON A.exp_ID = B.exp_ID INNER JOIN staff C ON B.purchased_by = C.staff_ID WHERE A.exp_ID = ? ORDER BY B.purchase_date DESC;',
+      ? await conn.rawQuery(
+          'SELECT  A.exp_name, B.item_name, B.quantity, B.unit_price || \' افغانی \', B.total || \' افغانی \', C.firstname || \' \' || C.lastname, strftime("%Y-%m-%d", B.purchase_date), B.note FROM expenses A INNER JOIN expense_detail B ON A.exp_ID = B.exp_ID INNER JOIN staff C ON B.purchased_by = C.staff_ID ORDER BY B.purchase_date DESC;')
+      : await conn.rawQuery(
+          'SELECT  A.exp_name, B.item_name, B.quantity, B.unit_price || \' افغانی \', B.total || \' افغانی \', C.firstname || \' \' || strftime("%Y-%m-%d", B.purchase_date), B.note FROM expenses A INNER JOIN expense_detail B ON A.exp_ID = B.exp_ID INNER JOIN staff C ON B.purchased_by = C.staff_ID WHERE A.exp_ID = ? ORDER BY B.purchase_date DESC;',
           [expFilterValue]);
 
   // Create a new PDF document.
@@ -132,8 +132,8 @@ void createPdfForExpenses() async {
           context: context,
           data: <List<String>>[
             columnTitles,
-            ...results
-                .map((row) => row.map((item) => item.toString()).toList()),
+            ...results.map(
+                (row) => row.values.map((item) => item.toString()).toList()),
           ],
           border: null, // Remove cell borders
           headerStyle: pw.TextStyle(
@@ -160,9 +160,6 @@ void createPdfForExpenses() async {
 
   // Open the file
   await OpenFile.open(file.path);
-
-  // Close the database connection.
-  await conn.close();
 }
 
 // Declare this variable to assign expenses filter value
@@ -209,35 +206,34 @@ class ExpenseDataTableState extends State<ExpenseDataTable> {
 
 // Fetch expenses records from the database
   Future<void> _fetchData() async {
-    final conn = await onConnToDb();
+    final conn = await onConnToSqliteDb();
     // if expFilterValue = 'همه' then it should not use WHERE to filter.
     final results = expFilterValue == 'همه'
-        ? await conn.query(
-            'SELECT  A.exp_name, B.item_name, B.quantity, B.unit_price, B.total, C.firstname, C.lastname, DATE_FORMAT(B.purchase_date, "%Y-%m-%d"), B.note, B.exp_detail_ID, A.exp_ID, B.qty_unit FROM expenses A INNER JOIN expense_detail B ON A.exp_ID = B.exp_ID INNER JOIN staff C ON B.purchased_by = C.staff_ID ORDER BY B.purchase_date DESC;')
-        : await conn.query(
-            'SELECT  A.exp_name, B.item_name, B.quantity, B.unit_price, B.total, C.firstname, C.lastname, DATE_FORMAT(B.purchase_date, "%Y-%m-%d"), B.note, B.exp_detail_ID, A.exp_ID, B.qty_unit FROM expenses A INNER JOIN expense_detail B ON A.exp_ID = B.exp_ID INNER JOIN staff C ON B.purchased_by = C.staff_ID WHERE A.exp_ID = ? ORDER BY B.purchase_date DESC;',
+        ? await conn.rawQuery(
+            'SELECT  A.exp_name AS exp_name, B.item_name AS item_name, B.quantity AS qty, B.unit_price AS uprice, B.total AS total, C.firstname AS sfname, C.lastname AS slname, strftime("%Y-%m-%d", B.purchase_date) AS pur_date, B.note AS note, B.exp_detail_ID AS e_detail_id, A.exp_ID AS exp_id, B.qty_unit AS units FROM expenses A INNER JOIN expense_detail B ON A.exp_ID = B.exp_ID INNER JOIN staff C ON B.purchased_by = C.staff_ID ORDER BY B.purchase_date DESC;')
+        : await conn.rawQuery(
+            'SELECT  A.exp_name AS exp_name, B.item_name AS item_name, B.quantity AS qty, B.unit_price AS uprice, B.total AS total, C.firstname AS sfname, C.lastname AS slname, strftime("%Y-%m-%d", B.purchase_date) AS pur_date, B.note AS note, B.exp_detail_ID AS e_detail_id, A.exp_ID AS exp_id, B.qty_unit AS units FROM expenses A INNER JOIN expense_detail B ON A.exp_ID = B.exp_ID INNER JOIN staff C ON B.purchased_by = C.staff_ID WHERE A.exp_ID = ? ORDER BY B.purchase_date DESC;',
             [expFilterValue]);
 
     _data = results.map((row) {
       return Expense(
-        expenseType: row[0],
-        expenseItem: row[1],
-        quantity: row[2],
-        unitPrice: row[3],
-        totalPrice: row[4],
-        purchasedBy: row[5] + ' ' + row[6],
-        purchasedDate: row[7].toString(),
-        description: row[8],
-        expDetID: row[9],
-        expTypeID: row[10],
-        qtyUnit: row[11],
+        expenseType: row["exp_name"].toString(),
+        expenseItem: row["item_name"].toString(),
+        quantity: row["qty"] as double,
+        unitPrice: row["uprice"] as double,
+        totalPrice: row["total"] as double,
+        purchasedBy: '${row["sfname"]} ${row["slname"]}',
+        purchasedDate: row["pur_date"].toString(),
+        description: row["note"].toString(),
+        expDetID: row["e_detail_id"] as int,
+        expTypeID: row["exp_id"] as int,
+        qtyUnit: row["units"].toString(),
         expenseDetail: const Icon(Icons.list),
         editExpense: const Icon(Icons.edit),
         deleteExpense: const Icon(Icons.delete),
       );
     }).toList();
     _filteredData = List.from(_data);
-    await conn.close();
     // Notify the framework that the state of the widget has changed
     setState(() {});
     // Print the data that was fetched from the database
@@ -248,18 +244,19 @@ class ExpenseDataTableState extends State<ExpenseDataTable> {
   String? selectedFilter;
   List<Map<String, dynamic>> expenseTypes = [];
   Future<void> fetchExpenseFilter() async {
-    var conn = await onConnToDb();
-    var results = await conn.query('SELECT exp_ID, exp_name FROM expenses');
+    var conn = await onConnToSqliteDb();
+    var results = await conn.rawQuery('SELECT exp_ID, exp_name FROM expenses');
     setState(() {
       expenseTypes = results
-          .map((result) =>
-              {'exp_ID': result[0].toString(), 'exp_name': result[1]})
+          .map((result) => {
+                'exp_ID': result["exp_ID"].toString(),
+                'exp_name': result["exp_name"]
+              })
           .toList();
       expenseTypes.insert(0, {'exp_ID': 'همه', 'exp_name': 'همه'});
     });
     selectedFilter =
         expenseTypes.isNotEmpty ? expenseTypes[0]['exp_ID'] : 'همه';
-    await conn.close();
   }
 
 // The text editing controller for the search TextField
@@ -352,7 +349,6 @@ class ExpenseDataTableState extends State<ExpenseDataTable> {
                       },
                     ),
                   ),
-                
                   Container(
                     width: 180.0,
                     height: 60.0,
@@ -795,18 +791,17 @@ onDeleteExpense(BuildContext context, Function onDelete) {
                       child: const Text('لغو')),
                   TextButton(
                     onPressed: () async {
-                      final conn = await onConnToDb();
-                      var results = await conn.query(
+                      final conn = await onConnToSqliteDb();
+                      var results = await conn.rawDelete(
                           'DELETE FROM expense_detail WHERE exp_detail_ID = ?',
                           [ExpenseInfo.exp_detail_ID]);
-                      if (results.affectedRows! > 0) {
+                      if (results > 0) {
                         _onShowSnack(
                             Colors.green,
                             translations[selectedLanguage]
                                     ?['DeleteExpSuccess'] ??
                                 '');
                         onDelete();
-                        await conn.close();
                       } else {
                         _onShowSnack(
                             Colors.red,
@@ -1029,17 +1024,15 @@ onEditExpense(BuildContext context, int expTypeId, Function onUpdate,
                                                               expenseTypeController
                                                                   .text;
                                                           final conn =
-                                                              await onConnToDb();
-                                                          var results =
-                                                              await conn.query(
+                                                              await onConnToSqliteDb();
+                                                          var results = await conn
+                                                              .rawUpdate(
                                                                   'UPDATE expenses SET exp_name = ? WHERE exp_ID = ?',
                                                                   [
                                                                 expCatName,
                                                                 expTypeId
                                                               ]);
-                                                          if (results
-                                                                  .affectedRows! >
-                                                              0) {
+                                                          if (results > 0) {
                                                             _onShowSnack(
                                                                 Colors.green,
                                                                 translations[
@@ -1712,9 +1705,9 @@ onEditExpense(BuildContext context, int expTypeId, Function onUpdate,
                                                                     .text;
 
                                                             final conn =
-                                                                await onConnToDb();
-                                                            var results =
-                                                                await conn.query(
+                                                                await onConnToSqliteDb();
+                                                            var results = await conn
+                                                                .rawUpdate(
                                                                     'UPDATE expense_detail SET item_name = ?, quantity = ?, qty_unit = ?, unit_price = ?, total = ?, purchase_date = ?, note = ? WHERE exp_detail_ID = ?',
                                                                     [
                                                                   expItem,
@@ -1728,9 +1721,7 @@ onEditExpense(BuildContext context, int expTypeId, Function onUpdate,
                                                                       .exp_detail_ID
                                                                 ]);
 
-                                                            if (results
-                                                                    .affectedRows! >
-                                                                0) {
+                                                            if (results > 0) {
                                                               _onShowSnack(
                                                                   Colors.green,
                                                                   translations[
@@ -1739,8 +1730,6 @@ onEditExpense(BuildContext context, int expTypeId, Function onUpdate,
                                                                           'StaffEditMsg'] ??
                                                                       '');
                                                               onUpdateItem();
-                                                              await conn
-                                                                  .close();
                                                             } else {
                                                               _onShowSnack(
                                                                   Colors.red,

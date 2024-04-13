@@ -328,21 +328,20 @@ class _CalendarPageState extends State<CalendarPage> {
                                     TypeAheadField(
                                       suggestionsCallback: (search) async {
                                         try {
-                                          final conn = await onConnToDb();
-                                          var results = await conn.query(
+                                          final conn = await onConnToSqliteDb();
+                                          var results = await conn.rawQuery(
                                               'SELECT pat_ID, firstname, lastname, phone FROM patients WHERE firstname LIKE ?',
                                               ['%$search%']);
 
                                           // Convert the results into a list of Patient objects
                                           var suggestions = results
                                               .map((row) => PatientDataModel(
-                                                    patientId: row[0] as int,
-                                                    patientFName: row[1],
-                                                    patentLName: row[2] ?? '',
-                                                    patientPhone: row[3],
+                                                    patientId: row["pat_ID"] as int,
+                                                    patientFName: row["firstname"].toString(),
+                                                    patentLName: row["lastname"] == null ? '' : row["lastname"].toString(),
+                                                    patientPhone: row["phone"].toString(),
                                                   ))
                                               .toList();
-                                          await conn.close();
                                           return suggestions;
                                         } catch (e) {
                                           print(
@@ -749,8 +748,8 @@ class _CalendarPageState extends State<CalendarPage> {
                             onPressed: () async {
                               if (_apptCalFormKey.currentState!.validate()) {
                                 try {
-                                  final conn = await onConnToDb();
-                                  final results = await conn.query(
+                                  final conn = await onConnToSqliteDb();
+                                  final results = await conn.rawInsert(
                                       'INSERT INTO appointments (pat_ID, service_ID, meet_date, staff_ID, status, notification, details) VALUES (?, ?, ?, ?, ?, ?, ?)',
                                       [
                                         selectedPatientID,
@@ -763,7 +762,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                             ? null
                                             : commentController.text
                                       ]);
-                                  if (results.affectedRows! > 0) {
+                                  if (results > 0) {
                                     Navigator.of(context).pop();
                                     _onShowSnack(
                                         Colors.green,
@@ -773,7 +772,6 @@ class _CalendarPageState extends State<CalendarPage> {
                                         context);
                                     refresh();
                                   }
-                                  await conn.close();
                                 } catch (e) {
                                   print('Appointment scheduling failed: $e');
                                 }
@@ -1001,21 +999,20 @@ class _CalendarPageState extends State<CalendarPage> {
                                 TypeAheadField(
                                   suggestionsCallback: (search) async {
                                     try {
-                                      final conn = await onConnToDb();
-                                      var results = await conn.query(
+                                      final conn = await onConnToSqliteDb();
+                                      var results = await conn.rawQuery(
                                           'SELECT pat_ID, firstname, lastname, phone FROM patients WHERE firstname LIKE ? OR CONCAT(firstname, " ", lastname) LIKE ?',
                                           ['%$search%', '%$search%']);
 
                                       // Convert the results into a list of Patient objects
                                       var suggestions = results
                                           .map((row) => PatientDataModel(
-                                                patientId: row[0] as int,
-                                                patientFName: row[1],
-                                                patentLName: row[2] ?? '',
-                                                patientPhone: row[3],
+                                                patientId: row["pat_ID"] as int,
+                                                patientFName: row["firstname"].toString(),
+                                                patentLName: row["lastname"] == null ? '' : row["lastname"].toString(),
+                                                patientPhone: row["phone"].toString(),
                                               ))
                                           .toList();
-                                      await conn.close();
                                       return suggestions;
                                     } catch (e) {
                                       print(
@@ -1380,8 +1377,8 @@ class _CalendarPageState extends State<CalendarPage> {
                             : currentPatID;
                         if (_editApptCalFormKey.currentState!.validate()) {
                           try {
-                            final conn = await onConnToDb();
-                            final results = await conn.query(
+                            final conn = await onConnToSqliteDb();
+                            final results = await conn.rawUpdate(
                                 'UPDATE appointments SET pat_ID = ?, service_ID = ?, staff_ID = ?, meet_date = ?, notification = ?, details = ? WHERE apt_ID = ?',
                                 [
                                   currentPatID,
@@ -1394,7 +1391,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                       : editCommentController.text,
                                   apptId
                                 ]);
-                            if (results.affectedRows! > 0) {
+                            if (results > 0) {
                               // ignore: use_build_context_synchronously
                               Navigator.of(context).pop();
                               // ignore: use_build_context_synchronously
@@ -1417,7 +1414,6 @@ class _CalendarPageState extends State<CalendarPage> {
                                   context);
                             }
 
-                            await conn.close();
                           } catch (e) {
                             print(
                                 'Appointment scheduling failed (General Calendar): $e');
@@ -1471,11 +1467,11 @@ class _CalendarPageState extends State<CalendarPage> {
                   TextButton(
                     onPressed: () async {
                       try {
-                        final conn = await onConnToDb();
-                        final deleteResult = await conn.query(
+                        final conn = await onConnToSqliteDb();
+                        final deleteResult = await conn.rawDelete(
                             'DELETE FROM appointments WHERE apt_ID = ? AND pat_ID = ?',
                             [apptId, patientId]);
-                        if (deleteResult.affectedRows! > 0) {
+                        if (deleteResult > 0) {
                           // ignore: use_build_context_synchronously
                           Navigator.of(context).pop();
                           // ignore: use_build_context_synchronously
@@ -1487,7 +1483,6 @@ class _CalendarPageState extends State<CalendarPage> {
                               context);
                           refresh();
                         }
-                        await conn.close();
                       } catch (e) {
                         print(
                             'Deleting appointment faield (General Calendar): $e');
@@ -1509,33 +1504,32 @@ class _CalendarPageState extends State<CalendarPage> {
   Future<List<PatientAppointment>> _fetchAppointments(
       {String searchTerm = ''}) async {
     try {
-      final conn = await onConnToDb();
-      final results = await conn.query(
-          '''SELECT st.firstname, st.lastname, s.ser_name, a.details, a.meet_date, a.apt_ID, a.notification, a.service_ID, a.staff_ID, p.pat_ID, p.firstname, p.lastname FROM staff st 
+      final conn = await onConnToSqliteDb();
+      final results = await conn.rawQuery(
+          '''SELECT st.firstname AS fname, st.lastname AS lname, s.ser_name AS sname, a.details AS details, a.meet_date AS meet_date, a.apt_ID AS apt_ID, a.notification AS notif, a.service_ID AS service_id, a.staff_ID AS staff_id, p.pat_ID AS pat_id, p.firstname AS pfname, p.lastname AS plname FROM staff st 
              INNER JOIN appointments a ON st.staff_ID = a.staff_ID 
              INNER JOIN patients p ON p.pat_ID = a.pat_ID
-             INNER JOIN services s ON a.service_ID = s.ser_ID WHERE a.status = ? AND (LOWER(p.firstname) LIKE ? OR LOWER(st.firstname) LIKE ? OR ? = '')''',
+             INNER JOIN services s ON a.service_ID = s.ser_ID WHERE a.status = ? AND (LOWER(pfname) LIKE ? OR LOWER(pfname) LIKE ? OR ? = '')''',
           [
             'Pending',
             '%$searchTerm%'.toLowerCase(),
             '%$searchTerm%'.toLowerCase(),
             searchTerm.isEmpty ? '' : '%$searchTerm%'.toLowerCase()
           ]);
-      await conn.close();
       return results
           .map((row) => PatientAppointment(
-                dentistFName: row[0].toString(),
-                dentistLName: row[1].toString(),
-                serviceName: row[2].toString(),
-                comments: row[3] == null ? '' : row[3].toString(),
-                visitTime: row[4] as DateTime,
-                apptId: row[5] as int,
-                notifFreq: row[6].toString(),
-                serviceID: row[7] as int,
-                staffID: row[8] as int,
-                patientID: row[9] as int,
-                patientFName: row[10],
-                patientLName: row[11] == null ? '' : row[11].toString(),
+                dentistFName: row["fname"].toString(),
+                dentistLName: row["lname"].toString(),
+                serviceName: row["sname"].toString(),
+                comments: row["details"] == null ? '' : row["details"].toString(),
+                visitTime: row["meet_date"] as DateTime,
+                apptId: row["apt_ID"] as int,
+                notifFreq: row["notif"].toString(),
+                serviceID: row["service_id"] as int,
+                staffID: row["staff_id"] as int,
+                patientID: row["pat_id"] as int,
+                patientFName: row["pfname"].toString(),
+                patientLName: row["plname"] == null ? '' : row["plname"].toString(),
               ))
           .toList();
     } catch (e) {
@@ -2190,7 +2184,7 @@ class _CalendarPageState extends State<CalendarPage> {
                               if (_sfNewPatientFormKey.currentState!
                                       .validate() &&
                                   PatientInfo.ageSelected) {
-                                final conn = await onConnToDb();
+                                final conn = await onConnToSqliteDb();
                                 String firstName = _firstNameController.text;
                                 String? lastName =
                                     _lastNameController.text.isEmpty
@@ -2204,7 +2198,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                 String? address = _addrController.text.isEmpty
                                     ? null
                                     : _addrController.text;
-                                final checkForDuplicate = await conn.query(
+                                final checkForDuplicate = await conn.rawQuery(
                                     'SELECT phone FROM patients WHERE phone = ?',
                                     [phone]);
                                 if (checkForDuplicate.isNotEmpty) {
@@ -2215,7 +2209,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                           '',
                                       context);
                                 } else {
-                                  final results = await conn.query(
+                                  final results = await conn.rawInsert(
                                       'INSERT INTO patients (staff_ID, firstname, lastname, age, sex, marital_status, phone, blood_group, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
                                       [
                                         staffId,
@@ -2228,7 +2222,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                         bloodGroup,
                                         address
                                       ]);
-                                  if (results.affectedRows! > 0) {
+                                  if (results > 0) {
                                     Navigator.of(context, rootNavigator: true)
                                         .pop();
 
@@ -2249,7 +2243,6 @@ class _CalendarPageState extends State<CalendarPage> {
                                             '',
                                         context);
                                   }
-                                  await conn.close();
                                 }
                               }
                             } catch (e) {

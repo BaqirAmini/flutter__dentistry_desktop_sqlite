@@ -32,14 +32,14 @@ class ServicesTile extends StatefulWidget {
 class _ServicesTileState extends State<ServicesTile> {
   // Fetch services from services table
   Future<List<Service>> getServices() async {
-    final conn = await onConnToDb();
+    final conn = await onConnToSqliteDb();
     final results =
-        await conn.query('SELECT ser_ID, ser_name, ser_fee FROM services');
+        await conn.rawQuery('SELECT ser_ID, ser_name, ser_fee FROM services');
     final services = results
         .map((row) => Service(
-              serviceID: row[0],
-              serviceName: row[1],
-              serviceFee: row[2] ?? 0,
+              serviceID: row["ser_ID"] as int,
+              serviceName: row["ser_name"].toString(),
+              serviceFee: row["ser_fee"] == null ? 0 : row["ser_fee"] as double,
             ))
         .toList();
 
@@ -77,7 +77,7 @@ class _ServicesTileState extends State<ServicesTile> {
                             child: Card(
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10)),
-                                  elevation: 0.4,
+                              elevation: 0.4,
                               child: Stack(
                                 children: [
                                   Center(
@@ -325,11 +325,11 @@ class _ServicesTileState extends State<ServicesTile> {
                         double serFee = feeController.text.isNotEmpty
                             ? double.parse(feeController.text)
                             : 0;
-                        final conn = await onConnToDb();
-                        final results = await conn.query(
+                        final conn = await onConnToSqliteDb();
+                        final results = await conn.rawUpdate(
                             'UPDATE services SET ser_name = ?, ser_fee = ? WHERE ser_ID = ?',
                             [serName, serFee, serviceId]);
-                        if (results.affectedRows! > 0) {
+                        if (results > 0) {
                           _onShowSnack(
                               Colors.green, 'سرویس موفقانه تغییر کرد.');
                           setState(() {});
@@ -339,7 +339,6 @@ class _ServicesTileState extends State<ServicesTile> {
                         }
                         // ignore: use_build_context_synchronously
                         Navigator.of(context, rootNavigator: true).pop();
-                        await conn.close();
                       }
                     },
                     child: const Text(' تغییر دادن'),
