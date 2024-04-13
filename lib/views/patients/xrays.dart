@@ -112,17 +112,30 @@ class XRayUploadScreen extends StatelessWidget {
 // This function fetches all x-ray images details from database.
 Future<List<XRayDataModel>> _fetchXRayImages(String type) async {
   try {
-    final conn = await onConnToDb();
-    final results = await conn.query(
-        'SELECT xray_ID, xray_name, DATE_FORMAT(reg_date, "%M %d, %Y"), xray_type, description FROM patient_xrays WHERE pat_ID = ? AND xray_type = ?',
+    final conn = await onConnToSqliteDb();
+    final results = await conn.rawQuery('''SELECT xray_ID, xray_name, description,
+	CASE strftime('%m', reg_date)
+		WHEN '01' THEN 'Jan'
+		WHEN '02' THEN 'Feb'
+		WHEN '03' THEN 'Mar'
+		WHEN '04' THEN 'Apr'
+		WHEN '05' THEN 'May'
+		WHEN '06' THEN 'Jun'
+		WHEN '07' THEN 'Jul'
+		WHEN '08' THEN 'Aug'
+		WHEN '09' THEN 'Sep'
+		WHEN '10' THEN 'Oct'
+		WHEN '11' THEN 'Nov'
+		WHEN '12' THEN 'Dec'
+	END || ' ' || strftime('%d, %Y', reg_date) AS reg_date FROM patient_xrays	 WHERE pat_ID = ? AND xray_type = ?''',
         [PatientInfo.patID, type]);
     final xrays = results
         .map((row) => XRayDataModel(
-            xrayID: row[0],
-            xrayImage: row[1].toString(),
-            xrayDate: row[2].toString(),
-            xrayType: row[3],
-            xrayDescription: row[4].toString()))
+            xrayID: row["xray_ID"] as int,
+            xrayImage: row["xray_name"].toString(),
+            xrayDate: row["reg_date"].toString(),
+            xrayType: row["xray_type"].toString(),
+            xrayDescription: row["description"].toString()))
         .toList();
     return xrays;
   } catch (e) {
@@ -655,7 +668,7 @@ class __ImageThumbNailState extends State<_ImageThumbNail> {
                               try {
                                 if (xrayFormKey.currentState!.validate() &&
                                     _selectedImage != null) {
-                                  final conn = await onConnToDb();
+                                  final conn = await onConnToSqliteDb();
                                   final date = dateContoller.text;
                                   final description = xrayNoteController.text;
                                   Directory? userDir =
@@ -677,7 +690,7 @@ class __ImageThumbNailState extends State<_ImageThumbNail> {
                                   final xrayImagePath =
                                       p.join(patientDirPath, xrayImageName);
                                   // Firstly, query to check if the selected x-ray already exists, it should not be allowed
-                                  final duplicateResult = await conn.query(
+                                  final duplicateResult = await conn.rawQuery(
                                       'SELECT * FROM patient_xrays WHERE pat_ID = ? AND xray_name = ? AND xray_type = ?',
                                       [
                                         PatientInfo.patID,
@@ -701,7 +714,7 @@ class __ImageThumbNailState extends State<_ImageThumbNail> {
                                               '';
                                     } else {
                                       await _selectedImage!.copy(xrayImagePath);
-                                      await conn.query(
+                                      await conn.rawInsert(
                                           'INSERT INTO patient_xrays (pat_ID, xray_name, xray_type, reg_date, description) VALUES (?, ?, ?, ?, ?)',
                                           [
                                             PatientInfo.patID,
