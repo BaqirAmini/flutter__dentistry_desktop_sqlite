@@ -69,24 +69,21 @@ class _SplashScreenState extends State<SplashScreen> {
       try {
         // Call to create database and tables
         var conn = await onConnToSqliteDb();
-        var query1 = await conn.rawQuery(
-            'SELECT * FROM staff_auth WHERE username = ?', ['admin123']);
+        var query1 = await conn.rawQuery('SELECT * FROM staff_auth');
         if (query1.isEmpty) {
           int resultStaff = await conn.rawInsert(
               'INSERT INTO staff (firstname, lastname, position, phone, family_phone1) VALUES (?, ?, ?, ?, ?)',
               ['Ahmad', 'Ahmadi', 'داکتر دندان', '1234567890', '1234567891']);
           if (resultStaff > 0) {
             // Select to see if it exsits.
-            var selectStaff = await conn.rawQuery(
-                'SELECT staff_ID FROM staff WHERE firstname = ? AND lastname = ? AND phone = ?',
-                ['Ahmad', 'Ahmadi', '1234567890']);
+            var selectStaff = await conn.rawQuery('SELECT staff_ID FROM staff');
             int staffId = selectStaff.first['staff_ID'] as int;
 
             //  Do some hashing for password
             var bytes = utf8.encode('admin123');
             var digest = sha256.convert(bytes);
             String hashedPwd = digest.toString();
-          
+
             int resultAuth = await conn.rawInsert(
                 'INSERT INTO staff_auth (staff_ID, username, password, role) VALUES (?, ?, ?, ?)',
                 [staffId, 'admin123', hashedPwd, 'مدیر سیستم']);
@@ -100,6 +97,9 @@ class _SplashScreenState extends State<SplashScreen> {
             print('Staff not created.');
           }
         }
+        await _onAddServices();
+        await _onAddServiceRequirement();
+        await _onAddPatientHistory();
       } catch (e) {
         print('Exception in splashscreen: $e');
       }
@@ -127,5 +127,95 @@ class _SplashScreenState extends State<SplashScreen> {
         ),
       ),
     );
+  }
+
+// Add patients histories
+  Future<void> _onAddPatientHistory() async {
+    try {
+      var conn = await onConnToSqliteDb();
+      var results = await conn.rawQuery('SELECT * FROM conditions');
+      if (results.isEmpty) {
+        var addPatientHistories = await conn.rawInsert('''
+              INSERT INTO conditions (cond_ID, name) VALUES
+              (1, 'آیا دخانیات مصرف میکنید؟'),
+              (2, 'آیا گاهی اوقات گیج میشوید؟'),
+              (3, 'آیا حمل دارید؟'),
+              (4, 'آیا حساسیت جلدی دارید؟'),
+              (5, 'آیا درد در ناحیه قفسه سینه دارید؟'),
+              (6, 'آیا زردی سیاه و یا دیگر انواع زردی دارید؟'),
+              (7, 'آیا مرض قند دارید؟'),
+              (8, 'آیا نسبت به بعضی داروها حساسیت دارید؟'),
+              (9, 'آیا دچار افت فشار خون و یا بالا رفتن آن میشوید؟');
+      ''');
+        if (addPatientHistories > 0) {
+          print('Patients histories added.');
+        }
+      } else {
+        print('Patients histories are existing.');
+      }
+    } catch (e) {
+      print('Error occured with adding patients histories.');
+    }
+  }
+
+  // Add Services
+  Future<void> _onAddServices() async {
+    try {
+      var conn = await onConnToSqliteDb();
+      var results = await conn.rawQuery('SELECT * FROM services');
+      if (results.isEmpty) {
+        var addServices = await conn.rawInsert('''
+              INSERT INTO services (ser_ID, ser_name, ser_fee) VALUES
+                (1, 'عصب کشی(R.C.T)', '999.99'),
+                (2, 'پرکاری(Filling)', '0.00'),
+                (3, 'Bleaching', '1000.00'),
+                (4, 'Scaling and Polishing', '0.00'),
+                (5, 'Orthodontics', '0.00'),
+                (7, 'Maxillofacial Surgery', '0.00'),
+                (8, 'Oral Examination', '0.00'),
+                (9, 'Denture', '0.00'),
+                (11, 'پوش کردن(Crown)', '0.00'),
+                (12, 'Flouride Therapy', '0.00'),
+                (13, 'Night Gaurd Prothesis', '0.00'),
+                (14, 'Snap-on Smile', '0.00'),
+                (15, 'Implant', '0.00'),
+                (16, 'Smile Design Correction', '0.00');
+      ''');
+        if (addServices > 0) {
+          print('Services added.');
+        }
+      } else {
+        print('Services are existing.');
+      }
+    } catch (e) {
+      print('Error occured with adding services.');
+    }
+  }
+
+  // Add Services Requirements
+  Future<void> _onAddServiceRequirement() async {
+    try {
+      var conn = await onConnToSqliteDb();
+      var results = await conn.rawQuery('SELECT * FROM service_requirements');
+      if (results.isEmpty) {
+        var addSerReq = await conn.rawInsert('''
+              INSERT INTO service_requirements (req_ID, req_name) VALUES
+                (1, 'Teeth Selection'),
+                (2, 'Description'),
+                (3, 'Procedure Type'),
+                (4, 'Materials'),
+                (5, 'Bleaching Steps'),
+                (7, 'Gum Selection'),
+                (9, 'Affected Area');
+      ''');
+        if (addSerReq > 0) {
+          print('Services requirements added.');
+        }
+      } else {
+        print('Services requirements are existing.');
+      }
+    } catch (e) {
+      print('Error occured with adding service requirements.');
+    }
   }
 }
