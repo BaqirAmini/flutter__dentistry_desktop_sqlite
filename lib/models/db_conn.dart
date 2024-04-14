@@ -16,7 +16,7 @@ Future<Database> onConnToSqliteDb() async {
     // Get the path to the database.
     final databasePath = await getDatabasesPath();
     final path = join(databasePath, 'dentistry_db.db');
-    
+
     // Open the database. The `onCreate` callback will be called if the database doesn't exist.
     final db =
         await openDatabase(path, version: 3, onCreate: (db, version) async {
@@ -50,6 +50,19 @@ Future<Database> onConnToSqliteDb() async {
             password TEXT NOT NULL,
             role TEXT NOT NULL,
             FOREIGN KEY(staff_ID) REFERENCES staff(staff_ID) ON DELETE CASCADE ON UPDATE CASCADE
+          )
+        ''');
+      // TABLE = clinics
+      await db.execute('''
+          CREATE TABLE clinics(
+            clinic_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            clinic_name TEXT NOT NULL,
+            clinic_address TEXT NOT NULL,
+            clinic_phone TEXT,
+            clinic_email TEXT,
+            clinic_founder INTEGER,
+            clinic_logo BLOB,
+            FOREIGN KEY(clinic_founder) REFERENCES staff(staff_ID) ON DELETE SET NULL ON UPDATE CASCADE
           )
         ''');
       // TABLE = patients
