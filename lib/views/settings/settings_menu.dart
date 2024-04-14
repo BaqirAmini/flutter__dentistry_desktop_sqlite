@@ -1379,7 +1379,8 @@ onRestoreData() {
                       });
 
                       // Database required variable
-                      const String dbName = 'dentistry_db';
+                      const String dbName =
+                          'dentistry_db.db'; // Include the '.db' extension
 
                       // SQLite database path
                       String dbPath = await getDatabasesPath();
@@ -1395,14 +1396,18 @@ onRestoreData() {
                         String backupPath =
                             filePickerResult!.files.single.path!;
 
-                        // Delete the current database
+                        // Close the current database
                         var database = await openDatabase(path);
                         await database.close();
-                        await deleteDatabase(path);
 
-                        // Copy the backup database file to the original location
+                        // Overwrite the current database with the backup file
+                        final File originalDbFile = File(path);
                         final File backupFile = File(backupPath);
-                        await backupFile.copy(path);
+                        await originalDbFile
+                            .writeAsBytes(await backupFile.readAsBytes());
+
+                        // Reopen the database
+                        database = await openDatabase(path);
 
                         _onShowSnack(
                             Colors.green,
@@ -1416,6 +1421,10 @@ onRestoreData() {
                       });
                     } catch (e) {
                       print('Restoration failed: $e');
+                      _onShowSnack(
+                        Colors.red,
+                        'Restoration failed: $e',
+                      );
                     }
                   },
                   icon: isRestoreInProg
