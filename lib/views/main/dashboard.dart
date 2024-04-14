@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:flutter/material.dart';
@@ -8,15 +10,22 @@ import 'package:flutter_dentistry/config/private/private.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:flutter_dentistry/views/main/sidebar.dart';
 import 'package:shamsi_date/shamsi_date.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:path/path.dart' as p;
 
 void main() => runApp(
       const Dashboard(),
     );
+
+// ignore: prefer_typing_uninitialized_variables
+var selectedLanguage;
+// ignore: prefer_typing_uninitialized_variables
+var isEnglish;
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -31,6 +40,8 @@ class _DashboardState extends State<Dashboard> {
   var _transExpenses;
   var _transEarnings;
   var _transReceivable;
+  File? _selectedImage;
+  bool _isLoadingXray = false;
   // This variable is to set the first filter value of doughnut chart dropdown
   String incomeDuration = '1 Month';
 // This function fetch patients' records
@@ -312,6 +323,10 @@ class _DashboardState extends State<Dashboard> {
         ModalRoute.of(context)!.settings.arguments as Map<String, String>;
     final staffId = userData["staffID"];
     final staffRole = userData["role"]; */
+    // Fetch translations keys based on the selected language.
+    var languageProvider = Provider.of<LanguageProvider>(context);
+    selectedLanguage = languageProvider.selectedLanguage;
+    isEnglish = selectedLanguage == 'English';
     return ChangeNotifierProvider(
         create: (_) => LanguageProvider(),
         builder: (context, child) {
@@ -343,9 +358,11 @@ class _DashboardState extends State<Dashboard> {
                               color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                         IconButton(
-                          tooltip: 'Edit Your Clinic Info',
-                          splashRadius: 22.0,
-                            onPressed: () {},
+                            tooltip: 'Edit Your Clinic Info',
+                            splashRadius: 22.0,
+                            onPressed: () => _onAddClinicInfo(() {
+                                  setState(() {});
+                                }),
                             icon: const Icon(Icons.edit_outlined, size: 16.0))
                       ],
                     ),
@@ -1009,6 +1026,490 @@ class _DashboardState extends State<Dashboard> {
             theme: ThemeData(useMaterial3: false),
           );
         });
+  }
+
+  Future<void> _onAddClinicInfo(Function onRefresh) {
+    TextEditingController clinicNameController = TextEditingController();
+    TextEditingController clinicAddrController = TextEditingController();
+    TextEditingController clinicPhoneController = TextEditingController();
+    TextEditingController clinicEmailController = TextEditingController();
+    final clinicFormKey = GlobalKey<FormState>();
+
+    return showDialog(
+        context: context,
+        builder: (ctx) => StatefulBuilder(
+              builder: (context, setState) {
+                final xrayMessage = ValueNotifier<String>('');
+                return AlertDialog(
+                  title: Directionality(
+                    textDirection:
+                        isEnglish ? TextDirection.ltr : TextDirection.rtl,
+                    child: const Text('تغییر معلومات مربوط کلینیک شما',
+                        style: TextStyle(color: Colors.blue)),
+                  ),
+                  content: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.39,
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: Directionality(
+                      textDirection:
+                          isEnglish ? TextDirection.ltr : TextDirection.rtl,
+                      child: SingleChildScrollView(
+                        child: Form(
+                          key: clinicFormKey,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 30.0, vertical: 5.0),
+                                child: const Card(
+                                  elevation: 3.0,
+                                  child: Padding(
+                                    padding: EdgeInsets.all(10.0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('نام فعلی:'),
+                                        Text('کلینیک تخصصی رایان'),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          width: 1.0,
+                                          color: _selectedImage == null
+                                              ? Colors.red
+                                              : Colors.blue),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    /*  decoration: BoxDecoration(
+                                      border: Border.all(
+                                          width: 1.0,
+                                          color: _selectedImage == null
+                                              ? Colors.red
+                                              : Colors.blue),
+                                    ), */
+                                    margin: const EdgeInsets.all(5.0),
+                                    width: MediaQuery.of(context).size.width *
+                                        0.15,
+                                    height: MediaQuery.of(context).size.height *
+                                        0.15,
+                                    child: InkWell(
+                                      onTap: () async {
+                                        setState(() {
+                                          _isLoadingXray = true;
+                                        });
+
+                                        final result = await FilePicker.platform
+                                            .pickFiles(
+                                                allowMultiple: true,
+                                                type: FileType.custom,
+                                                allowedExtensions: [
+                                              'jpg',
+                                              'jpeg',
+                                              'png'
+                                            ]);
+                                        if (result != null) {
+                                          setState(() {
+                                            _isLoadingXray = false;
+                                            _selectedImage = File(result
+                                                .files.single.path
+                                                .toString());
+                                          });
+                                        }
+                                      },
+                                      child: _selectedImage == null &&
+                                              !_isLoadingXray
+                                          ? const Icon(Icons.add,
+                                              size: 40, color: Colors.blue)
+                                          : _isLoadingXray
+                                              ? const Center(
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                          strokeWidth: 3.0))
+                                              : Image.file(_selectedImage!,
+                                                  fit: BoxFit.fill),
+                                    ),
+                                  ),
+                                  if (_selectedImage == null)
+                                    const Padding(
+                                      padding: EdgeInsets.only(right: 8.0),
+                                      child: Text(
+                                        'Choose Logo of Clinic (Optional)',
+                                        style: TextStyle(
+                                            fontSize: 12.0,
+                                            color: Colors.redAccent),
+                                      ),
+                                    ),
+                                  ValueListenableBuilder<String>(
+                                    valueListenable: xrayMessage,
+                                    builder: (context, value, child) {
+                                      if (value.isEmpty) {
+                                        return const SizedBox
+                                            .shrink(); // or Container()
+                                      } else {
+                                        return Padding(
+                                          padding:
+                                              const EdgeInsets.only(right: 8.0),
+                                          child: SizedBox(
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.3,
+                                            child: Text(
+                                              value,
+                                              style: const TextStyle(
+                                                  fontSize: 12.0,
+                                                  color: Colors.redAccent),
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  )
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    '*',
+                                    style: TextStyle(
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  Container(
+                                    width: MediaQuery.of(context).size.width *
+                                        0.335,
+                                    margin: const EdgeInsets.symmetric(
+                                        vertical: 10.0, horizontal: 20.0),
+                                    child: TextFormField(
+                                      controller: clinicNameController,
+                                      validator: (value) {
+                                        if (value!.isEmpty) {
+                                          return 'Clinic Name Required.';
+                                        } else if (value.length < 10 ||
+                                            value.length > 35) {
+                                          return 'نام کلینیک باید بیشتر از 10 حرف و کمتر از 35 حرف باشد.';
+                                        }
+                                        return null;
+                                      },
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.allow(
+                                            RegExp(GlobalUsage.allowedEPChar))
+                                      ],
+                                      decoration: const InputDecoration(
+                                        border: OutlineInputBorder(),
+                                        labelText: 'نام کلینیک',
+                                        suffixIcon:
+                                            Icon(Icons.calendar_month_outlined),
+                                        enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(50.0)),
+                                            borderSide:
+                                                BorderSide(color: Colors.grey)),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(50.0)),
+                                            borderSide:
+                                                BorderSide(color: Colors.blue)),
+                                        errorBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(50.0)),
+                                            borderSide:
+                                                BorderSide(color: Colors.red)),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(50.0)),
+                                            borderSide: BorderSide(
+                                                color: Colors.red, width: 1.5)),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    '*',
+                                    style: TextStyle(
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  Container(
+                                    width: MediaQuery.of(context).size.width *
+                                        0.335,
+                                    margin: const EdgeInsets.symmetric(
+                                        vertical: 10.0, horizontal: 20.0),
+                                    child: TextFormField(
+                                      controller: clinicAddrController,
+                                      validator: (value) {
+                                        if (value!.isEmpty) {
+                                          return 'Clinic Address Required.';
+                                        } else if (value.length < 10 ||
+                                            value.length > 35) {
+                                          return 'آدرس کلینیک باید بیشتر از 10 حرف و کمتر از 35 حرف باشد.';
+                                        }
+                                        return null;
+                                      },
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.allow(
+                                          RegExp(GlobalUsage.allowedEPChar),
+                                        ),
+                                      ],
+                                      minLines: 1,
+                                      maxLines: 2,
+                                      decoration: const InputDecoration(
+                                        border: OutlineInputBorder(),
+                                        labelText: 'آدرس کلینیک',
+                                        suffixIcon:
+                                            Icon(Icons.note_alt_outlined),
+                                        enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(50.0)),
+                                            borderSide:
+                                                BorderSide(color: Colors.grey)),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(50.0)),
+                                            borderSide:
+                                                BorderSide(color: Colors.blue)),
+                                        errorBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(50.0)),
+                                            borderSide:
+                                                BorderSide(color: Colors.red)),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(50.0)),
+                                            borderSide: BorderSide(
+                                                color: Colors.red, width: 1.5)),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                width:
+                                    MediaQuery.of(context).size.width * 0.335,
+                                margin: const EdgeInsets.symmetric(
+                                    vertical: 10.0, horizontal: 20.0),
+                                child: TextFormField(
+                                  controller: clinicPhoneController,
+                                  validator: (value) {
+                                    if (value!.isNotEmpty) {
+                                      if (value.startsWith('07')) {
+                                        if (value.length < 10 ||
+                                            value.length > 10) {
+                                          return translations[selectedLanguage]
+                                                  ?['Phone10'] ??
+                                              '';
+                                        }
+                                      } else if (value.startsWith('+93')) {
+                                        if (value.length < 12 ||
+                                            value.length > 12) {
+                                          return translations[selectedLanguage]
+                                                  ?['Phone12'] ??
+                                              '';
+                                        }
+                                      } else {
+                                        return translations[selectedLanguage]
+                                                ?['ValidPhone'] ??
+                                            '';
+                                      }
+                                    }
+                                    return null;
+                                  },
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                      RegExp(GlobalUsage.allowedDigits),
+                                    ),
+                                  ],
+                                  minLines: 1,
+                                  maxLines: 2,
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    labelText: 'نمبر تماس',
+                                    suffixIcon: Icon(Icons.note_alt_outlined),
+                                    enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(50.0)),
+                                        borderSide:
+                                            BorderSide(color: Colors.grey)),
+                                    focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(50.0)),
+                                        borderSide:
+                                            BorderSide(color: Colors.blue)),
+                                    errorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(50.0)),
+                                        borderSide:
+                                            BorderSide(color: Colors.red)),
+                                    focusedErrorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(50.0)),
+                                        borderSide: BorderSide(
+                                            color: Colors.red, width: 1.5)),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                width:
+                                    MediaQuery.of(context).size.width * 0.335,
+                                margin: const EdgeInsets.symmetric(
+                                    vertical: 10.0, horizontal: 20.0),
+                                child: TextFormField(
+                                  autovalidateMode: AutovalidateMode.always,
+                                  controller: clinicEmailController,
+                                  validator: (value) {
+                                    if (value!.isNotEmpty) {
+                                      const pattern =
+                                          r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$';
+                                      final regex = RegExp(pattern);
+                                      return !regex.hasMatch(value)
+                                          ? 'The email is invalid'
+                                          : null;
+                                    }
+                                    return null;
+                                  },
+                                  minLines: 1,
+                                  maxLines: 2,
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    labelText: 'ایمیل آدرس',
+                                    suffixIcon: Icon(Icons.note_alt_outlined),
+                                    enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(50.0)),
+                                        borderSide:
+                                            BorderSide(color: Colors.grey)),
+                                    focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(50.0)),
+                                        borderSide:
+                                            BorderSide(color: Colors.blue)),
+                                    errorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(50.0)),
+                                        borderSide:
+                                            BorderSide(color: Colors.red)),
+                                    focusedErrorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(50.0)),
+                                        borderSide: BorderSide(
+                                            color: Colors.red, width: 1.5)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  actions: [
+                    Row(
+                      mainAxisAlignment: isEnglish
+                          ? MainAxisAlignment.end
+                          : MainAxisAlignment.start,
+                      children: [
+                        TextButton(
+                            onPressed: () =>
+                                Navigator.of(context, rootNavigator: true)
+                                    .pop(),
+                            child: Text(translations[selectedLanguage]
+                                    ?['CancelBtn'] ??
+                                '')),
+                        ElevatedButton(
+                          onPressed: () async {
+                            try {
+                              if (clinicFormKey.currentState!.validate() &&
+                                  _selectedImage != null) {
+                                /*    final conn = await onConnToSqliteDb();
+                                  final date = _clinicNameController.text;
+                                  final description = xrayNoteController.text;
+                                  Directory? userDir =
+                                      await getApplicationDocumentsDirectory();
+                                  // Name of the uploaded xray image name
+                                  final xrayImageName =
+                                      p.basename(_selectedImage!.path);
+                                  // Patient directory path for instance, Users/name-specified-in-windows/Documents/CROWN/Ali123
+                                  final patientDirPath = p.join(
+                                      userDir.path,
+                                      'CROWN',
+                                      '${PatientInfo.firstName}${PatientInfo.patID}');
+                                  // Patient Directory for instance, CROWN/Ali123
+                                  final patientsDir = Directory(patientDirPath);
+                                  if (!patientsDir.existsSync()) {
+                                    // If the directory is not existing, create it.
+                                    patientsDir.createSync(recursive: true);
+                                  }
+                                  final xrayImagePath =
+                                      p.join(patientDirPath, xrayImageName);
+                                  // Firstly, query to check if the selected x-ray already exists, it should not be allowed
+                                  final duplicateResult = await conn.rawQuery(
+                                      'SELECT * FROM patient_xrays WHERE pat_ID = ? AND xray_name = ? AND xray_type = ?',
+                                      [
+                                        PatientInfo.patID,
+                                        xrayImagePath,
+                                        xrayType
+                                      ]);
+                                  // Check to not allow duplicates.
+                                  if (duplicateResult.isNotEmpty) {
+                                    xrayMessage.value =
+                                        translations[selectedLanguage]
+                                                ?['DupXrayMsg'] ??
+                                            '';
+                                  } else {
+                                    // It should not allow x-ray images with size more than 10MB.
+                                    var xraySize =
+                                        await _selectedImage!.readAsBytes();
+                                    if (xraySize.length > 10 * 1024 * 1024) {
+                                      xrayMessage.value =
+                                          translations[selectedLanguage]
+                                                  ?['XraySizeMsg'] ??
+                                              '';
+                                    } else {
+                                      await _selectedImage!.copy(xrayImagePath);
+                                      await conn.rawInsert(
+                                          'INSERT INTO patient_xrays (pat_ID, xray_name, xray_type, reg_date, description) VALUES (?, ?, ?, ?, ?)',
+                                          [
+                                            PatientInfo.patID,
+                                            xrayImagePath,
+                                            xrayType,
+                                            date,
+                                            description
+                                          ]);
+                                      // ignore: use_build_context_synchronously
+                                      Navigator.of(context, rootNavigator: true)
+                                          .pop();
+                                      onRefresh();
+                                    }
+                                  } */
+                              }
+                            } catch (e) {
+                              print('Uploading X-Ray failed. $e');
+                            }
+                          },
+                          child: Text(
+                              translations[selectedLanguage]?['RegBtn'] ?? ''),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ));
   }
 }
 
