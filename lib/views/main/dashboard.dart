@@ -139,8 +139,8 @@ class _DashboardState extends State<Dashboard> {
 ''');
 
     for (var row in results) {
-      patientData.add(
-          _PatientsData(row["formatted_date"].toString(), double.parse(row["count"].toString())));
+      patientData.add(_PatientsData(row["formatted_date"].toString(),
+          double.parse(row["count"].toString())));
     }
     setState(() {
       _isPatientDataInitialized = true;
@@ -332,10 +332,23 @@ class _DashboardState extends State<Dashboard> {
               textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
               child: Scaffold(
                 appBar: AppBar(
-                  title: const Text(
-                    clinicName,
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
+                  title: Container(
+                    width: MediaQuery.of(context).size.width * 0.18,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          clinicName,
+                          style: TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(
+                          tooltip: 'Edit Your Clinic Info',
+                          splashRadius: 22.0,
+                            onPressed: () {},
+                            icon: const Icon(Icons.edit_outlined, size: 16.0))
+                      ],
+                    ),
                   ),
                   leading: Builder(
                     builder: (BuildContext context) {
