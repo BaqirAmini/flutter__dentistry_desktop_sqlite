@@ -100,6 +100,7 @@ class _SplashScreenState extends State<SplashScreen> {
         await _onAddServices();
         await _onAddServiceRequirement();
         await _onAddPatientHistory();
+        await _onAddDefaultClinic();
       } catch (e) {
         print('Exception in splashscreen: $e');
       }
@@ -154,7 +155,7 @@ class _SplashScreenState extends State<SplashScreen> {
         print('Patients histories are existing.');
       }
     } catch (e) {
-      print('Error occured with adding patients histories.');
+      print('Error occured with adding patients histories: $e');
     }
   }
 
@@ -188,7 +189,7 @@ class _SplashScreenState extends State<SplashScreen> {
         print('Services are existing.');
       }
     } catch (e) {
-      print('Error occured with adding services.');
+      print('Error occured with adding services: $e');
     }
   }
 
@@ -215,7 +216,28 @@ class _SplashScreenState extends State<SplashScreen> {
         print('Services requirements are existing.');
       }
     } catch (e) {
-      print('Error occured with adding service requirements.');
+      print('Error occured with adding service requirements: $e');
+    }
+  }
+
+  // Add a default clinic name
+  Future<void> _onAddDefaultClinic() async {
+    try {
+      var conn = await onConnToSqliteDb();
+      var results = await conn.rawQuery('SELECT * FROM clinics');
+      if (results.isEmpty) {
+        var addClinic = await conn.rawInsert('''
+              INSERT INTO clinics (clinic_name, clinic_address, clinic_phone) VALUES
+                ('Your Clinic Name', 'Your Clinic Address', '07XXXXXXXX');
+      ''');
+        if (addClinic > 0) {
+          print('Clinic added.');
+        }
+      } else {
+        print('Clinic is existing.');
+      }
+    } catch (e) {
+      print('Error occured with adding clinic: $e');
     }
   }
 }
