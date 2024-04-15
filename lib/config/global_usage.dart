@@ -56,15 +56,41 @@ class GlobalUsage {
     }
   }
 
+  // Fetch clinics which will be needed later.
+  Future<List<Map<String, dynamic>>> retrieveClinics() async {
+    try {
+      var conn = await onConnToSqliteDb();
+      var results = await conn.rawQuery(
+          'SELECT clinic_ID, clinic_name, clinic_address, clinic_phone, clinic_email, clinic_founder, clinic_logo FROM clinics');
+
+      List<Map<String, dynamic>> clinicList = results
+          .map((result) => {
+                'clinicId': result["clinic_ID"].toString(),
+                'clinicName': result["clinic_name"],
+                'clinicAddr': result["clinic_address"] ?? '',
+                'clinicPhone': result["clinic_phone"] ?? '',
+                'clinicEmail': result["clinic_email"] ?? '',
+                'clinicLogo': result["clinic_logo"] ?? ''
+              })
+          .toList();
+      return clinicList;
+    } catch (e) {
+      print('Error occured fetching clinics (Global Usage): $e');
+      return [];
+    }
+  }
+
 // Declare this function to fetch services from services table to be used globally
   Future<List<Map<String, dynamic>>> fetchServices() async {
     var conn = await onConnToSqliteDb();
-    var queryService =
-        await conn.rawQuery('SELECT ser_ID, ser_name FROM services WHERE ser_ID');
+    var queryService = await conn
+        .rawQuery('SELECT ser_ID, ser_name FROM services WHERE ser_ID');
 
     List<Map<String, dynamic>> services = queryService
-        .map(
-            (result) => {'ser_ID': result["ser_ID"].toString(), 'ser_name': result["ser_name"]})
+        .map((result) => {
+              'ser_ID': result["ser_ID"].toString(),
+              'ser_name': result["ser_name"]
+            })
         .toList();
 
     return services;
