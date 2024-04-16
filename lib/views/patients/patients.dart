@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/developer_options.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
-import 'package:flutter_dentistry/config/private/private.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/main/dashboard.dart';
 import 'package:flutter_dentistry/views/patients/new_patient.dart';
@@ -26,7 +25,6 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xls;
-import 'package:flutter_dentistry/config/global_usage.dart';
 
 void main() {
   return runApp(const Patient());
@@ -128,18 +126,20 @@ onCreatePrescription(BuildContext context) {
                                   const assetImgProvider = AssetImage(
                                     'assets/graphics/logo1.png',
                                   );
-                                  var blobImgProvider;
+                                  ImageProvider? blobImgProvider;
 
-                                  if (firstClinicLogo != null && firstClinicLogo!.isNotEmpty) {
+                                  Uint8List? firstClinicLogoBuffer =
+                                      firstClinicLogo?.buffer.asUint8List();
+                                  if (firstClinicLogoBuffer != null &&
+                                      firstClinicLogoBuffer.isNotEmpty) {
                                     final Completer<ui.Image> completer =
                                         Completer();
                                     ui.decodeImageFromList(
-                                        Uint8List.view(firstClinicLogo!.buffer),
-                                        (ui.Image img) {
+                                        firstClinicLogoBuffer, (ui.Image img) {
                                       return completer.complete(img);
                                     });
                                     blobImgProvider =
-                                        MemoryImage(firstClinicLogo!);
+                                        MemoryImage(firstClinicLogoBuffer);
                                   }
 
                                   final clinicLogo = await flutterImageProvider(
@@ -159,11 +159,12 @@ onCreatePrescription(BuildContext context) {
                                               mainAxisAlignment:
                                                   pw.MainAxisAlignment.center,
                                               children: [
-                                                pw.Image(
-                                                  clinicLogo,
-                                                  width: 100.0,
-                                                  height: 100.0,
-                                                ),
+                                                pw.ClipOval(
+                                                    child: pw.Container(
+                                                  width: 50,
+                                                  height: 50,
+                                                  child: pw.Image(clinicLogo),
+                                                )),
                                                 pw.Directionality(
                                                   textDirection:
                                                       pw.TextDirection.rtl,
