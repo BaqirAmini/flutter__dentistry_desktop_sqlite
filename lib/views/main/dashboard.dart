@@ -378,25 +378,23 @@ class _DashboardState extends State<Dashboard> {
               textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
               child: Scaffold(
                 appBar: AppBar(
-                  title: Container(
-                    width: MediaQuery.of(context).size.width * 0.3,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          firstClinicName ?? 'Your Clinic Name Goes Here',
-                          style: const TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.bold),
+                  title: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        firstClinicName ?? 'Your Clinic Name Goes Here',
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        tooltip: 'Edit Your Clinic Info',
+                        splashRadius: 22.0,
+                        onPressed: () => _onAddClinicInfo().then(
+                          (_) => _retrieveClinics(),
                         ),
-                        IconButton(
-                            tooltip: 'Edit Your Clinic Info',
-                            splashRadius: 22.0,
-                            onPressed: () => _onAddClinicInfo().then(
-                                  (_) => _retrieveClinics(),
-                                ),
-                            icon: const Icon(Icons.edit_outlined, size: 16.0))
-                      ],
-                    ),
+                        icon: const Icon(Icons.mode_edit_outlined, size: 14.0),
+                      ),
+                    ],
                   ),
                   leading: Builder(
                     builder: (BuildContext context) {
