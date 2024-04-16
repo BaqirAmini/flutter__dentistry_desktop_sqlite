@@ -337,7 +337,14 @@ class _DashboardState extends State<Dashboard> {
       firstClinicAddr = clinics[0]["clinicAddr"];
       firstClinicPhone = clinics[0]["clinicPhone"];
       firstClinicEmail = clinics[0]["clinicEmail"];
-      firstClinicLogo = clinics[0]["clinicLogo"];
+      if (clinics[0]["clinicLogo"] is Uint8List) {
+        firstClinicLogo = clinics[0]["clinicLogo"];
+      } else if (clinics[0]["clinicLogo"] == null) {
+        print('clinicLogo is null');
+      } else {
+        // Handle the case when clinicLogo is not a Uint8List
+        print('clinicLogo is not a Uint8List');
+      }
     }); // Call setState to trigger a rebuild of the widget with the new data.
   }
 
@@ -372,7 +379,7 @@ class _DashboardState extends State<Dashboard> {
               child: Scaffold(
                 appBar: AppBar(
                   title: Container(
-                    width: MediaQuery.of(context).size.width * 0.18,
+                    width: MediaQuery.of(context).size.width * 0.3,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -1139,8 +1146,11 @@ class _DashboardState extends State<Dashboard> {
                                             },
                                             child: _selectedLogo == null &&
                                                     !_isLodingLogo
-                                                ? const Icon(Icons.add,
-                                                    size: 40,
+                                                ? Icon(Icons.add,
+                                                    size: MediaQuery.of(context)
+                                                            .size
+                                                            .width *
+                                                        0.015,
                                                     color: Colors.blue)
                                                 : _isLodingLogo
                                                     ? const Center(

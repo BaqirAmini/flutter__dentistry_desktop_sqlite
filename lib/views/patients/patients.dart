@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,6 +26,7 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xls;
+import 'package:flutter_dentistry/config/global_usage.dart';
 
 void main() {
   return runApp(const Patient());
@@ -110,8 +113,10 @@ onCreatePrescription(BuildContext context) {
                                       'SELECT * FROM staff WHERE staff_ID = ?',
                                       [defaultSelectedStaff]);
                                   var row = results.first;
-                                  String drFirstName = row['firstname'].toString();
-                                  String drLastName = row['lastname'].toString();
+                                  String drFirstName =
+                                      row['firstname'].toString();
+                                  String drLastName =
+                                      row['lastname'].toString();
                                   String drPhone = row['phone'].toString();
                                   /* --------------------/. Fetch staff firstname & lastname ---------------- */
 
@@ -120,11 +125,25 @@ onCreatePrescription(BuildContext context) {
                                   String formattedDate =
                                       intl.DateFormat('yyyy/MM/dd').format(now);
 
-                                  const imageProvider = AssetImage(
+                                  const assetImgProvider = AssetImage(
                                     'assets/graphics/logo1.png',
                                   );
-                                  final dentalLogo =
-                                      await flutterImageProvider(imageProvider);
+                                  var blobImgProvider;
+
+                                  if (firstClinicLogo != null && firstClinicLogo!.isNotEmpty) {
+                                    final Completer<ui.Image> completer =
+                                        Completer();
+                                    ui.decodeImageFromList(
+                                        Uint8List.view(firstClinicLogo!.buffer),
+                                        (ui.Image img) {
+                                      return completer.complete(img);
+                                    });
+                                    blobImgProvider =
+                                        MemoryImage(firstClinicLogo!);
+                                  }
+
+                                  final clinicLogo = await flutterImageProvider(
+                                      blobImgProvider ?? assetImgProvider);
                                   final pdf = pw.Document();
                                   final fontData = await rootBundle
                                       .load('assets/fonts/per_sans_font.ttf');
@@ -141,7 +160,7 @@ onCreatePrescription(BuildContext context) {
                                                   pw.MainAxisAlignment.center,
                                               children: [
                                                 pw.Image(
-                                                  dentalLogo,
+                                                  clinicLogo,
                                                   width: 100.0,
                                                   height: 100.0,
                                                 ),
@@ -150,7 +169,8 @@ onCreatePrescription(BuildContext context) {
                                                       pw.TextDirection.rtl,
                                                   child: pw.Column(children: [
                                                     pw.Text(
-                                                      clinicName,
+                                                      firstClinicName ??
+                                                          'Clinic Name',
                                                       style: pw.TextStyle(
                                                         fontSize: 20,
                                                         font: ttf,
@@ -163,7 +183,8 @@ onCreatePrescription(BuildContext context) {
                                                       ),
                                                     ),
                                                     pw.Text(
-                                                      clinicAddress,
+                                                      firstClinicAddr ??
+                                                          'Clinic Address',
                                                       style: pw.TextStyle(
                                                         fontSize: 12,
                                                         font: ttf,
@@ -353,9 +374,10 @@ onCreatePrescription(BuildContext context) {
                                             mainAxisAlignment: pw
                                                 .MainAxisAlignment.spaceBetween,
                                             children: [
-                                              pw.Text('Phone: $drPhone'),
                                               pw.Text(
-                                                  'Email: ${clinicEmail.isNotEmpty ? clinicEmail : 'No Email'}'),
+                                                  'Phone: ${firstClinicPhone ?? ''}'),
+                                              pw.Text(
+                                                  'Email: ${firstClinicEmail ?? ''}'),
                                             ]),
                                       ]);
                                     },
@@ -497,12 +519,20 @@ onCreatePrescription(BuildContext context) {
                                           // Convert the results into a list of Patient objects
                                           var suggestions = results
                                               .map((row) => PatientDataModel(
-                                                  patientId: row["pat_ID"] as int,
-                                                  patientFName: row["firstname"].toString(),
-                                                  patientLName: row["lastname"] == null ? '' : row["lastname"].toString(),
-                                                  patientPhone: row["phone"].toString(),
+                                                  patientId:
+                                                      row["pat_ID"] as int,
+                                                  patientFName: row["firstname"]
+                                                      .toString(),
+                                                  patientLName:
+                                                      row["lastname"] == null
+                                                          ? ''
+                                                          : row["lastname"]
+                                                              .toString(),
+                                                  patientPhone:
+                                                      row["phone"].toString(),
                                                   patientAge: row["age"] as int,
-                                                  patientGender: row["sex"].toString()))
+                                                  patientGender:
+                                                      row["sex"].toString()))
                                               .toList();
                                           return suggestions;
                                         } catch (e) {
@@ -1071,8 +1101,8 @@ void createPdfForPatients() async {
           context: context,
           data: <List<String>>[
             columnTitles,
-            ...results
-                .map((row) => row.values.map((item) => item?.toString() ?? '--').toList()),
+            ...results.map((row) =>
+                row.values.map((item) => item?.toString() ?? '--').toList()),
           ],
           border: null, // Remove cell borders
           headerStyle:
@@ -1119,6 +1149,15 @@ void _onShowSnack(Color backColor, String msg, BuildContext context) {
   ).show(context);
 }
 
+// This list to be assigned clinic info.
+List<Map<String, dynamic>> clinics = [];
+String? firstClinicID;
+String? firstClinicName;
+String? firstClinicAddr;
+String? firstClinicPhone;
+String? firstClinicEmail;
+Uint8List? firstClinicLogo;
+
 class Patient extends StatefulWidget {
   const Patient({Key? key}) : super(key: key);
 
@@ -1127,6 +1166,7 @@ class Patient extends StatefulWidget {
 }
 
 class _PatientState extends State<Patient> {
+  final GlobalUsage _globalUsage = GlobalUsage();
   // Fetch staff which will be needed later.
   Future<void> fetchStaff() async {
     // Fetch staff for purchased by fields
@@ -1166,6 +1206,26 @@ class _PatientState extends State<Patient> {
     // });
   }
 
+// This function fetches clinic info by instantiation
+  void _retrieveClinics() async {
+    clinics = await _globalUsage.retrieveClinics();
+    setState(() {
+      firstClinicID = clinics[0]["clinicId"];
+      firstClinicName = clinics[0]["clinicName"];
+      firstClinicAddr = clinics[0]["clinicAddr"];
+      firstClinicPhone = clinics[0]["clinicPhone"];
+      firstClinicEmail = clinics[0]["clinicEmail"];
+      if (clinics[0]["clinicLogo"] is Uint8List) {
+        firstClinicLogo = clinics[0]["clinicLogo"];
+      } else if (clinics[0]["clinicLogo"] == null) {
+        print('clinicLogo is null');
+      } else {
+        // Handle the case when clinicLogo is not a Uint8List
+        print('clinicLogo is not a Uint8List');
+      }
+    }); // Call setState to trigger a rebuild of the widget with the new data.
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -1173,6 +1233,7 @@ class _PatientState extends State<Patient> {
     // Call the function to list staff in the dropdown.
     fetchStaff();
     fetchPatients();
+    _retrieveClinics();
   }
 
   @override
@@ -1893,7 +1954,8 @@ class _PatientDataTableState extends State<PatientDataTable> {
         phone: row["phone"].toString(),
         patID: row["pat_ID"] as int,
         regDate: row["reg_date"].toString(),
-        bloodGroup: row["blood_group"] == null ? '' : row["blood_group"].toString(),
+        bloodGroup:
+            row["blood_group"] == null ? '' : row["blood_group"].toString(),
         address: row["address"] == null ? '' : row["address"].toString(),
         patientDetail: const Icon(Icons.list),
         editPatient: const Icon(Icons.edit_outlined),
