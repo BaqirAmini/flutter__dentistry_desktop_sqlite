@@ -150,14 +150,16 @@ class _DashboardState extends State<Dashboard> {
   Future<void> _getLastSixMonthPatient() async {
     final conn = await onConnToSqliteDb();
     final results = await conn.rawQuery('''
-  SELECT strftime('%m %d, %Y', reg_date) as formatted_date, COUNT(*) as count
+  SELECT reg_date, COUNT(*) as count
   FROM patients
   WHERE julianday('now') - julianday(reg_date) <= 180
   GROUP BY strftime('%m', reg_date)
 ''');
 
     for (var row in results) {
-      patientData.add(_PatientsData(row["formatted_date"].toString(),
+      patientData.add(_PatientsData(
+          intl.DateFormat('MMM d, y')
+              .format(DateTime.parse(row["reg_date"].toString())),
           double.parse(row["count"].toString())));
     }
     setState(() {
@@ -1096,7 +1098,8 @@ class _DashboardState extends State<Dashboard> {
                                   children: [
                                     Container(
                                       decoration: BoxDecoration(
-                                        border: Border.all(width: 1.0, color: Colors.blue),
+                                        border: Border.all(
+                                            width: 1.0, color: Colors.blue),
                                         shape: BoxShape.circle,
                                       ),
                                       margin: const EdgeInsets.all(5.0),
