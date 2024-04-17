@@ -126,7 +126,9 @@ class _DashboardState extends State<Dashboard> {
       print('Data not loaded $e');
     }
     _getPieData();
-    _getLastSixMonthPatient();
+    _getLastSixMonthPatient().then((_) {
+      setState(() {});
+    });
     // Alert notifications
     _timer = Timer.periodic(
         const Duration(minutes: 5), (Timer t) => _alertNotification());
