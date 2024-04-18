@@ -432,8 +432,10 @@ class _DashboardState extends State<Dashboard> {
                   ),
                   actions: [
                     IconButton(
+                        splashRadius: 25.0,
+                        tooltip: 'Refresh',
                         onPressed: () => refresh(),
-                        icon: Icon(Icons.refresh_outlined)),
+                        icon: const Icon(Icons.rotate_left_rounded)),
                     SizedBox(width: MediaQuery.of(context).size.width * 0.09),
                     Visibility(
                       visible: _validDays < 4 ? true : false,
