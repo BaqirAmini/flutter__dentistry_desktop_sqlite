@@ -247,6 +247,11 @@ final Map<String, Map<String, String>> translations = {
     'ChooseCLogo': 'Choose Logo of Your Clinic (Optional)',
     'CAddrRequired': 'Clinic address is required.',
     'CNameRequired': 'Clinic name is required.',
+    'EditSer': 'Edit This Service',
+    'SerNameRequired': 'Service Name Required.',
+    'SerNameLength': 'Service name must be 5 to 30 characters.',
+    'SerName': 'Service Name',
+    'SerFee': 'Service Fee',
     /*-----/. PATIENTS -----*/
     /*-------- STAFF ------- */
     'AllStaff': 'All Staff',
@@ -692,6 +697,11 @@ final Map<String, Map<String, String>> translations = {
     'ChooseCLogo': 'لوگوی کلینیک تانرا انتخاب کنید (اختیاری).',
     'CAddrRequired': 'آدرس کلینیک الزامی میباشد.',
     'CNameRequired': 'نام کلینیک الزامی میباشد.',
+    'EditSer': 'تغییر این سرویس',
+    'SerNameRequired': 'نام سرویس الزامی میباشد.',
+    'SerNameLength': 'نام سرویس باید 5 الی 30 حرف باشد.',
+    'SerName': 'نام سرویس (خدمات)',
+    'SerFee': 'فیس سرویس',
     /*-----/. PATIENTS -----*/
     /*-------- STAFF ------- */
     'AllStaff': 'همه کارمندان',
@@ -1144,6 +1154,11 @@ final Map<String, Map<String, String>> translations = {
     'ChooseCLogo': 'د خپل کلینیک لوګو غوره کړئ (اختیاري).',
     'CAddrRequired': 'د کلینیک پته اړین دی.',
     'CNameRequired': 'د کلینیک نوم اړین دی.',
+    'EditSer': 'دا سرویس سم کول',
+    'SerNameRequired': 'د سرویس نوم اړین دی.',
+    'SerNameLength': 'د سرویس نوم باید له 5 څخه تر 30 حروف پورې وي.',
+    'SerName': 'د سرویس نوم (خدمتونه)',
+    'SerFee': 'د سرویس فیس',
     /*-----/. PATIENTS -----*/
     /*-------- STAFF ------- */
     'AllStaff': 'ټول کارکوونکي',

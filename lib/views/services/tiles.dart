@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 
 // Create the global key at the top level of your Dart file
 final GlobalKey<ScaffoldMessengerState> _globalKeyForService =
     GlobalKey<ScaffoldMessengerState>();
+
+// ignore: prefer_typing_uninitialized_variables
+var selectedLanguage;
+// ignore: prefer_typing_uninitialized_variables
+var isEnglish;
 
 // This is shows snackbar when called
 void _onShowSnack(Color backColor, String msg) {
@@ -48,6 +56,10 @@ class _ServicesTileState extends State<ServicesTile> {
 
   @override
   Widget build(BuildContext context) {
+    // Fetch translations keys based on the selected language.
+    var languageProvider = Provider.of<LanguageProvider>(context);
+    selectedLanguage = languageProvider.selectedLanguage;
+    isEnglish = selectedLanguage == 'English';
     return ScaffoldMessenger(
       key: _globalKeyForService,
       child: Scaffold(
@@ -84,48 +96,43 @@ class _ServicesTileState extends State<ServicesTile> {
                                     child: onSetTileContent(service.serviceName,
                                         service.serviceFee),
                                   ),
-                                  Positioned(
-                                    top: 8.0,
-                                    left: 8.0,
-                                    child: PopupMenuButton(
-                                        iconColor: Colors.grey,
-                                        splashRadius: 25.0,
-                                        itemBuilder: (BuildContext context) =>
-                                            <PopupMenuEntry>[
-                                              const PopupMenuItem(
-                                                child: Directionality(
-                                                  textDirection:
-                                                      TextDirection.rtl,
-                                                  child: ListTile(
-                                                    leading: Icon(Icons.list),
-                                                    title: Text('جزییات'),
-                                                  ),
-                                                ),
-                                              ),
-                                              PopupMenuItem(
-                                                child: Directionality(
-                                                  textDirection:
-                                                      TextDirection.rtl,
-                                                  child: Builder(builder:
-                                                      (BuildContext context) {
-                                                    return ListTile(
-                                                      leading: const Icon(
-                                                          Icons.edit),
-                                                      title: const Text(
-                                                          'تغییر دادن'),
-                                                      onTap: () {
-                                                        onEditDentalService(
-                                                            context,
-                                                            service.serviceID,
-                                                            service.serviceName,
-                                                            service.serviceFee);
-                                                        Navigator.pop(context);
-                                                      },
-                                                    );
-                                                  }),
-                                                ),
-                                              ),
-                                              /*   PopupMenuItem(
+                                  isEnglish
+                                      ? Positioned(
+                                          top: 8.0,
+                                          right: 8.0,
+                                          child: PopupMenuButton(
+                                              iconColor: Colors.grey,
+                                              splashRadius: 25.0,
+                                              itemBuilder: (BuildContext
+                                                      context) =>
+                                                  <PopupMenuEntry>[
+                                                    PopupMenuItem(
+                                                      child: Builder(builder:
+                                                          (BuildContext
+                                                              context) {
+                                                        return ListTile(
+                                                          leading: const Icon(
+                                                              Icons.edit),
+                                                          title: Text(translations[
+                                                                      selectedLanguage]
+                                                                  ?['Edit'] ??
+                                                              ''),
+                                                          onTap: () {
+                                                            onEditDentalService(
+                                                                context,
+                                                                service
+                                                                    .serviceID,
+                                                                service
+                                                                    .serviceName,
+                                                                service
+                                                                    .serviceFee);
+                                                            Navigator.pop(
+                                                                context);
+                                                          },
+                                                        );
+                                                      }),
+                                                    ),
+                                                    /*   PopupMenuItem(
                                                 child: Directionality(
                                                   textDirection:
                                                       TextDirection.rtl,
@@ -141,8 +148,61 @@ class _ServicesTileState extends State<ServicesTile> {
                                                       }),
                                                 ),
                                               ), */
-                                            ]),
-                                  ),
+                                                  ]),
+                                        )
+                                      : Positioned(
+                                          top: 8.0,
+                                          left: 8.0,
+                                          child: PopupMenuButton(
+                                              iconColor: Colors.grey,
+                                              splashRadius: 25.0,
+                                              itemBuilder: (BuildContext
+                                                      context) =>
+                                                  <PopupMenuEntry>[
+                                                    PopupMenuItem(
+                                                      child: Builder(builder:
+                                                          (BuildContext
+                                                              context) {
+                                                        return ListTile(
+                                                          leading: const Icon(
+                                                              Icons.edit),
+                                                          title: Text(translations[
+                                                                      selectedLanguage]
+                                                                  ?['Edit'] ??
+                                                              ''),
+                                                          onTap: () {
+                                                            onEditDentalService(
+                                                                context,
+                                                                service
+                                                                    .serviceID,
+                                                                service
+                                                                    .serviceName,
+                                                                service
+                                                                    .serviceFee);
+                                                            Navigator.pop(
+                                                                context);
+                                                          },
+                                                        );
+                                                      }),
+                                                    ),
+                                                    /*   PopupMenuItem(
+                                                child: Directionality(
+                                                  textDirection:
+                                                      TextDirection.rtl,
+                                                  child: ListTile(
+                                                      leading: const Icon(
+                                                          Icons.delete),
+                                                      title: const Text(
+                                                          'حذف کردن'),
+                                                      onTap: () {
+                                                        onDeleteDentalService(
+                                                            context);
+                                                        Navigator.pop(context);
+                                                      }),
+                                                ),
+                                              ), */
+                                                  ]),
+                                        ),
                                 ],
                               ),
                             ),
@@ -192,7 +252,7 @@ class _ServicesTileState extends State<ServicesTile> {
           height: 10.0,
         ),
         Text(
-          '$price افغانی',
+          '$price ${translations[selectedLanguage]?['Afn'] ?? ''}',
           style: const TextStyle(
               fontSize: 14.0, color: Color.fromARGB(255, 105, 101, 101)),
         ),
@@ -217,11 +277,11 @@ class _ServicesTileState extends State<ServicesTile> {
       context: context,
       builder: ((context) {
         return AlertDialog(
-          title: const Directionality(
-            textDirection: TextDirection.rtl,
+          title: Directionality(
+            textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
             child: Text(
-              'تغییر سرویس',
-              style: TextStyle(color: Colors.blue),
+              translations[selectedLanguage]?['EditSer'] ?? '',
+              style: const TextStyle(color: Colors.blue),
             ),
           ),
           content: Directionality(
@@ -239,9 +299,13 @@ class _ServicesTileState extends State<ServicesTile> {
                         controller: nameController,
                         validator: (value) {
                           if (value!.isEmpty) {
-                            return 'نام سرویس الزامی میباشد.';
+                            return translations[selectedLanguage]
+                                    ?['SerNameRequired'] ??
+                                '';
                           } else if (value.length < 5 || value.length > 30) {
-                            return 'نام سرویس باید 5 الی 30 حرف شد.';
+                            return translations[selectedLanguage]
+                                    ?['SerNameLength'] ??
+                                '';
                           }
                         },
                         inputFormatters: [
@@ -249,23 +313,24 @@ class _ServicesTileState extends State<ServicesTile> {
                             RegExp(regExOnlyAbc),
                           ),
                         ],
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'نام سرویس (خدمات)',
-                          suffixIcon: Icon(Icons.medical_services_sharp),
-                          enabledBorder: OutlineInputBorder(
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText:
+                              translations[selectedLanguage]?['SerName'] ?? '',
+                          suffixIcon: const Icon(Icons.medical_services_sharp),
+                          enabledBorder: const OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(50.0)),
                               borderSide: BorderSide(color: Colors.grey)),
-                          focusedBorder: OutlineInputBorder(
+                          focusedBorder: const OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(50.0)),
                               borderSide: BorderSide(color: Colors.blue)),
-                          errorBorder: OutlineInputBorder(
+                          errorBorder: const OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(50.0)),
                               borderSide: BorderSide(color: Colors.red)),
-                          focusedErrorBorder: OutlineInputBorder(
+                          focusedErrorBorder: const OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(50.0)),
                               borderSide:
@@ -280,23 +345,24 @@ class _ServicesTileState extends State<ServicesTile> {
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
                         ],
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'فیس تعیین شده',
-                          suffixIcon: Icon(Icons.money),
-                          enabledBorder: OutlineInputBorder(
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText:
+                              translations[selectedLanguage]?['SerFee'] ?? '',
+                          suffixIcon: const Icon(Icons.money),
+                          enabledBorder: const OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(50.0)),
                               borderSide: BorderSide(color: Colors.grey)),
-                          focusedBorder: OutlineInputBorder(
+                          focusedBorder: const OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(50.0)),
                               borderSide: BorderSide(color: Colors.blue)),
-                          errorBorder: OutlineInputBorder(
+                          errorBorder: const OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(50.0)),
                               borderSide: BorderSide(color: Colors.red)),
-                          focusedErrorBorder: OutlineInputBorder(
+                          focusedErrorBorder: const OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(50.0)),
                               borderSide:
@@ -311,13 +377,15 @@ class _ServicesTileState extends State<ServicesTile> {
           ),
           actions: [
             Directionality(
-              textDirection: TextDirection.rtl,
+              textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment:
+                    isEnglish ? MainAxisAlignment.start : MainAxisAlignment.end,
                 children: [
                   TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('لغو')),
+                      child: Text(
+                          translations[selectedLanguage]?['CancelBtn'] ?? '')),
                   ElevatedButton(
                     onPressed: () async {
                       if (formKey.currentState!.validate()) {
@@ -331,17 +399,22 @@ class _ServicesTileState extends State<ServicesTile> {
                             [serName, serFee, serviceId]);
                         if (results > 0) {
                           _onShowSnack(
-                              Colors.green, 'سرویس موفقانه تغییر کرد.');
+                              Colors.green,
+                              translations[selectedLanguage]?['StaffEditMsg'] ??
+                                  '');
                           setState(() {});
                         } else {
-                          _onShowSnack(Colors.red,
-                              'شما هیچ تغییراتی به این سرویس نیاوردید.');
+                          _onShowSnack(
+                              Colors.red,
+                              translations[selectedLanguage]
+                                      ?['StaffEditErrMsg'] ??
+                                  '');
                         }
                         // ignore: use_build_context_synchronously
                         Navigator.of(context, rootNavigator: true).pop();
                       }
                     },
-                    child: const Text(' تغییر دادن'),
+                    child: Text(translations[selectedLanguage]?['Edit'] ?? ''),
                   ),
                 ],
               ),

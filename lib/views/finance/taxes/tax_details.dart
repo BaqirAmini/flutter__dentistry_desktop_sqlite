@@ -1,11 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/views/finance/taxes/tax_info.dart';
+import 'package:provider/provider.dart';
+
+// ignore: prefer_typing_uninitialized_variables
+var selectedLanguage;
+// ignore: prefer_typing_uninitialized_variables
+var isEnglish;
 
 class TaxDetails extends StatelessWidget {
   const TaxDetails({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // Fetch translations keys based on the selected language.
+    var languageProvider = Provider.of<LanguageProvider>(context);
+    selectedLanguage = languageProvider.selectedLanguage;
+    isEnglish = selectedLanguage == 'English';
     return SizedBox(
       width: 500.0,
       child: Column(
@@ -18,9 +30,9 @@ class TaxDetails extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'نمبر تشخیصیه مالیه دهنده (TIN)',
-                  style: TextStyle(
+                Text(
+                  translations[selectedLanguage]?['TIN'] ?? '',
+                  style: const TextStyle(
                     fontSize: 14.0,
                     color: Color.fromARGB(255, 118, 116, 116),
                   ),
@@ -42,9 +54,9 @@ class TaxDetails extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
-                      'مالیات سال',
-                      style: TextStyle(
+                    Text(
+                      translations[selectedLanguage]?['TaxOfYear'] ?? '',
+                      style: const TextStyle(
                         fontSize: 14.0,
                         color: Color.fromARGB(255, 118, 116, 116),
                       ),
@@ -60,9 +72,9 @@ class TaxDetails extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
-                      'فیصدی مالیات (%)',
-                      style: TextStyle(
+                    Text(
+                      translations[selectedLanguage]?['TaxRate'] ?? '',
+                      style: const TextStyle(
                         fontSize: 14.0,
                         color: Color.fromARGB(255, 118, 116, 116),
                       ),
@@ -86,9 +98,9 @@ class TaxDetails extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
-                      'تاریخ تحویلی',
-                      style: TextStyle(
+                    Text(
+                      translations[selectedLanguage]?['TaxPaidRate'] ?? '',
+                      style: const TextStyle(
                         fontSize: 14.0,
                         color: Color.fromARGB(255, 118, 116, 116),
                       ),
@@ -104,14 +116,15 @@ class TaxDetails extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
-                      'مجموع مالیات',
-                      style: TextStyle(
+                    Text(
+                      translations[selectedLanguage]?['AnnTotTax'] ?? '',
+                      style: const TextStyle(
                         fontSize: 14.0,
                         color: Color.fromARGB(255, 118, 116, 116),
                       ),
                     ),
-                    Text('${TaxInfo.annTotTaxes.toString()} افغانی'),
+                    Text(
+                        '${TaxInfo.annTotTaxes.toString()} ${translations[selectedLanguage]?['Afn'] ?? ''}'),
                   ],
                 ),
               ),
@@ -126,14 +139,15 @@ class TaxDetails extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                const Text(
-                  'مبلع باقی',
-                  style: TextStyle(
+                Text(
+                  translations[selectedLanguage]?['TaxDue'] ?? '',
+                  style: const TextStyle(
                     fontSize: 14.0,
                     color: Color.fromARGB(255, 118, 116, 116),
                   ),
                 ),
-                Text('${TaxInfo.dueTaxes} افغانی'),
+                Text(
+                    '${TaxInfo.dueTaxes} ${translations[selectedLanguage]?['Afn'] ?? ''}'),
               ],
             ),
           ),
@@ -146,9 +160,9 @@ class TaxDetails extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'تحویل مالیات توسط',
-                  style: TextStyle(
+                Text(
+                  translations[selectedLanguage]?['TaxPaidBy'] ?? '',
+                  style: const TextStyle(
                     fontSize: 14.0,
                     color: Color.fromARGB(255, 118, 116, 116),
                   ),

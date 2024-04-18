@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/services/tiles.dart';
+import 'package:provider/provider.dart';
 
 void main() => runApp(const Service());
+
+// ignore: prefer_typing_uninitialized_variables
+var selectedLanguage;
+// ignore: prefer_typing_uninitialized_variables
+var isEnglish;
 
 // Create the global key at the top level of your Dart file
 final GlobalKey<ScaffoldMessengerState> _globalKeyForService =
@@ -73,6 +81,10 @@ class _ServiceState extends State<Service> {
 
   @override
   Widget build(BuildContext context) {
+    // Fetch translations keys based on the selected language.
+    var languageProvider = Provider.of<LanguageProvider>(context);
+    selectedLanguage = languageProvider.selectedLanguage;
+    isEnglish = selectedLanguage == 'English';
     return Directionality(
       textDirection: TextDirection.rtl,
       child: ScaffoldMessenger(
@@ -112,11 +124,11 @@ class _ServiceState extends State<Service> {
                 ? TextField(
                     controller: _searchQuery,
                     style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(
-                        hintText: "جستجو...",
+                    decoration: InputDecoration(
+                        hintText: translations[selectedLanguage]?['Search'] ?? '',
                         hintStyle: TextStyle(color: Colors.white)),
                   )
-                : const Text("خدمات ما"),
+                :  Text(translations[selectedLanguage]?['Services'] ?? ''),
           ),
           body: const ServicesTile(),
         ),
