@@ -15,9 +15,7 @@ import 'package:flutter_dentistry/views/main/sidebar.dart';
 import 'package:shamsi_date/shamsi_date.dart';
 import 'package:intl/intl.dart' as intl;
 
-void main() => runApp(
-      const Dashboard(),
-    );
+void main() => runApp(const Dashboard());
 
 // ignore: prefer_typing_uninitialized_variables
 var selectedLanguage;
@@ -32,6 +30,16 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+  // This function is to refresh the dashboard when called.
+  void refresh() {
+    // Clear the old data to not causing unexpected results.
+    patientData.clear();
+    _getLastSixMonthPatient();
+    _getPieData();
+    _fetchAllPatient();
+    _fetchFinance();
+  }
+
   int _allPatients = 0;
   int _todaysPatients = 0;
   var _transExpenses;
@@ -126,9 +134,7 @@ class _DashboardState extends State<Dashboard> {
       print('Data not loaded $e');
     }
     _getPieData();
-    _getLastSixMonthPatient().then((_) {
-      setState(() {});
-    });
+    _getLastSixMonthPatient();
     // Alert notifications
     _timer = Timer.periodic(
         const Duration(minutes: 5), (Timer t) => _alertNotification());
@@ -425,6 +431,10 @@ class _DashboardState extends State<Dashboard> {
                     },
                   ),
                   actions: [
+                    IconButton(
+                        onPressed: () => refresh(),
+                        icon: Icon(Icons.refresh_outlined)),
+                    SizedBox(width: MediaQuery.of(context).size.width * 0.09),
                     Visibility(
                       visible: _validDays < 4 ? true : false,
                       child: Container(
