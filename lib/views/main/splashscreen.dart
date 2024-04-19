@@ -101,6 +101,7 @@ class _SplashScreenState extends State<SplashScreen> {
         await _onAddServiceRequirement();
         await _onAddPatientHistory();
         await _onAddDefaultClinic();
+        await _onAddExpenseType();
       } catch (e) {
         print('Exception in splashscreen: $e');
       }
@@ -149,13 +150,13 @@ class _SplashScreenState extends State<SplashScreen> {
               (9, 'آیا دچار افت فشار خون و یا بالا رفتن آن میشوید؟');
       ''');
         if (addPatientHistories > 0) {
-          print('Patients histories added.');
+          print('Patients histories Created.');
         }
       } else {
         print('Patients histories are existing.');
       }
     } catch (e) {
-      print('Error occured with adding patients histories: $e');
+      print('Error occured with creating patients histories: $e');
     }
   }
 
@@ -183,13 +184,13 @@ class _SplashScreenState extends State<SplashScreen> {
                 (16, 'Smile Design Correction', '0.00');
       ''');
         if (addServices > 0) {
-          print('Services added.');
+          print('Services Created.');
         }
       } else {
         print('Services are existing.');
       }
     } catch (e) {
-      print('Error occured with adding services: $e');
+      print('Error occured with creating services: $e');
     }
   }
 
@@ -210,13 +211,13 @@ class _SplashScreenState extends State<SplashScreen> {
                 (9, 'Affected Area');
       ''');
         if (addSerReq > 0) {
-          print('Services requirements added.');
+          print('Services requirements Created.');
         }
       } else {
         print('Services requirements are existing.');
       }
     } catch (e) {
-      print('Error occured with adding service requirements: $e');
+      print('Error occured with creating service requirements: $e');
     }
   }
 
@@ -231,13 +232,39 @@ class _SplashScreenState extends State<SplashScreen> {
                 ('Your Clinic Name', 'Your Clinic Address', '07XXXXXXXX');
       ''');
         if (addClinic > 0) {
-          print('Clinic added.');
+          print('Clinic Created.');
         }
       } else {
-        print('Clinic is existing.');
+        print('Clinic Existing.');
       }
     } catch (e) {
-      print('Error occured with adding clinic: $e');
+      print('Error occured with creating clinic: $e');
+    }
+  }
+
+  // Add default expense types
+  Future<void> _onAddExpenseType() async {
+    try {
+      var conn = await onConnToSqliteDb();
+      var results = await conn.rawQuery('SELECT * FROM expenses');
+      if (results.isEmpty) {
+        var addClinic = await conn.rawInsert('''
+              INSERT INTO expenses (exp_name) VALUES
+                ('لابراتوار'),
+                ('تجهیزات کلینیک'),
+                ('ترمیم ابزار'),
+                ('شاروالی'),
+                ('خوراک'),
+                ('آب');
+      ''');
+        if (addClinic > 0) {
+          print('Expense Types Created.');
+        }
+      } else {
+        print('Expense Types Existing.');
+      }
+    } catch (e) {
+      print('Error occured with creating expense types: $e');
     }
   }
 }
