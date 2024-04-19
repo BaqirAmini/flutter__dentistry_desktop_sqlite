@@ -92,7 +92,7 @@ class _NewStaffFormState extends State<NewStaffForm> {
                   Container(
                     margin: const EdgeInsets.symmetric(vertical: 10.0),
                     child: Text(
-                      '* نماینگر فیلد (خانه) های الزامی میباشد.',
+                      translations[selectedLanguage]?['Asterisk'] ?? '',
                       style: TextStyle(color: Colors.red, fontSize: 12.0),
                     ),
                   ),
@@ -276,7 +276,9 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                                 _familyPhone1Controller.text ||
                                             value ==
                                                 _familyPhone2Controller.text) {
-                                          return 'نمبر تماس شما با نمبر تماس خانواده تان نباید یکسان باشد.';
+                                          return translations[selectedLanguage]
+                                                  ?['InvalidFPhone'] ??
+                                              '';
                                         } else if (value.startsWith('07')) {
                                           if (value.length < 10 ||
                                               value.length > 10) {
@@ -364,12 +366,16 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                       ],
                                       validator: (value) {
                                         if (value!.isEmpty) {
-                                          return 'این نمبر تماس عضوی فامیل نمی تواند خالی باشد.';
+                                          return translations[selectedLanguage]
+                                                  ?['FPhone1Required'] ??
+                                              '';
                                         } else if (value ==
                                                 _phoneController.text ||
                                             value ==
                                                 _familyPhone2Controller.text) {
-                                          return 'این نمبر تماس باید متفاوت باشد.';
+                                          return translations[selectedLanguage]
+                                                  ?['InvalidFPhone'] ??
+                                              '';
                                         } else if (value.startsWith('07')) {
                                           if (value.length < 10 ||
                                               value.length > 10) {
@@ -396,7 +402,10 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                       // inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                       decoration: InputDecoration(
                                         border: OutlineInputBorder(),
-                                        labelText: 'نمبر تماس عضو فامیل (1)',
+                                        labelText:
+                                            translations[selectedLanguage]
+                                                    ?['FPhone1'] ??
+                                                '',
                                         suffixIcon: Icon(Icons.phone),
                                         enabledBorder: OutlineInputBorder(
                                             borderRadius: BorderRadius.all(
@@ -450,7 +459,9 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                       }
                                     } else if (value == _phoneController.text ||
                                         value == _familyPhone1Controller.text) {
-                                      return 'نمبر تماس خانواده تان باید متفاوت باشد.';
+                                      return translations[selectedLanguage]
+                                              ?['InvalidFPhone'] ??
+                                          '';
                                     } else if (value.startsWith('+93')) {
                                       if (value.length < 12 ||
                                           value.length > 12) {
@@ -469,7 +480,9 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                 // inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                 decoration: InputDecoration(
                                   border: OutlineInputBorder(),
-                                  labelText: 'نمبر تماس عضو فامیل (2)',
+                                  labelText: translations[selectedLanguage]
+                                          ?['FPhone2'] ??
+                                      '',
                                   suffixIcon: Icon(Icons.phone),
                                   enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.all(
@@ -634,7 +647,9 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                       controller: _hireDateController,
                                       validator: (value) {
                                         if (value!.isEmpty) {
-                                          return 'لطفا تاریخ استخدام کارمند را انتخاب کنید.';
+                                          return translations[selectedLanguage]
+                                                  ?['HDateRequired'] ??
+                                              '';
                                         }
                                         return null;
                                       },
@@ -661,9 +676,12 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                         FilteringTextInputFormatter.allow(
                                             RegExp(r'[0-9.]'))
                                       ],
-                                      decoration: const InputDecoration(
+                                      decoration: InputDecoration(
                                         border: OutlineInputBorder(),
-                                        labelText: 'تاریخ استخدام',
+                                        labelText:
+                                            translations[selectedLanguage]
+                                                    ?['HireDate'] ??
+                                                '',
                                         suffixIcon:
                                             Icon(Icons.calendar_month_outlined),
                                         enabledBorder: OutlineInputBorder(
@@ -706,7 +724,9 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                     ? null
                                     : (value) {
                                         if (value!.isEmpty) {
-                                          return 'پول ضمانت نمی تواند خالی باشد.';
+                                          return translations[selectedLanguage]
+                                                  ?['PrePayAmountRequired'] ??
+                                              '';
                                         }
                                         return null;
                                       },
@@ -716,7 +736,9 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                 ],
                                 decoration: InputDecoration(
                                   border: OutlineInputBorder(),
-                                  labelText: 'مقدار پول بطور ضمانت',
+                                  labelText: translations[selectedLanguage]
+                                          ?['PrePayAmount'] ??
+                                      '',
                                   suffixIcon: Icon(Icons.money),
                                   enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.all(
@@ -912,7 +934,9 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                     padding:
                                         EdgeInsets.symmetric(horizontal: 20.0),
                                     child: Text(
-                                        'لطفاً قرارداد خط را انتخاب کنید.',
+                                        translations[selectedLanguage]
+                                                ?['ContractRequired'] ??
+                                            '',
                                         style: TextStyle(
                                             color: Colors.redAccent,
                                             fontSize: 12.0)),
@@ -1000,10 +1024,14 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                 _selectedContractFile != null) {
                               if (contractFile!.length > 1024 * 1024) {
                                 _contractFileMessage.value =
-                                    'اندازه این فایل باید 1 میگابایت یا کمتر باشد.';
+                                    translations[selectedLanguage]
+                                            ?['CFileSize'] ??
+                                        '';
                               } else if (_selectedContractFile == null) {
                                 _contractFileMessage.value =
-                                    'لطفاً قرارداد خط را انتخاب کنید.';
+                                    translations[selectedLanguage]
+                                            ?['ContractRequired'] ??
+                                        '';
                               } else {
                                 await conn.rawInsert(
                                     'INSERT INTO staff (firstname, lastname, hire_date, position, salary, prepayment, phone, family_phone1, family_phone2, contract_file, file_type, tazkira_ID, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -1031,7 +1059,9 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                   _selectedContractFile != null) {
                                 if (contractFile!.length > 1024 * 1024) {
                                   _contractFileMessage.value =
-                                      'اندازه این فایل باید 1 میگابایت یا کمتر باشد.';
+                                      translations[selectedLanguage]
+                                              ?['CFileSize'] ??
+                                          '';
                                 } else {
                                   await conn.rawInsert(
                                       'INSERT INTO staff (firstname, lastname, hire_date, position, salary, prepayment, phone, family_phone1, family_phone2, contract_file, file_type, tazkira_ID, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',

@@ -109,7 +109,7 @@ class StaffDetail extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const Dashboard()),
                     (route) => route.settings.name == 'Dashboard'),
                 icon: const Icon(Icons.home_outlined),
-                tooltip: 'Dashboard',
+                tooltip: translations[selectedLanguage]?['GoToDashboard'] ?? '',
                 padding: const EdgeInsets.all(3.0),
                 splashRadius: 27.0,
               ),

@@ -320,7 +320,7 @@ class _ServiceFormState extends State<ServiceForm> {
                                         horizontalTitleGap: 0.5),
                                   ),
                                   child: RadioListTile(
-                                    contentPadding: EdgeInsets.zero,
+                                      contentPadding: EdgeInsets.zero,
                                       title: const Text(
                                         'Full',
                                         style: TextStyle(fontSize: 14),
@@ -342,7 +342,7 @@ class _ServiceFormState extends State<ServiceForm> {
                                         horizontalTitleGap: 0.5),
                                   ),
                                   child: RadioListTile(
-                                    contentPadding: EdgeInsets.zero,
+                                      contentPadding: EdgeInsets.zero,
                                       title: const Text(
                                         'Partial',
                                         style: TextStyle(fontSize: 14),
@@ -364,7 +364,7 @@ class _ServiceFormState extends State<ServiceForm> {
                                         horizontalTitleGap: 0.5),
                                   ),
                                   child: RadioListTile(
-                                    contentPadding: EdgeInsets.zero,
+                                      contentPadding: EdgeInsets.zero,
                                       title: const Text(
                                         'C.C Plate',
                                         style: TextStyle(fontSize: 14),
@@ -604,8 +604,10 @@ class _ServiceFormState extends State<ServiceForm> {
                     Visibility(
                       // ignore: unrelated_type_equality_checks
                       visible: (ServiceInfo.selectedServiceID == 9 &&
-                              (ServiceInfo.dentureGroupValue == 'Full Denture' ||
-                                  ServiceInfo.dentureGroupValue == 'C.C Plate Denture'))
+                              (ServiceInfo.dentureGroupValue ==
+                                      'Full Denture' ||
+                                  ServiceInfo.dentureGroupValue ==
+                                      'C.C Plate Denture'))
                           ? true
                           : false,
                       child: Container(
@@ -1178,9 +1180,10 @@ class _ServiceFormState extends State<ServiceForm> {
                                   ?['SelectDentist'] ??
                               '',
                           enabledBorder: const OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(50.0)),
-                              borderSide: BorderSide(color: Colors.grey),),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(50.0)),
+                            borderSide: BorderSide(color: Colors.grey),
+                          ),
                           focusedBorder: const OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(15.0)),
