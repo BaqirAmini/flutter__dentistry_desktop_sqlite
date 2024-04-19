@@ -250,7 +250,7 @@ class _MyDataTableState extends State<MyDataTable> {
   Future<void> _fetchData() async {
     final conn = await onConnToSqliteDb();
     final queryResult = await conn.rawQuery(
-        'SELECT photo, firstname, lastname, position, salary, phone, tazkira_ID, address, staff_ID, strftime("%m %d, %Y", hire_date), prepayment, family_phone1, family_phone2, contract_file, file_type FROM staff ORDER BY staff_ID desc');
+        'SELECT photo, firstname, lastname, position, salary, phone, tazkira_ID, address, staff_ID, hire_date, prepayment, family_phone1, family_phone2, contract_file, file_type FROM staff ORDER BY staff_ID desc');
 
     _data = queryResult.map((row) {
       return MyStaff(
@@ -907,8 +907,8 @@ onDeleteStaff(BuildContext context, int staffId, String firstName,
                     'DELETE FROM staff WHERE staff_ID = ?', [staffId]);
                 if (deleteResult > 0) {
                   // Delete its child records
-                await conn.rawDelete(
-                    'DELETE FROM staff_auth WHERE staff_ID = ?', [staffId]);
+                  await conn.rawDelete(
+                      'DELETE FROM staff_auth WHERE staff_ID = ?', [staffId]);
                   _onShowSnack(Colors.green,
                       translations[selectedLanguage]?['DeleteStaffMsg'] ?? '');
                   onDelete();

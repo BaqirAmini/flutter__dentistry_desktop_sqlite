@@ -15,6 +15,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart' as intl2;
 
 int gStaffID = 0;
 String gStaffFName = '';
@@ -96,8 +97,8 @@ class StaffDetail extends StatelessWidget {
         textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
         child: Scaffold(
           appBar: AppBar(
-            title:
-                Text('${translations[selectedLanguage]?['StaffBackground'] ?? ''}$gStaffFName'),
+            title: Text(
+                '${translations[selectedLanguage]?['StaffBackground'] ?? ''}$gStaffFName'),
             leading: IconButton(
               splashRadius: 27.0,
               onPressed: () => Navigator.pop(context),
@@ -474,7 +475,10 @@ class _StaffMoreDetailState extends State<_StaffMoreDetail> {
                             style: const TextStyle(
                                 color: Colors.grey, fontSize: 12.0),
                           ),
-                          Text(gStaffHDate),
+                          Text(gStaffHDate.isEmpty
+                              ? '--'
+                              : intl2.DateFormat('MMM d, y')
+                                  .format(DateTime.parse(gStaffHDate))),
                         ],
                       ),
                     ),
