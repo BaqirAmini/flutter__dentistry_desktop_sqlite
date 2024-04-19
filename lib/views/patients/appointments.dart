@@ -230,6 +230,10 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                         final deleteResult = await conn.rawDelete(
                             'DELETE FROM appointments WHERE apt_ID = ?', [id]);
                         if (deleteResult > 0) {
+                          // Delete the child records
+                          await conn.rawDelete(
+                              'DELETE FROM fee_payments WHERE apt_ID = ?',
+                              [id]);
                           // ignore: use_build_context_synchronously
                           Navigator.of(context).pop();
                           // ignore: use_build_context_synchronously

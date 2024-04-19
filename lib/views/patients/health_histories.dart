@@ -90,7 +90,7 @@ class HealthHistoriesState extends State<HealthHistories> {
                           final conds = snapshot.data;
                           List<Widget> conditionWidgets =
                               []; // Create an empty list of widgets
-                         
+
                           for (var cond in conds!) {
                             // Set a dynamic group value for radio buttons
                             _condResultGV[cond.condID] ??= 0;
@@ -268,7 +268,7 @@ class HealthHistoriesState extends State<HealthHistories> {
                               ),
                             );
                           }
-                           PatientInfo.showElevatedBtn =
+                          PatientInfo.showElevatedBtn =
                               conditionWidgets.length <= 1 ? false : true;
                           // Return a Column with all the widgets
                           return Container(
@@ -464,8 +464,8 @@ class HealthHistoriesState extends State<HealthHistories> {
     final results = await conn.rawQuery('SELECT cond_ID, name FROM conditions');
     final conditions = results
         .map(
-          (row) =>
-              PatientCondition(condID: row["cond_ID"] as int, CondName: row["name"].toString()),
+          (row) => PatientCondition(
+              condID: row["cond_ID"] as int, CondName: row["name"].toString()),
         )
         .toList();
     return conditions;
@@ -969,9 +969,13 @@ class HealthHistoriesState extends State<HealthHistories> {
           ElevatedButton(
             onPressed: () async {
               final conn = await onConnToSqliteDb();
-              final deleteResults = await conn
-                  .rawDelete('DELETE FROM conditions WHERE cond_ID = ?', [condID]);
+              final deleteResults = await conn.rawDelete(
+                  'DELETE FROM conditions WHERE cond_ID = ?', [condID]);
               if (deleteResults > 0) {
+                // Delete its child records
+                await conn.rawDelete(
+                    'DELETE FROM condition_details WHERE cond_ID = ?',
+                    [condID]);
                 _onShowSnack(Colors.green, 'تاریخچه صحی موفقانه حذف گردید.');
                 setState(() {});
               } else {

@@ -67,7 +67,9 @@ void createExcelForTaxes() async {
   for (var row in results) {
     var columnValues = row.values!.toList();
     for (var i = 0; i < columnValues.length; i++) {
-      sheet.getRangeByIndex(rowIndex + 1, i + 1).setText(columnValues[i].toString());
+      sheet
+          .getRangeByIndex(rowIndex + 1, i + 1)
+          .setText(columnValues[i].toString());
     }
     rowIndex++;
   }
@@ -125,8 +127,8 @@ void createPdfForTaxes() async {
           context: context,
           data: <List<String>>[
             columnTitles,
-            ...results
-                .map((row) => row.values.map((item) => item.toString()).toList()),
+            ...results.map(
+                (row) => row.values.map((item) => item.toString()).toList()),
           ],
           border: null, // Remove cell borders
           headerStyle: pw.TextStyle(
@@ -1516,6 +1518,10 @@ onDeleteTax(BuildContext context, Function onDelete) {
                   final results = await conn.rawDelete(
                       'DELETE FROM taxes WHERE tax_ID = ?', [TaxInfo.taxID]);
                   if (results > 0) {
+                    // Delete its child records
+                    await conn.rawDelete(
+                        'DELETE FROM tax_payments WHERE tax_ID = ?',
+                        [TaxInfo.taxID]);
                     // ignore: use_build_context_synchronously
                     Navigator.of(context, rootNavigator: true).pop();
                     _onShowSnack(Colors.green,
@@ -2199,8 +2205,7 @@ onEditTax(BuildContext context, Function onUpdate) {
                                   editNotes,
                                   TaxInfo.taxPayID
                                 ]);
-                            if (editResult1 > 0 ||
-                                editResult2 > 0) {
+                            if (editResult1 > 0 || editResult2 > 0) {
                               _onShowSnack(
                                   Colors.green,
                                   translations[selectedLanguage]

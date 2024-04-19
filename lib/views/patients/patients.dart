@@ -1014,7 +1014,7 @@ void createExcelForPatients() async {
 
   // Query data from the database.
   var results = await conn.rawQuery(
-      'SELECT firstname, lastname, CONCAT(age, \' سال \'), sex, marital_status, phone, pat_ID, strftime("%Y-%m-%d", reg_date), blood_group, COALESCE(address, \' \') FROM patients ORDER BY reg_date DESC');
+      'SELECT firstname, lastname, age || \' سال \', sex, marital_status, phone, pat_ID, strftime("%Y-%m-%d", reg_date), blood_group, COALESCE(address, \' \') FROM patients ORDER BY reg_date DESC');
 
   // Create a new Excel document.
   final xls.Workbook workbook = xls.Workbook();
@@ -1043,8 +1043,11 @@ void createExcelForPatients() async {
   var rowIndex =
       1; // Start from the second row as the first row is used for column titles.
   for (var row in results) {
-    for (var i = 0; i < row.length; i++) {
-      sheet.getRangeByIndex(rowIndex + 1, i + 1).setText(row[i].toString());
+    var columnValues = row.values.toList();
+    for (var i = 0; i < columnValues.length; i++) {
+      sheet
+          .getRangeByIndex(rowIndex + 1, i + 1)
+          .setText(columnValues[i].toString());
     }
     rowIndex++;
   }
@@ -1070,7 +1073,7 @@ void createPdfForPatients() async {
 
   // Query data from the database.
   var results = await conn.rawQuery(
-      'SELECT firstname, lastname, CONCAT(age, \' سال \'), sex, marital_status, phone, pat_ID, strftime("%Y-%m-%d", reg_date), blood_group, COALESCE(address, \' \') FROM patients ORDER BY reg_date DESC');
+      'SELECT firstname, lastname, age || \' سال \', sex, marital_status, phone, pat_ID, strftime("%Y-%m-%d", reg_date), blood_group, COALESCE(address, \' \') FROM patients ORDER BY reg_date DESC');
 
   // Create a new PDF document.
   final pdf = pw.Document();
@@ -1310,6 +1313,25 @@ onDeletePatient(BuildContext context, Function onRefresh) {
                     final results = await conn.rawDelete(
                         'DELETE FROM patients WHERE pat_ID = ?', [patientId]);
                     if (results > 0) {
+                      /*-------- Delete all child records -------- */
+                      await conn.rawDelete(
+                          'DELETE FROM fee_payments WHERE apt_ID IN (SELECT apt_ID FROM appointments WHERE pat_ID = ?)',
+                          [patientId]);
+                      await conn.rawDelete(
+                          'DELETE FROM appointments WHERE pat_ID = ?',
+                          [patientId]);
+                      await conn.rawDelete(
+                          'DELETE FROM retreatments WHERE pat_ID = ?',
+                          [patientId]);
+                      await conn.rawDelete(
+                          'DELETE FROM patient_services WHERE pat_ID = ?',
+                          [patientId]);
+                      await conn.rawDelete(
+                          'DELETE FROM patient_xrays WHERE pat_ID = ?',
+                          [patientId]);
+                      await conn.rawDelete(
+                          'DELETE FROM condition_details WHERE pat_ID = ?',
+                          [patientId]);
                       // ignore: use_build_context_synchronously
                       _onShowSnack(
                           Colors.green,

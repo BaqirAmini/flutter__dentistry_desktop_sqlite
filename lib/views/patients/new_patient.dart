@@ -1352,6 +1352,10 @@ class _NewPatientState extends State<NewPatient> {
                   final deleteResults = await conn.rawDelete(
                       'DELETE FROM conditions WHERE cond_ID = ?', [condID]);
                   if (deleteResults > 0) {
+                    // Delete its child records
+                    await conn.rawDelete(
+                        'DELETE FROM condition_details WHERE cond_ID = ?',
+                        [condID]);
                     _onShowSnack(
                         Colors.green,
                         translations[selectedLanguage]?['HistDelSuccess'] ??

@@ -19,8 +19,8 @@ Future<Database> onConnToSqliteDb() async {
 
     // Open the database. The `onCreate` callback will be called if the database doesn't exist.
     final db =
-        await openDatabase(path, version: 3, onCreate: (db, version) async {
-      await db.execute('PRAGMA foreign_keys = ON;');
+        await openDatabase(path, version: 1, onCreate: (db, version) async {
+      await db.execute('PRAGMA foreign_keys = ON');
       // TABLE = staff
       await db.execute('''
           CREATE TABLE staff(

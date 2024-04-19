@@ -906,6 +906,9 @@ onDeleteStaff(BuildContext context, int staffId, String firstName,
                 final deleteResult = await conn.rawDelete(
                     'DELETE FROM staff WHERE staff_ID = ?', [staffId]);
                 if (deleteResult > 0) {
+                  // Delete its child records
+                await conn.rawDelete(
+                    'DELETE FROM staff_auth WHERE staff_ID = ?', [staffId]);
                   _onShowSnack(Colors.green,
                       translations[selectedLanguage]?['DeleteStaffMsg'] ?? '');
                   onDelete();
