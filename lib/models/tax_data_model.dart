@@ -940,14 +940,15 @@ class TaxDataTableState extends State<TaxDataTable> {
                                   int taxID = row['tax_ID'] as int;
 
                                   var results4 = await conn.rawInsert(
-                                      'INSERT INTO tax_payments (tax_ID, paid_date, paid_by, paid_amount, due_amount, note) VALUES (?, ?, ?, ?, ?, ?)',
+                                      'INSERT INTO tax_payments (tax_ID, paid_date, paid_by, paid_amount, due_amount, note, modified_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
                                       [
                                         taxID,
                                         paidDate,
                                         staffID,
                                         paidAmount,
                                         dueAmount,
-                                        note
+                                        note,
+                                        DateTime.now().toIso8601String()
                                       ]);
                                   if (results4 > 0) {
                                     _onShowSnack(
@@ -1423,6 +1424,7 @@ class MyDataSource extends DataTableSource {
               } else {
                 TaxInfo.isDueTax = true;
               }
+              print('Hello isDue: $dueTax');
               onShowTaxDetails(context);
             }),
             color: Colors.blue,
@@ -2542,14 +2544,15 @@ onPayDueTaxes(BuildContext context) {
 // Insert tax_payments table to make the due taxes zero.
                             final conn = await onConnToSqliteDb();
                             var dueResults = await conn.rawInsert(
-                                'INSERT INTO tax_payments (tax_ID, paid_date, paid_by, paid_amount, due_amount, note) VALUES (?, ?, ?, ?, ?, ?)',
+                                'INSERT INTO tax_payments (tax_ID, paid_date, paid_by, paid_amount, due_amount, note, modified_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
                                 [
                                   taxId,
                                   paidDate,
                                   selectedStaffForTax,
                                   paidAmount,
                                   dueAmount,
-                                  notes
+                                  notes,
+                                  DateTime.now().toIso8601String()
                                 ]);
 
                             if (dueResults > 0) {
@@ -2621,7 +2624,7 @@ onShowTaxDetails(BuildContext context) {
         ),
       ),
       content: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.4,
+        height: MediaQuery.of(context).size.height * 0.6,
         child: Directionality(
           textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
           child: SizedBox(

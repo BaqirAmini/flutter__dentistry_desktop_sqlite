@@ -743,7 +743,7 @@ class _FeeContentState extends State<FeeContent> {
             final Map<String, List<ApptFeeDataModel>> groupedApptFees = {};
 
             for (var af in apptFee!) {
-              String key = '${af.serviceName}-${af.apptID}'; // Composite key
+              String key = '${af.serviceName}_${af.apptID}'; // Composite key
               if (!groupedApptFees.containsKey(key)) {
                 groupedApptFees[key] = [];
                 totalFeeToBePaid += af.totalFee;
@@ -756,8 +756,8 @@ class _FeeContentState extends State<FeeContent> {
             }
             return ListView(
               children: groupedApptFees.entries.map<Widget>((entry) {
-                // Since it is displaying like: servicename - ID, on the screen it should not be display so.
-                final keyParts = entry.key.split('-');
+                // Since it is displaying like: servicename _ ID, on the screen it should not be display so.
+                final keyParts = entry.key.split('_');
                 final serviceName = keyParts[0];
                 final payments = entry.value;
                 return Stack(
