@@ -1,4 +1,5 @@
 // For only Android & IOS this package is enough
+import 'dart:io';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 // This package is only required by flutter web & desktop in addtion to sqflite
@@ -14,8 +15,12 @@ Future<Database> onConnToSqliteDb() async {
   initSqflite(); // Initialize sqflite_common_ffi
   try {
     // Get the path to the database.
-    final databasePath = await getDatabasesPath();
+    /*--------------------------------------------------------------*/
+    /*          Users\account-name\AppData\Local\crown              */
+    /*--------------------------------------------------------------*/
+    String databasePath = join(Platform.environment['LOCALAPPDATA']!, 'crown');
     final path = join(databasePath, 'dentistry_db.db');
+    print('DATABASE PATH: $path');
 
     // Open the database. The `onCreate` callback will be called if the database doesn't exist.
     final db =
