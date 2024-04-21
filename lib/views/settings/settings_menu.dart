@@ -1,6 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:convert';
+
 import 'package:archive/archive.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
@@ -535,40 +538,54 @@ onChangePwd() {
                       ),
                       onPressed: () async {
                         if (formKeyChangePwd.currentState!.validate()) {
-                          String currentPwd = currentPwdController.text;
-                          String newPwd = newPwdController.text;
-                          final conn = await onConnToSqliteDb();
-                          // First make sure the current password matches.
-                          var results = await conn.rawQuery(
-                              'SELECT * FROM staff_auth WHERE password = PASSWORD(?)',
-                              [currentPwd]);
+                          try {
+                            String currentPwd = currentPwdController.text;
+                            String newPwd = newPwdController.text;
+                            final conn = await onConnToSqliteDb();
+                            // First make sure the current password matches.
+                            var bytesForCurPwd = utf8.encode(currentPwd);
+                            var digestForCurPwd =
+                                sha256.convert(bytesForCurPwd);
+                            String hashedCurPwd = digestForCurPwd.toString();
+                            // Hash the newly inserted password
+                            var bytesforNewPwd = utf8.encode(newPwd);
+                            var digestForNewPwd =
+                                sha256.convert(bytesforNewPwd);
+                            String hashedNewPwd = digestForNewPwd.toString();
+                            var results = await conn.rawQuery(
+                                'SELECT * FROM staff_auth WHERE password = ?',
+                                [hashedCurPwd]);
 
-                          if (results.isNotEmpty) {
-                            var updatedResult = await conn.rawUpdate(
-                                'UPDATE staff_auth SET password = PASSWORD(?) WHERE staff_ID = ?',
-                                [newPwd, StaffInfo.staffID]);
-                            if (updatedResult > 0) {
-                              _onShowSnack(
-                                  Colors.green,
-                                  translations[selectedLanguage]
-                                          ?['PwdSuccessMsg'] ??
-                                      '');
-                              currentPwdController.clear();
-                              newPwdController.clear();
-                              unConfirmController.clear();
+                            if (results.isNotEmpty) {
+                              var updatedResult = await conn.rawUpdate(
+                                  'UPDATE staff_auth SET password = ? WHERE staff_ID = ?',
+                                  [hashedNewPwd, StaffInfo.staffID]);
+                              if (updatedResult > 0) {
+                                _onShowSnack(
+                                    Colors.green,
+                                    translations[selectedLanguage]
+                                            ?['PwdSuccessMsg'] ??
+                                        '');
+                                currentPwdController.clear();
+                                newPwdController.clear();
+                                unConfirmController.clear();
+                              } else {
+                                _onShowSnack(
+                                    Colors.red,
+                                    translations[selectedLanguage]
+                                            ?['StaffEditErrMsg'] ??
+                                        '');
+                              }
                             } else {
                               _onShowSnack(
                                   Colors.red,
                                   translations[selectedLanguage]
-                                          ?['StaffEditErrMsg'] ??
+                                          ?['InvalidCurrPwd'] ??
                                       '');
                             }
-                          } else {
-                            _onShowSnack(
-                                Colors.red,
-                                translations[selectedLanguage]
-                                        ?['InvalidCurrPwd'] ??
-                                    '');
+                          } catch (e) {
+                            print(
+                                'Something went wrong with updating password: $e');
                           }
                         }
                       },
@@ -759,7 +776,7 @@ onShowProfile(BuildContext context, [void Function()? onUpdatePhoto]) {
                                 color: Color.fromARGB(255, 118, 116, 116),
                               ),
                             ),
-                            Text('${StaffInfo.tazkira}'),
+                            Text(StaffInfo.tazkira ?? '--'),
                           ],
                         ),
                       ),
@@ -784,7 +801,7 @@ onShowProfile(BuildContext context, [void Function()? onUpdatePhoto]) {
                                     color: Color.fromARGB(255, 118, 116, 116),
                                   ),
                                 ),
-                                Text('${StaffInfo.salary} افغانی'),
+                                Text('${StaffInfo.salary ?? '0'} افغانی'),
                               ],
                             ),
                           ),
@@ -823,7 +840,7 @@ onShowProfile(BuildContext context, [void Function()? onUpdatePhoto]) {
                                 color: Color.fromARGB(255, 118, 116, 116),
                               ),
                             ),
-                            Text('${StaffInfo.address}'),
+                            Text(StaffInfo.address ?? '--'),
                           ],
                         ),
                       ),
@@ -956,8 +973,10 @@ onBackUpData() {
                     const String dbName = 'dentistry_db.db';
 
                     // SQLite database path
-                    String dbPath = await getDatabasesPath();
+                    String dbPath =
+                        p.join(Platform.environment['LOCALAPPDATA']!, 'crown');
                     String path = p.join(dbPath, dbName);
+                    print('Backup FROM: $path');
 
                     // User date & time for naming backup file
                     var now = DateTime.now();
@@ -1383,7 +1402,8 @@ onRestoreData() {
                           'dentistry_db.db'; // Include the '.db' extension
 
                       // SQLite database path
-                      String dbPath = await getDatabasesPath();
+                      String dbPath = p.join(
+                          Platform.environment['LOCALAPPDATA']!, 'crown');
                       String path = p.join(dbPath, dbName);
 
                       // Show file picker
@@ -1483,13 +1503,13 @@ onEditProfileInfo(BuildContext context) {
   final tazkiraPattern = RegExp(r'^\d{4}-\d{4}-\d{5}$');
 
   // Assign values from static class members
-  nameController.text = StaffInfo.firstName!;
-  lastNameController.text =
-      StaffInfo.lastName == null ? '' : StaffInfo.lastName!;
-  phoneController.text = StaffInfo.phone!;
-  salaryController.text = StaffInfo.salary.toString();
-  tazkiraController.text = StaffInfo.tazkira!;
-  addressController.text = StaffInfo.address!;
+  nameController.text = StaffInfo.firstName ?? '';
+  lastNameController.text = StaffInfo.lastName ?? '';
+  phoneController.text = StaffInfo.phone ?? '';
+  salaryController.text =
+      StaffInfo.salary == null ? '0' : StaffInfo.salary.toString();
+  tazkiraController.text = StaffInfo.tazkira ?? '';
+  addressController.text = StaffInfo.address ?? '';
 
   return showDialog(
     context: context,

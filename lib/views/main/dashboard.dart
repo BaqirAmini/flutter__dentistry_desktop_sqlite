@@ -38,6 +38,7 @@ class _DashboardState extends State<Dashboard> {
     _getPieData();
     _fetchAllPatient();
     _fetchFinance();
+    _retrieveClinics();
   }
 
   int _allPatients = 0;
