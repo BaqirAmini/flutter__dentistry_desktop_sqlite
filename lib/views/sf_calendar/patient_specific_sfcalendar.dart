@@ -190,8 +190,12 @@ class _CalendarPageState extends State<CalendarPage> {
             return Directionality(
               textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
               child: AlertDialog(
-                title: Text('${translations[selectedLanguage]?['SchdAppt'] ?? ''}${PatientInfo.firstName} ${PatientInfo.lastName}',
-                    style: Theme.of(context).textTheme.headlineSmall!.copyWith(color: Colors.blue, fontSize: 18.0)),
+                title: Text(
+                    '${translations[selectedLanguage]?['SchdAppt'] ?? ''}${PatientInfo.firstName} ${PatientInfo.lastName}',
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineSmall!
+                        .copyWith(color: Colors.blue, fontSize: 18.0)),
                 content: SizedBox(
                   height: MediaQuery.of(context).size.height * 0.6,
                   width: MediaQuery.of(context).size.width * 0.35,
@@ -1035,7 +1039,6 @@ class _CalendarPageState extends State<CalendarPage> {
                                     '',
                                 context);
                           }
-
                         } catch (e) {
                           print('Appointment scheduling failed: $e');
                         }
@@ -1115,7 +1118,7 @@ class _CalendarPageState extends State<CalendarPage> {
               dentistLName: row["lastname"].toString(),
               serviceName: row["ser_name"].toString(),
               comments: row["details"] == null ? '' : row["details"].toString(),
-              visitTime: row["meet_date"] as DateTime,
+              visitTime: DateTime.parse(row["meet_date"].toString()),
               apptId: row["apt_ID"] as int,
               notifFreq: row["notification"].toString(),
               serviceID: row["ser_id"] as int,
@@ -1141,7 +1144,7 @@ class _CalendarPageState extends State<CalendarPage> {
           bgColor = Colors.green;
           break;
         case 2:
-          bgColor = Colors.blue;
+          bgColor = Colors.brown;
           break;
         case 3:
           bgColor = const Color.fromARGB(255, 46, 12, 236);

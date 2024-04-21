@@ -1522,7 +1522,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 dentistLName: row["lname"].toString(),
                 serviceName: row["sname"].toString(),
                 comments: row["details"] == null ? '' : row["details"].toString(),
-                visitTime: row["meet_date"] as DateTime,
+                visitTime: DateTime.parse(row["meet_date"].toString()),
                 apptId: row["apt_ID"] as int,
                 notifFreq: row["notif"].toString(),
                 serviceID: row["service_id"] as int,
