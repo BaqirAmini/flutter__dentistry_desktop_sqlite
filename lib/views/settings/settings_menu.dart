@@ -266,6 +266,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
               ),
             ),
           );
+          StaffInfo.userPhoto = bytes;
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(

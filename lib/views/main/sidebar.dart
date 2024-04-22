@@ -156,11 +156,14 @@ class _SidebarState extends State<Sidebar> {
       : null;
 
 // Use this function to update user profile photo
-  onUpdatePhoto() {
-    _image = (uint8list != null)
-        ? MemoryImage(uint8list!)
-        : const AssetImage('assets/graphics/user_profile2.jpg')
-            as ImageProvider;
+  _fetchUserProfilePhoto() {
+    setState(() {
+      _image = (uint8list != null)
+          ? MemoryImage(uint8list!)
+          : const AssetImage('assets/graphics/user_profile2.jpg')
+              as ImageProvider;
+    });
+
     return _image;
   }
 
@@ -171,18 +174,7 @@ class _SidebarState extends State<Sidebar> {
     // Clear image caching since Flutter by default does.
     imageCache.clear();
     imageCache.clearLiveImages();
-    onUpdatePhoto();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Clear image caching since Flutter by default does.
-    imageCache.clear();
-    imageCache.clearLiveImages();
-    setState(() {
-      onUpdatePhoto();
-    });
+    _fetchUserProfilePhoto();
   }
 
   @override
@@ -209,7 +201,7 @@ class _SidebarState extends State<Sidebar> {
                     builder: (context) => const Settings(),
                   ),
                 ).then((_) {
-                  onUpdatePhoto();
+                  _fetchUserProfilePhoto();
                 });
               },
             ),

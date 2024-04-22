@@ -20,6 +20,7 @@ class AdultQuadrantGrid extends StatefulWidget {
 class _AdultQuadrantGrid extends State<AdultQuadrantGrid> {
   final List<String> _selectedTeethNum = [];
   final Map<String, bool> _isHovering = {};
+  bool _allTeethSelected = false;
 
   Widget _buildQuadrant(String quadrantId, List<int> toothNumbers) {
     return Row(
@@ -73,92 +74,162 @@ class _AdultQuadrantGrid extends State<AdultQuadrantGrid> {
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
     Tooth.adultToothSelected = _selectedTeethNum.isEmpty ? false : true;
-    return InputDecorator(
-      decoration: InputDecoration(
-        border: const OutlineInputBorder(),
-        labelText: _selectedTeethNum.isEmpty
-            // ignore: unnecessary_string_interpolations
-            ? '${translations[selectedLanguage]?['SelectTeeth'] ?? ''}'
-            // ignore: unnecessary_string_interpolations
-            : '${translations[selectedLanguage]?['AdultTeethSelection'] ?? ''}',
-        contentPadding: const EdgeInsets.all(20),
-        floatingLabelAlignment: FloatingLabelAlignment.center,
-        labelStyle: TextStyle(
-            color: _selectedTeethNum.isEmpty ? Colors.red : Colors.blue,
-            fontSize: 18),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: const BorderRadius.all(Radius.circular(30.0)),
-          borderSide: BorderSide(
-              color: _selectedTeethNum.isEmpty ? Colors.red : Colors.blue),
-        ),
-        focusedBorder: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(50.0),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        InputDecorator(
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            labelText: _selectedTeethNum.isEmpty
+                // ignore: unnecessary_string_interpolations
+                ? '${translations[selectedLanguage]?['SelectTeeth'] ?? ''}'
+                // ignore: unnecessary_string_interpolations
+                : '${translations[selectedLanguage]?['AdultTeethSelection'] ?? ''}',
+            contentPadding: const EdgeInsets.all(20),
+            floatingLabelAlignment: FloatingLabelAlignment.center,
+            labelStyle: TextStyle(
+                color: _selectedTeethNum.isEmpty ? Colors.red : Colors.blue,
+                fontSize: 18),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: const BorderRadius.all(Radius.circular(30.0)),
+              borderSide: BorderSide(
+                  color: _selectedTeethNum.isEmpty ? Colors.red : Colors.blue),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(50.0),
+              ),
+            ),
           ),
-        ),
-      ),
-      child: Stack(
-        children: [
-          Column(
-            children: [
-              Expanded(
-                child: Row(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.35,
+            child: Stack(
+              children: [
+                Column(
                   children: [
-                    _buildQuadrantWithLabel(
-                      'Q2',
-                      List<int>.generate(
-                        8,
-                        (i) => (i + 1),
-                      ).reversed.toList(),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          _buildQuadrantWithLabel(
+                            'Q2',
+                            List<int>.generate(
+                              8,
+                              (i) => (i + 1),
+                            ).reversed.toList(),
+                          ),
+                          _buildQuadrantWithLabel(
+                            'Q1',
+                            List<int>.generate(
+                              8,
+                              (i) => (i + 1),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    _buildQuadrantWithLabel(
-                      'Q1',
-                      List<int>.generate(
-                        8,
-                        (i) => (i + 1),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          _buildQuadrantWithLabel(
+                            'Q3',
+                            List<int>.generate(
+                              8,
+                              (i) => (i + 1),
+                            ).reversed.toList(),
+                          ),
+                          _buildQuadrantWithLabel(
+                            'Q4',
+                            List<int>.generate(
+                              8,
+                              (i) => (i + 1),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-              Expanded(
-                child: Row(
-                  children: [
-                    _buildQuadrantWithLabel(
-                      'Q3',
-                      List<int>.generate(
-                        8,
-                        (i) => (i + 1),
-                      ).reversed.toList(),
-                    ),
-                    _buildQuadrantWithLabel(
-                      'Q4',
-                      List<int>.generate(
-                        8,
-                        (i) => (i + 1),
-                      ),
-                    ),
-                  ],
+                Center(
+                  child: Container(
+                    width: 1,
+                    height: double.infinity,
+                    color: Colors.blue,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          Center(
-            child: Container(
-              width: 1,
-              height: double.infinity,
-              color: Colors.blue,
+                Center(
+                  child: Container(
+                    height: 1,
+                    width: double.infinity,
+                    color: Colors.blue,
+                  ),
+                ),
+              ],
             ),
           ),
-          Center(
-            child: Container(
-              height: 1,
-              width: double.infinity,
-              color: Colors.blue,
-            ),
+        ),
+        Container(
+          margin: const EdgeInsets.only(top: 10.0),
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+            shape: BoxShape.rectangle,
+            border: Border.all(color: Colors.green, width: 1.5),
           ),
-        ],
-      ),
+          width: MediaQuery.of(context).size.width * 0.07,
+          child: CheckboxListTile(
+            value: _allTeethSelected,
+            onChanged: (bool? value) {
+              setState(() {
+                _allTeethSelected = value!;
+                if (_allTeethSelected) {
+                  _selectedTeethNum.clear();
+                  _selectedTeethNum.addAll([
+                    'Q1-1',
+                    'Q1-2',
+                    'Q1-3',
+                    'Q1-4',
+                    'Q1-5',
+                    'Q1-6',
+                    'Q1-7',
+                    'Q1-8',
+                    'Q2-1',
+                    'Q2-2',
+                    'Q2-3',
+                    'Q2-4',
+                    'Q2-5',
+                    'Q2-6',
+                    'Q2-7',
+                    'Q2-8',
+                    'Q3-1',
+                    'Q3-2',
+                    'Q3-3',
+                    'Q3-4',
+                    'Q3-5',
+                    'Q3-6',
+                    'Q3-7',
+                    'Q3-8',
+                    'Q4-1',
+                    'Q4-2',
+                    'Q4-3',
+                    'Q4-4',
+                    'Q4-5',
+                    'Q4-6',
+                    'Q4-7',
+                    'Q4-8',
+                  ]);
+                  _onArrangeAdultSelectedTeeth(_selectedTeethNum);
+                } else {
+                  _selectedTeethNum.clear();
+                }
+              });
+            },
+            title: Text(translations[selectedLanguage]?['AllTeeth'] ?? '',
+                style: const TextStyle(color: Colors.green)),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 5.0, vertical: 0),
+          ),
+        ),
+      ],
     );
   }
 
