@@ -37,6 +37,7 @@ class ChildQuadrantGrid extends StatefulWidget {
 class _ChildQuadrantGrid extends State<ChildQuadrantGrid> {
   final List<String> _selectedTeethLetters = [];
   final Map<String, bool> _isHovering = {};
+  bool _allTeethSelected = false;
 
   Widget _buildQuadrant(String quadrantId, List<String> letters) {
     return Row(
@@ -90,82 +91,141 @@ class _ChildQuadrantGrid extends State<ChildQuadrantGrid> {
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
     Tooth.childToothSelected = _selectedTeethLetters.isEmpty ? false : true;
-    return InputDecorator(
-      decoration: InputDecoration(
-        contentPadding: const EdgeInsets.all(20),
-        border: const OutlineInputBorder(),
-        labelText: _selectedTeethLetters.isEmpty
-            // ignore: unnecessary_string_interpolations
-            ? '${translations[selectedLanguage]?['SelectTeeth'] ?? ''}'
-            // ignore: unnecessary_string_interpolations
-            : '${translations[selectedLanguage]?['ChildTeethSelection'] ?? ''}',
-        floatingLabelAlignment: FloatingLabelAlignment.center,
-        labelStyle: TextStyle(
-            color: _selectedTeethLetters.isEmpty ? Colors.red : Colors.blue,
-            fontSize: 18),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: const BorderRadius.all(
-            Radius.circular(30.0),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        InputDecorator(
+          decoration: InputDecoration(
+            contentPadding: const EdgeInsets.all(20),
+            border: const OutlineInputBorder(),
+            labelText: _selectedTeethLetters.isEmpty
+                // ignore: unnecessary_string_interpolations
+                ? '${translations[selectedLanguage]?['SelectTeeth'] ?? ''}'
+                // ignore: unnecessary_string_interpolations
+                : '${translations[selectedLanguage]?['ChildTeethSelection'] ?? ''}',
+            floatingLabelAlignment: FloatingLabelAlignment.center,
+            labelStyle: TextStyle(
+                color: _selectedTeethLetters.isEmpty ? Colors.red : Colors.blue,
+                fontSize: 18),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: const BorderRadius.all(
+                Radius.circular(30.0),
+              ),
+              borderSide: BorderSide(
+                color: _selectedTeethLetters.isEmpty ? Colors.red : Colors.blue,
+              ),
+            ),
           ),
-          borderSide: BorderSide(
-            color: _selectedTeethLetters.isEmpty ? Colors.red : Colors.blue,
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.35,
+            child: Stack(
+              children: [
+                Column(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          _buildQuadrantWithLabel(
+                              'Q2',
+                              List<String>.generate(
+                                      5, (i) => String.fromCharCode(65 + i))
+                                  .reversed
+                                  .toList()),
+                          _buildQuadrantWithLabel(
+                              'Q1',
+                              List<String>.generate(
+                                  5, (i) => String.fromCharCode(65 + i))),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          _buildQuadrantWithLabel(
+                              'Q3',
+                              List<String>.generate(
+                                      5, (i) => String.fromCharCode(65 + i))
+                                  .reversed
+                                  .toList()),
+                          _buildQuadrantWithLabel(
+                              'Q4',
+                              List<String>.generate(
+                                  5, (i) => String.fromCharCode(65 + i))),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Center(
+                  child: Container(
+                    width: 1,
+                    height: double.infinity,
+                    color: Colors.blue,
+                  ),
+                ),
+                Center(
+                  child: Container(
+                    height: 1,
+                    width: double.infinity,
+                    color: Colors.blue,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-      child: Stack(
-        children: [
-          Column(
-            children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    _buildQuadrantWithLabel(
-                        'Q2',
-                        List<String>.generate(
-                                5, (i) => String.fromCharCode(65 + i))
-                            .reversed
-                            .toList()),
-                    _buildQuadrantWithLabel(
-                        'Q1',
-                        List<String>.generate(
-                            5, (i) => String.fromCharCode(65 + i))),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Row(
-                  children: [
-                    _buildQuadrantWithLabel(
-                        'Q3',
-                        List<String>.generate(
-                                5, (i) => String.fromCharCode(65 + i))
-                            .reversed
-                            .toList()),
-                    _buildQuadrantWithLabel(
-                        'Q4',
-                        List<String>.generate(
-                            5, (i) => String.fromCharCode(65 + i))),
-                  ],
-                ),
-              ),
-            ],
+        Container(
+          margin: EdgeInsets.only(top: 10.0),
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+            shape: BoxShape.rectangle,
+            border: Border.all(color: Colors.green, width: 1.5),
           ),
-          Center(
-            child: Container(
-              width: 1,
-              height: double.infinity,
-              color: Colors.blue,
-            ),
+          width: MediaQuery.of(context).size.width * 0.07,
+          child: CheckboxListTile(
+            value: _allTeethSelected,
+            onChanged: (bool? value) {
+              setState(() {
+                _allTeethSelected = value!;
+                if (_allTeethSelected) {
+                  _selectedTeethLetters.clear();
+                  _selectedTeethLetters.addAll([
+                    'Q1-A',
+                    'Q1-B',
+                    'Q1-C',
+                    'Q1-D',
+                    'Q1-E',
+                    'Q2-A',
+                    'Q2-B',
+                    'Q2-C',
+                    'Q2-D',
+                    'Q2-E',
+                    'Q3-A',
+                    'Q3-B',
+                    'Q3-C',
+                    'Q3-D',
+                    'Q3-E',
+                    'Q4-A',
+                    'Q4-B',
+                    'Q4-C',
+                    'Q4-D',
+                    'Q4-E',
+                  ]);
+                  _onArrangeChildSelectedTeeth(_selectedTeethLetters);
+                } else {
+                  _selectedTeethLetters.clear();
+                }
+              });
+            },
+            title:
+                const Text('All Teeth', style: TextStyle(color: Colors.green)),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 5.0, vertical: 0),
           ),
-          Center(
-            child: Container(
-              height: 1,
-              width: double.infinity,
-              color: Colors.blue,
-            ),
-          ),
-        ],
-      ),
+        ),
+        Container(),
+      ],
     );
   }
 
