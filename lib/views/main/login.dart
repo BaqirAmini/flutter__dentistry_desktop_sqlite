@@ -88,8 +88,8 @@ class _LoginState extends State<Login> {
           String? phone = row2["phone"];
           String? tazkira = row2["tazkira_ID"];
           String? addr = row2["address"];
-          /* final userPhoto =
-              row2['photo'] != null ? row2['photo'] as Uint8List : null; */
+          final userPhoto =
+              row2['photo'] != null ? row2['photo'] as Uint8List : null;
           // Global variables to be assigned staff info
           StaffInfo.staffID = staffID;
           StaffInfo.staffRole = role;
@@ -100,8 +100,9 @@ class _LoginState extends State<Login> {
           StaffInfo.phone = phone;
           StaffInfo.tazkira = tazkira;
           StaffInfo.address = addr;
-          // StaffInfo.userPhoto = userPhoto;
+          StaffInfo.userPhoto = userPhoto;
 
+          // ignore: use_build_context_synchronously
           Navigator.push(
             context,
             MaterialPageRoute(
