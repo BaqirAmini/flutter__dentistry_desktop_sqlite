@@ -166,66 +166,66 @@ class _AdultQuadrantGrid extends State<AdultQuadrantGrid> {
             ),
           ),
         ),
-        Material(
-          child: Container(
-            margin: const EdgeInsets.only(top: 10.0),
-            width: MediaQuery.of(context).size.width * 0.12,
-            child: CheckboxListTile(
-              checkboxShape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(3)),
-              controlAffinity: ListTileControlAffinity.leading,
-              value: _allTeethSelected,
-              onChanged: (bool? value) {
-                setState(() {
-                  _allTeethSelected = value!;
-                  if (_allTeethSelected) {
-                    _selectedTeethNum.clear();
-                    _selectedTeethNum.addAll([
-                      'Q1-1',
-                      'Q1-2',
-                      'Q1-3',
-                      'Q1-4',
-                      'Q1-5',
-                      'Q1-6',
-                      'Q1-7',
-                      'Q1-8',
-                      'Q2-1',
-                      'Q2-2',
-                      'Q2-3',
-                      'Q2-4',
-                      'Q2-5',
-                      'Q2-6',
-                      'Q2-7',
-                      'Q2-8',
-                      'Q3-1',
-                      'Q3-2',
-                      'Q3-3',
-                      'Q3-4',
-                      'Q3-5',
-                      'Q3-6',
-                      'Q3-7',
-                      'Q3-8',
-                      'Q4-1',
-                      'Q4-2',
-                      'Q4-3',
-                      'Q4-4',
-                      'Q4-5',
-                      'Q4-6',
-                      'Q4-7',
-                      'Q4-8',
-                    ]);
-                    _onArrangeAdultSelectedTeeth(_selectedTeethNum);
-                  } else {
-                    _selectedTeethNum.clear();
-                  }
-                });
-              },
-              title: Text(
-                translations[selectedLanguage]?['AllTeeth'] ?? '',
-                style: const TextStyle(fontSize: 12.0),
+        Directionality(
+          textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
+          child: Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: Checkbox(
+                    value: _allTeethSelected,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _allTeethSelected = value!;
+                        if (_allTeethSelected) {
+                          _selectedTeethNum.clear();
+                          _selectedTeethNum.addAll([
+                            'Q1-1',
+                            'Q1-2',
+                            'Q1-3',
+                            'Q1-4',
+                            'Q1-5',
+                            'Q1-6',
+                            'Q1-7',
+                            'Q1-8',
+                            'Q2-1',
+                            'Q2-2',
+                            'Q2-3',
+                            'Q2-4',
+                            'Q2-5',
+                            'Q2-6',
+                            'Q2-7',
+                            'Q2-8',
+                            'Q3-1',
+                            'Q3-2',
+                            'Q3-3',
+                            'Q3-4',
+                            'Q3-5',
+                            'Q3-6',
+                            'Q3-7',
+                            'Q3-8',
+                            'Q4-1',
+                            'Q4-2',
+                            'Q4-3',
+                            'Q4-4',
+                            'Q4-5',
+                            'Q4-6',
+                            'Q4-7',
+                            'Q4-8',
+                          ]);
+                          _onArrangeAdultSelectedTeeth(_selectedTeethNum);
+                        } else {
+                          _selectedTeethNum.clear();
+                        }
+                      });
+                    },
+                  ),
+                ),
               ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
-            ),
+              Text(translations[selectedLanguage]?['AllTeeth'] ?? ''),
+            ],
           ),
         )
       ],

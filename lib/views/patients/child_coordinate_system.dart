@@ -175,50 +175,56 @@ class _ChildQuadrantGrid extends State<ChildQuadrantGrid> {
             ),
           ),
         ),
-        Container(
-          margin: const EdgeInsets.only(top: 10.0),
-          width: MediaQuery.of(context).size.width * 0.12,
-          child: CheckboxListTile(
-            controlAffinity: ListTileControlAffinity.leading,
-            value: _allTeethSelected,
-            onChanged: (bool? value) {
-              setState(() {
-                _allTeethSelected = value!;
-                if (_allTeethSelected) {
-                  _selectedTeethLetters.clear();
-                  _selectedTeethLetters.addAll([
-                    'Q1-A',
-                    'Q1-B',
-                    'Q1-C',
-                    'Q1-D',
-                    'Q1-E',
-                    'Q2-A',
-                    'Q2-B',
-                    'Q2-C',
-                    'Q2-D',
-                    'Q2-E',
-                    'Q3-A',
-                    'Q3-B',
-                    'Q3-C',
-                    'Q3-D',
-                    'Q3-E',
-                    'Q4-A',
-                    'Q4-B',
-                    'Q4-C',
-                    'Q4-D',
-                    'Q4-E',
-                  ]);
-                  _onArrangeChildSelectedTeeth(_selectedTeethLetters);
-                } else {
-                  _selectedTeethLetters.clear();
-                }
-              });
-            },
-            title: Text(
-              translations[selectedLanguage]?['AllTeeth'] ?? '',
-              style: const TextStyle(fontSize: 12.0),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 10.0),
+        Directionality(
+          textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
+          child: Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: Checkbox(
+                    value: _allTeethSelected,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _allTeethSelected = value!;
+                        if (_allTeethSelected) {
+                          _selectedTeethLetters.clear();
+                          _selectedTeethLetters.addAll([
+                            'Q1-A',
+                            'Q1-B',
+                            'Q1-C',
+                            'Q1-D',
+                            'Q1-E',
+                            'Q2-A',
+                            'Q2-B',
+                            'Q2-C',
+                            'Q2-D',
+                            'Q2-E',
+                            'Q3-A',
+                            'Q3-B',
+                            'Q3-C',
+                            'Q3-D',
+                            'Q3-E',
+                            'Q4-A',
+                            'Q4-B',
+                            'Q4-C',
+                            'Q4-D',
+                            'Q4-E',
+                          ]);
+                          _onArrangeChildSelectedTeeth(_selectedTeethLetters);
+                        } else {
+                          _selectedTeethLetters.clear();
+                        }
+                      });
+                    },
+                  ),
+                ),
+              ),
+              Text(
+                translations[selectedLanguage]?['AllTeeth'] ?? ''
+              ),
+            ],
           ),
         ),
         Container(),
