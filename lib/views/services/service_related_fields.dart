@@ -1304,7 +1304,7 @@ class _ServiceFormState extends State<ServiceForm> {
                 width: (ServiceInfo.patAge <= 13)
                     ? MediaQuery.of(context).size.width * 0.35
                     : MediaQuery.of(context).size.width * 0.55,
-                height: MediaQuery.of(context).size.height * 0.45,
+                height: MediaQuery.of(context).size.height * 0.5,
                 child: (ServiceInfo.patAge <= 13)
                     ? const ChildQuadrantGrid()
                     : const AdultQuadrantGrid(),

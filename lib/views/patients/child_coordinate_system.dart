@@ -176,14 +176,10 @@ class _ChildQuadrantGrid extends State<ChildQuadrantGrid> {
           ),
         ),
         Container(
-          margin: EdgeInsets.only(top: 10.0),
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-            shape: BoxShape.rectangle,
-            border: Border.all(color: Colors.green, width: 1.5),
-          ),
-          width: MediaQuery.of(context).size.width * 0.07,
+          margin: const EdgeInsets.only(top: 10.0),
+          width: MediaQuery.of(context).size.width * 0.12,
           child: CheckboxListTile(
+            controlAffinity: ListTileControlAffinity.leading,
             value: _allTeethSelected,
             onChanged: (bool? value) {
               setState(() {
@@ -218,10 +214,11 @@ class _ChildQuadrantGrid extends State<ChildQuadrantGrid> {
                 }
               });
             },
-            title:
-                const Text('All Teeth', style: TextStyle(color: Colors.green)),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 5.0, vertical: 0),
+            title: Text(
+              translations[selectedLanguage]?['AllTeeth'] ?? '',
+              style: const TextStyle(fontSize: 12.0),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 10.0),
           ),
         ),
         Container(),
