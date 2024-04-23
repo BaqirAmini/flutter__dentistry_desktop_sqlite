@@ -1474,18 +1474,55 @@ String convertSingleQuadrant(String quadTooth) {
 
 // This takes a string of multiple codes (like ‘Q1-4, Q2-3, Q4-1’), splits it into individual codes,
 String convertMultiQuadrant(String quadTeeth) {
-  // Split the input string into individual quadrants
   var quadrantList =
       quadTeeth.split(',').map((quadrant) => quadrant.trim()).toList();
-  // This will hold the descriptions
   var descriptionList = <String>[];
-  // For each quadrant in the list...
+
+  // Create a map to hold the count of teeth in each quadrant
+  var quadrantCount = {
+    'Q1': 0,
+    'Q2': 0,
+    'Q3': 0,
+    'Q4': 0,
+  };
+
+  // Count the number of teeth in each quadrant
   for (var quadrant in quadrantList) {
-    // Convert the quadrant to a description
-    var description = convertSingleQuadrant(quadrant);
-    // And add it to the list of descriptions
-    descriptionList.add(description);
+    var parts = quadrant.split('-');
+    var quadKey = parts[0];
+    if (quadrantCount.containsKey(quadKey)) {
+      quadrantCount[quadKey] = (quadrantCount[quadKey] ?? 0) + 1;
+    }
   }
+
+  // Determine if we're dealing with adult or children's teeth
+  bool isAdult = quadrantList[0].split('-')[1].length == 1;
+
+  // Check if all teeth are present in any or all quadrants
+  int totalTeeth =
+      isAdult ? 8 : 5; // Adults have 8 teeth per quadrant, children have 5
+  if (quadrantCount.values.every((count) => count == totalTeeth)) {
+    descriptionList.add('All Teeth (Four Sides)');
+  } else {
+    for (var entry in quadrantCount.entries) {
+      if (entry.value == totalTeeth) {
+        descriptionList.add('${quadrantDescriptions[entry.key]} All Teeth');
+      } else {
+        // If not all teeth were counted, proceed with individual counting
+        for (var quadrant in quadrantList) {
+          var parts = quadrant.split('-');
+          var quadKey = parts[0];
+
+          // Only add to the description list if this quadrant has not been fully counted
+          if (quadKey == entry.key && entry.value != totalTeeth) {
+            var description = convertSingleQuadrant(quadrant);
+            descriptionList.add(description);
+          }
+        }
+      }
+    }
+  }
+
   // Join the descriptions back together into a single string
   return descriptionList.join(', ');
 }
