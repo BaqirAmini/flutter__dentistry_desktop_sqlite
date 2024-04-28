@@ -53,7 +53,8 @@ class _DashboardState extends State<Dashboard> {
   String? firstClinicID;
   String? firstClinicName;
   String? firstClinicAddr;
-  String? firstClinicPhone;
+  String? firstClinicPhone1;
+  String? firstClinicPhone2;
   String? firstClinicEmail;
   Uint8List? firstClinicLogo;
   // This variable is to set the first filter value of doughnut chart dropdown
@@ -338,22 +339,27 @@ class _DashboardState extends State<Dashboard> {
 
 // This function fetches clinic info by instantiation
   void _retrieveClinics() async {
-    clinics = await _globalUsage.retrieveClinics();
-    setState(() {
-      firstClinicID = clinics[0]["clinicId"];
-      firstClinicName = clinics[0]["clinicName"];
-      firstClinicAddr = clinics[0]["clinicAddr"];
-      firstClinicPhone = clinics[0]["clinicPhone"];
-      firstClinicEmail = clinics[0]["clinicEmail"];
-      if (clinics[0]["clinicLogo"] is Uint8List) {
-        firstClinicLogo = clinics[0]["clinicLogo"];
-      } else if (clinics[0]["clinicLogo"] == null) {
-        print('clinicLogo is null');
-      } else {
-        // Handle the case when clinicLogo is not a Uint8List
-        print('clinicLogo is not a Uint8List');
-      }
-    }); // Call setState to trigger a rebuild of the widget with the new data.
+    try {
+      clinics = await _globalUsage.retrieveClinics();
+      setState(() {
+        firstClinicID = clinics[0]["clinicId"];
+        firstClinicName = clinics[0]["clinicName"];
+        firstClinicAddr = clinics[0]["clinicAddr"];
+        firstClinicPhone1 = clinics[0]["clinicPhone1"];
+        firstClinicPhone2 = clinics[0]["clinicPhone2"];
+        firstClinicEmail = clinics[0]["clinicEmail"];
+        if (clinics[0]["clinicLogo"] is Uint8List) {
+          firstClinicLogo = clinics[0]["clinicLogo"];
+        } else if (clinics[0]["clinicLogo"] == null) {
+          print('clinicLogo is null');
+        } else {
+          // Handle the case when clinicLogo is not a Uint8List
+          print('clinicLogo is not a Uint8List');
+        }
+      }); // Call setState to trigger a rebuild of the widget with the new data.
+    } catch (e) {
+      print('No clinic found.');
+    }
   }
 
   @override
@@ -1074,12 +1080,14 @@ class _DashboardState extends State<Dashboard> {
   Future<void> _onAddClinicInfo() async {
     TextEditingController clinicNameController = TextEditingController();
     TextEditingController clinicAddrController = TextEditingController();
-    TextEditingController clinicPhoneController = TextEditingController();
+    TextEditingController clinicPhoneController1 = TextEditingController();
+    TextEditingController clinicPhoneController2 = TextEditingController();
     TextEditingController clinicEmailController = TextEditingController();
     final clinicFormKey = GlobalKey<FormState>();
     clinicNameController.text = firstClinicName ?? '';
     clinicAddrController.text = firstClinicAddr ?? '';
-    clinicPhoneController.text = firstClinicPhone ?? '';
+    clinicPhoneController1.text = firstClinicPhone1 ?? '';
+    clinicPhoneController2.text = firstClinicPhone2 ?? '';
     clinicEmailController.text = firstClinicEmail ?? '';
 
     // ignore: use_build_context_synchronously
@@ -1355,7 +1363,68 @@ class _DashboardState extends State<Dashboard> {
                                   child: TextFormField(
                                     textDirection: TextDirection.ltr,
                                     autovalidateMode: AutovalidateMode.always,
-                                    controller: clinicPhoneController,
+                                    controller: clinicPhoneController1,
+                                    validator: (value) {
+                                      if (value!.isEmpty) {
+                                        return 'این نمبر الزامی میباشد.';
+                                      } else if (value.startsWith('07')) {
+                                        if (value.length < 10 ||
+                                            value.length > 10) {
+                                          return 'نمبر تماس باید 10 رقم باشد.';
+                                        }
+                                      } else if (value.startsWith('+93')) {
+                                        if (value.length < 12 ||
+                                            value.length > 12) {
+                                          return 'نمبر تماس همراه با کود کشور باید 12 رقم باشد.';
+                                        }
+                                      } else {
+                                        return 'نمبر تماس نا معتبر است.';
+                                      }
+                                      return null;
+                                    },
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(
+                                        RegExp(GlobalUsage.allowedDigits),
+                                      ),
+                                    ],
+                                    minLines: 1,
+                                    decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      labelText: 'نمبر تماس 1',
+                                      suffixIcon:
+                                          Icon(Icons.phone_enabled_outlined),
+                                      enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(50.0)),
+                                          borderSide:
+                                              BorderSide(color: Colors.grey)),
+                                      focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(50.0)),
+                                          borderSide:
+                                              BorderSide(color: Colors.blue)),
+                                      errorBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(50.0)),
+                                          borderSide:
+                                              BorderSide(color: Colors.red)),
+                                      focusedErrorBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(50.0)),
+                                          borderSide: BorderSide(
+                                              color: Colors.red, width: 1.5)),
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.335,
+                                  margin: const EdgeInsets.symmetric(
+                                      vertical: 10.0, horizontal: 20.0),
+                                  child: TextFormField(
+                                    textDirection: TextDirection.ltr,
+                                    autovalidateMode: AutovalidateMode.always,
+                                    controller: clinicPhoneController2,
                                     validator: (value) {
                                       if (value!.isNotEmpty) {
                                         if (value.startsWith('07')) {
@@ -1368,6 +1437,9 @@ class _DashboardState extends State<Dashboard> {
                                               value.length > 12) {
                                             return 'نمبر تماس همراه با کود کشور باید 12 رقم باشد.';
                                           }
+                                        } else if (value ==
+                                            clinicPhoneController1.text) {
+                                          return 'نمبر تماس های کلینیک باید متفاوت باشد.';
                                         } else {
                                           return 'نمبر تماس نا معتبر است.';
                                         }
@@ -1382,7 +1454,7 @@ class _DashboardState extends State<Dashboard> {
                                     minLines: 1,
                                     decoration: const InputDecoration(
                                       border: OutlineInputBorder(),
-                                      labelText: 'نمبر تماس',
+                                      labelText: 'نمبر تماس 2',
                                       suffixIcon:
                                           Icon(Icons.phone_enabled_outlined),
                                       enabledBorder: OutlineInputBorder(
@@ -1488,14 +1560,17 @@ class _DashboardState extends State<Dashboard> {
                                         'The logo size should not be more 1MB.';
                                   } else {
                                     var editResults = await conn.rawUpdate(
-                                        'UPDATE clinics SET clinic_name = ?, clinic_address = ?, clinic_phone = ?, clinic_email = ?, clinic_logo = ? WHERE clinic_ID = ?',
+                                        'UPDATE clinics SET clinic_name = ?, clinic_address = ?, clinic_phone1 = ?, clinic_phone2 = ?, clinic_email = ?, clinic_logo = ? WHERE clinic_ID = ?',
                                         [
                                           clinicNameController.text,
                                           clinicAddrController.text.isNotEmpty
                                               ? clinicAddrController.text
                                               : '',
-                                          clinicPhoneController.text.isNotEmpty
-                                              ? clinicPhoneController.text
+                                          clinicPhoneController1.text.isNotEmpty
+                                              ? clinicPhoneController1.text
+                                              : '',
+                                          clinicPhoneController2.text.isNotEmpty
+                                              ? clinicPhoneController2.text
                                               : '',
                                           clinicEmailController.text.isNotEmpty
                                               ? clinicEmailController.text
@@ -1513,14 +1588,17 @@ class _DashboardState extends State<Dashboard> {
                                   }
                                 } else {
                                   var editResults = await conn.rawUpdate(
-                                      'UPDATE clinics SET clinic_name = ?, clinic_address = ?, clinic_phone = ?, clinic_email = ? WHERE clinic_ID = ?',
+                                      'UPDATE clinics SET clinic_name = ?, clinic_address = ?, clinic_phone1 = ?, clinic_phone2 = ?, clinic_email = ? WHERE clinic_ID = ?',
                                       [
                                         clinicNameController.text,
                                         clinicAddrController.text.isNotEmpty
                                             ? clinicAddrController.text
                                             : '',
-                                        clinicPhoneController.text.isNotEmpty
-                                            ? clinicPhoneController.text
+                                        clinicPhoneController1.text.isNotEmpty
+                                            ? clinicPhoneController1.text
+                                            : '',
+                                        clinicPhoneController2.text.isNotEmpty
+                                            ? clinicPhoneController2.text
                                             : '',
                                         clinicEmailController.text.isNotEmpty
                                             ? clinicEmailController.text

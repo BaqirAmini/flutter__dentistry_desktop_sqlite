@@ -220,7 +220,6 @@ class _SplashScreenState extends State<SplashScreen> {
       print('Error occured with creating service requirements: $e');
     }
   }
-
   // Add a default clinic name
   Future<void> _onAddDefaultClinic() async {
     try {
@@ -228,7 +227,7 @@ class _SplashScreenState extends State<SplashScreen> {
       var results = await conn.rawQuery('SELECT * FROM clinics');
       if (results.isEmpty) {
         var addClinic = await conn.rawInsert('''
-              INSERT INTO clinics (clinic_name, clinic_address, clinic_phone) VALUES
+              INSERT INTO clinics (clinic_name, clinic_address, clinic_phone1) VALUES
                 ('Your Clinic Name', 'Your Clinic Address', '07XXXXXXXX');
       ''');
         if (addClinic > 0) {

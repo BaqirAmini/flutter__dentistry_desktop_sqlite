@@ -61,14 +61,15 @@ class GlobalUsage {
     try {
       var conn = await onConnToSqliteDb();
       var results = await conn.rawQuery(
-          'SELECT clinic_ID, clinic_name, clinic_address, clinic_phone, clinic_email, clinic_founder, clinic_logo FROM clinics');
+          'SELECT clinic_ID, clinic_name, clinic_address, clinic_phone1, clinic_phone2, clinic_email, clinic_founder, clinic_logo FROM clinics');
 
       List<Map<String, dynamic>> clinicList = results
           .map((result) => {
                 'clinicId': result["clinic_ID"].toString(),
-                'clinicName': result["clinic_name"],
+                'clinicName': result["clinic_name"] ?? '',
                 'clinicAddr': result["clinic_address"] ?? '',
-                'clinicPhone': result["clinic_phone"] ?? '',
+                'clinicPhone1': result["clinic_phone1"] ?? '',
+                'clinicPhone2': result["clinic_phone2"] ?? '',
                 'clinicEmail': result["clinic_email"] ?? '',
                 'clinicLogo': result["clinic_logo"] ?? ''
               })

@@ -15,6 +15,7 @@ import 'package:flutter_dentistry/views/services/service_related_fields.dart';
 import 'package:flutter_dentistry/views/staff/staff_info.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:win32/win32.dart';
 import 'patient_info.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -71,6 +72,15 @@ onCreatePrescription(BuildContext context) {
   for (int i = 1; i <= 100; i++) {
     medicineQty.add('$i');
   }
+  // Set Dentist Professions
+  List<String> dentistProfessions = [
+    'متخصص امراض جوف دهن و دندان',
+    'متخصص جراحی وجه و فک',
+    'متخصص امپلنتولوجیست',
+    'متخصص ارتودانسی'
+  ];
+
+  String selectedProfession = 'متخصص امراض جوف دهن و دندان';
 
 // Key for Form widget
   final formKeyPresc = GlobalKey<FormState>();
@@ -90,8 +100,7 @@ onCreatePrescription(BuildContext context) {
             ),
             actions: [
               Directionality(
-                  textDirection:
-                      isEnglish ? TextDirection.ltr : TextDirection.rtl,
+                  textDirection: TextDirection.rtl,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -148,6 +157,9 @@ onCreatePrescription(BuildContext context) {
                                   final fontData = await rootBundle
                                       .load('assets/fonts/per_sans_font.ttf');
                                   final ttf = pw.Font.ttf(fontData);
+                                  final iconData = await rootBundle
+                                      .load('assets/fonts/material-icons.ttf');
+                                  final iconTtf = pw.Font.ttf(iconData);
 
                                   pdf.addPage(pw.Page(
                                     pageFormat: PdfPageFormat.a4,
@@ -165,49 +177,50 @@ onCreatePrescription(BuildContext context) {
                                                   height: 50,
                                                   child: pw.Image(clinicLogo),
                                                 )),
-                                                pw.Directionality(
-                                                  textDirection:
-                                                      pw.TextDirection.rtl,
-                                                  child: pw.Column(children: [
-                                                    pw.Text(
-                                                      firstClinicName ??
-                                                          'Clinic Name',
-                                                      style: pw.TextStyle(
-                                                        fontSize: 20,
-                                                        font: ttf,
-                                                        fontWeight:
-                                                            pw.FontWeight.bold,
-                                                        color: const PdfColor(
-                                                            51 / 255,
-                                                            153 / 255,
-                                                            255 / 255),
-                                                      ),
+                                                pw.Column(children: [
+                                                  pw.Text(
+                                                    textDirection:
+                                                        pw.TextDirection.rtl,
+                                                    firstClinicName ??
+                                                        'Clinic Name',
+                                                    style: pw.TextStyle(
+                                                      fontSize: 20,
+                                                      font: ttf,
+                                                      fontWeight:
+                                                          pw.FontWeight.bold,
+                                                      color: const PdfColor(
+                                                          51 / 255,
+                                                          153 / 255,
+                                                          255 / 255),
                                                     ),
-                                                    pw.Text(
-                                                      firstClinicAddr ??
-                                                          'Clinic Address',
-                                                      style: pw.TextStyle(
-                                                        fontSize: 12,
-                                                        font: ttf,
-                                                        color: const PdfColor(
-                                                            51 / 255,
-                                                            153 / 255,
-                                                            255 / 255),
-                                                      ),
+                                                  ),
+                                                  pw.Text(
+                                                    textDirection:
+                                                        pw.TextDirection.rtl,
+                                                    'داکتر $drFirstName $drLastName',
+                                                    style: pw.TextStyle(
+                                                      font: ttf,
+                                                      fontSize: 12,
+                                                      color: const PdfColor(
+                                                          51 / 255,
+                                                          153 / 255,
+                                                          255 / 255),
                                                     ),
-                                                    pw.Text(
-                                                      'داکتر $drFirstName $drLastName',
-                                                      style: pw.TextStyle(
-                                                        font: ttf,
-                                                        fontSize: 12,
-                                                        color: const PdfColor(
-                                                            51 / 255,
-                                                            153 / 255,
-                                                            255 / 255),
-                                                      ),
+                                                  ),
+                                                  pw.Text(
+                                                    textDirection:
+                                                        pw.TextDirection.rtl,
+                                                    selectedProfession,
+                                                    style: pw.TextStyle(
+                                                      font: ttf,
+                                                      fontSize: 12,
+                                                      color: const PdfColor(
+                                                          51 / 255,
+                                                          153 / 255,
+                                                          255 / 255),
                                                     ),
-                                                  ]),
-                                                ),
+                                                  ),
+                                                ]),
                                               ]),
                                         ),
                                         pw.Row(
@@ -215,10 +228,14 @@ onCreatePrescription(BuildContext context) {
                                               pw.MainAxisAlignment.spaceBetween,
                                           children: <pw.Widget>[
                                             pw.Directionality(
-                                                child: pw.Text(
-                                                  'Date: $formattedDate',
-                                                  style:
-                                                      pw.TextStyle(font: ttf),
+                                                child: pw.Align(
+                                                  alignment:
+                                                      pw.Alignment.centerRight,
+                                                  child: pw.Text(
+                                                    'Patient\'s Name: $selectedPFName $selectedPLName',
+                                                    style:
+                                                        pw.TextStyle(font: ttf),
+                                                  ),
                                                 ),
                                                 textDirection:
                                                     pw.TextDirection.rtl),
@@ -247,14 +264,10 @@ onCreatePrescription(BuildContext context) {
                                                 textDirection:
                                                     pw.TextDirection.rtl),
                                             pw.Directionality(
-                                                child: pw.Align(
-                                                  alignment:
-                                                      pw.Alignment.centerRight,
-                                                  child: pw.Text(
-                                                    'Patient\'s Name: $selectedPFName $selectedPLName',
-                                                    style:
-                                                        pw.TextStyle(font: ttf),
-                                                  ),
+                                                child: pw.Text(
+                                                  'Date: $formattedDate',
+                                                  style:
+                                                      pw.TextStyle(font: ttf),
                                                 ),
                                                 textDirection:
                                                     pw.TextDirection.rtl),
@@ -262,107 +275,136 @@ onCreatePrescription(BuildContext context) {
                                           text: 'تاریخ: $formattedDate'), */
                                           ],
                                         ),
-                                        pw.Header(level: 1, text: 'Px'),
+                                        pw.Row(children: [
+                                          pw.Container(
+                                            width: 50,
+                                            child: pw.Text('Clinical Record'),
+                                          ),
+                                          pw.Text('Rx'),
+                                        ]),
                                         ...medicines
-                                            .map((medicine) => pw.Padding(
-                                                  padding: const pw
-                                                      .EdgeInsets.only(
-                                                      top: 10,
-                                                      left:
-                                                          15.0), // Adjust the value as needed
-                                                  child: pw.Align(
-                                                    alignment:
-                                                        pw.Alignment.centerLeft,
-                                                    child: pw.Table(
-                                                      columnWidths: {
-                                                        0: const pw
-                                                            .FixedColumnWidth(
-                                                            150),
-                                                        1: const pw
-                                                            .FixedColumnWidth(
-                                                            150),
-                                                        2: const pw
-                                                            .FixedColumnWidth(
-                                                            80),
-                                                        3: const pw
-                                                            .FixedColumnWidth(
-                                                            80),
-                                                        4: const pw
-                                                            .FixedColumnWidth(
-                                                            80),
-                                                        5: const pw
-                                                            .FixedColumnWidth(
-                                                            180),
-                                                      }, // Make each column the same width
+                                            .map((medicine) =>
+                                                pw.Row(
+                                                  mainAxisAlignment: pw.MainAxisAlignment.start,
+                                                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                                                  children: [
+                                                  pw.SizedBox(
+                                                    width: 80.0,
+                                                    child: pw.Column(
+                                                      crossAxisAlignment: pw
+                                                          .CrossAxisAlignment
+                                                          .start,
                                                       children: [
-                                                        pw.TableRow(
-                                                          children: [
-                                                            pw.Text(
-                                                                (medicine['type'] ==
-                                                                        'Syrups')
-                                                                    ? 'SYR'
-                                                                    : (medicine['type'] ==
-                                                                            'Capsules')
-                                                                        ? 'CAP'
-                                                                        : (medicine['type'] ==
-                                                                                'Tablets')
-                                                                            ? 'TAB'
-                                                                            : (medicine['type'] == 'Ointments')
-                                                                                ? 'UNG'
-                                                                                : (medicine['type'] == 'Solutions')
-                                                                                    ? 'SOL'
-                                                                                    : (medicine['type'] == 'Ampoules')
-                                                                                        ? 'AMP'
-                                                                                        : (medicine['type'] == 'Flourides')
-                                                                                            ? 'FL'
-                                                                                            : (medicine['type']),
-                                                                style: pw.TextStyle(font: ttf)),
-                                                            pw.Text(
-                                                                (medicine[
-                                                                        'nameController']
-                                                                    .text),
-                                                                style: pw
-                                                                    .TextStyle(
-                                                                        font:
-                                                                            ttf)),
-                                                            pw.Text(
-                                                                '${medicine['piece']}',
-                                                                style: pw
-                                                                    .TextStyle(
-                                                                        font:
-                                                                            ttf)),
-                                                            pw.Text(
-                                                                '${medicine['dose']}',
-                                                                style: pw
-                                                                    .TextStyle(
-                                                                        font:
-                                                                            ttf)),
-                                                            pw.Text(
-                                                                'N = ${medicine['qty']}',
-                                                                style: pw
-                                                                    .TextStyle(
-                                                                        font:
-                                                                            ttf)),
-                                                            pw.Directionality(
-                                                              textDirection: pw
-                                                                  .TextDirection
-                                                                  .rtl,
-                                                              child: pw.Text(
-                                                                '${medicine['descController'].text ?? ''}',
-                                                                style: pw
-                                                                    .TextStyle(
-                                                                        font:
-                                                                            ttf),
-                                                              ),
-                                                            ), // Use an empty string if the description is null
-                                                            pw.SizedBox(
-                                                                width: 2.0)
-                                                          ],
-                                                        ),
+                                                        pw.Text('BP'),
+                                                        pw.SizedBox(
+                                                            height: 80.0),
+                                                        pw.Text('PR'),
+                                                        pw.SizedBox(
+                                                            height: 80.0),
+                                                        pw.Text('RR'),
                                                       ],
                                                     ),
                                                   ),
-                                                ))
+                                                  pw.SizedBox(
+                                                      child: pw.VerticalDivider(
+                                                          color:
+                                                              PdfColor(0, 0, 0),
+                                                          thickness: 1.0),
+                                                      height: 500.0),
+                                                  pw.Padding(
+                                                    padding: const pw
+                                                        .EdgeInsets.only(
+                                                        top: 10,
+                                                        left:
+                                                            15.0), // Adjust the value as needed
+                                                    child: pw.Align(
+                                                        alignment: pw.Alignment
+                                                            .centerLeft,
+                                                        child: pw.Table(
+                                                          columnWidths: {
+                                                            0: const pw
+                                                                .FixedColumnWidth(
+                                                                150),
+                                                            1: const pw
+                                                                .FixedColumnWidth(
+                                                                150),
+                                                            2: const pw
+                                                                .FixedColumnWidth(
+                                                                80),
+                                                            3: const pw
+                                                                .FixedColumnWidth(
+                                                                80),
+                                                            4: const pw
+                                                                .FixedColumnWidth(
+                                                                80),
+                                                            5: const pw
+                                                                .FixedColumnWidth(
+                                                                180),
+                                                          }, // Make each column the same width
+                                                          children: [
+                                                            pw.TableRow(
+                                                              children: [
+                                                                pw.Text(
+                                                                    (medicine['type'] ==
+                                                                            'Syrups')
+                                                                        ? 'SYR'
+                                                                        : (medicine['type'] ==
+                                                                                'Capsules')
+                                                                            ? 'CAP'
+                                                                            : (medicine['type'] == 'Tablets')
+                                                                                ? 'TAB'
+                                                                                : (medicine['type'] == 'Ointments')
+                                                                                    ? 'UNG'
+                                                                                    : (medicine['type'] == 'Solutions')
+                                                                                        ? 'SOL'
+                                                                                        : (medicine['type'] == 'Ampoules')
+                                                                                            ? 'AMP'
+                                                                                            : (medicine['type'] == 'Flourides')
+                                                                                                ? 'FL'
+                                                                                                : (medicine['type']),
+                                                                    style: pw.TextStyle(font: ttf)),
+                                                                pw.Text(
+                                                                    (medicine[
+                                                                            'nameController']
+                                                                        .text),
+                                                                    style: pw.TextStyle(
+                                                                        font:
+                                                                            ttf)),
+                                                                pw.Text(
+                                                                    '${medicine['piece']}',
+                                                                    style: pw.TextStyle(
+                                                                        font:
+                                                                            ttf)),
+                                                                pw.Text(
+                                                                    '${medicine['dose']}',
+                                                                    style: pw.TextStyle(
+                                                                        font:
+                                                                            ttf)),
+                                                                pw.Text(
+                                                                    'N = ${medicine['qty']}',
+                                                                    style: pw.TextStyle(
+                                                                        font:
+                                                                            ttf)),
+                                                                pw.Directionality(
+                                                                  textDirection:
+                                                                      pw.TextDirection
+                                                                          .rtl,
+                                                                  child:
+                                                                      pw.Text(
+                                                                    '${medicine['descController'].text ?? ''}',
+                                                                    style: pw.TextStyle(
+                                                                        font:
+                                                                            ttf),
+                                                                  ),
+                                                                ), // Use an empty string if the description is null
+                                                                pw.SizedBox(
+                                                                    width: 2.0)
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        )),
+                                                  )
+                                                ]))
                                             .toList(),
                                         pw.Spacer(),
                                         pw.Text('Signature:'),
@@ -371,14 +413,83 @@ onCreatePrescription(BuildContext context) {
                                           height: 10,
                                           thickness: 1.0,
                                         ),
-                                        pw.Row(
-                                            mainAxisAlignment: pw
-                                                .MainAxisAlignment.spaceBetween,
+                                        pw.Column(
+                                            crossAxisAlignment:
+                                                pw.CrossAxisAlignment.end,
                                             children: [
-                                              pw.Text(
-                                                  'Phone: ${firstClinicPhone ?? ''}'),
-                                              pw.Text(
-                                                  'Email: ${firstClinicEmail ?? ''}'),
+                                              pw.Row(
+                                                  mainAxisAlignment:
+                                                      pw.MainAxisAlignment.end,
+                                                  children: [
+                                                    pw.Text(
+                                                      textDirection:
+                                                          pw.TextDirection.rtl,
+                                                      firstClinicAddr ??
+                                                          'Clinic Address',
+                                                      style: pw.TextStyle(
+                                                        fontSize: 12,
+                                                        font: ttf,
+                                                      ),
+                                                    ),
+                                                    pw.SizedBox(width: 5.0),
+                                                    pw.Icon(
+                                                      pw.IconData(0xE0C8),
+                                                      font: iconTtf,
+                                                      size: 12,
+                                                    ),
+                                                  ]),
+                                              pw.Row(
+                                                  mainAxisAlignment:
+                                                      pw.MainAxisAlignment.end,
+                                                  children: [
+                                                    firstClinicPhone2!
+                                                            .isNotEmpty
+                                                        ? pw.SizedBox(
+                                                            width: 180,
+                                                            child: pw.Row(
+                                                                mainAxisAlignment: pw
+                                                                    .MainAxisAlignment
+                                                                    .spaceBetween,
+                                                                children: [
+                                                                  pw.Text(
+                                                                      textDirection: pw
+                                                                          .TextDirection
+                                                                          .ltr,
+                                                                      firstClinicPhone1 ??
+                                                                          '',
+                                                                      style: pw.TextStyle(
+                                                                          font:
+                                                                              ttf)),
+                                                                  if (firstClinicPhone2!
+                                                                      .isNotEmpty)
+                                                                    pw.Text(
+                                                                        '-'),
+                                                                  pw.Text(
+                                                                      textDirection: pw
+                                                                          .TextDirection
+                                                                          .ltr,
+                                                                      firstClinicPhone2 ??
+                                                                          '',
+                                                                      style: pw.TextStyle(
+                                                                          font:
+                                                                              ttf)),
+                                                                ]),
+                                                          )
+                                                        : pw.Text(
+                                                            textDirection: pw
+                                                                .TextDirection
+                                                                .ltr,
+                                                            firstClinicPhone1 ??
+                                                                '',
+                                                            style: pw.TextStyle(
+                                                                font: ttf)),
+                                                    pw.SizedBox(width: 5.0),
+                                                    pw.Icon(
+                                                      pw.IconData(0xE0CD),
+                                                      font: iconTtf,
+                                                      size: 12,
+                                                    ),
+                                                  ]),
                                             ]),
                                       ]);
                                     },
@@ -426,71 +537,269 @@ onCreatePrescription(BuildContext context) {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      SizedBox(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Directionality(
-                              textDirection: isEnglish
-                                  ? TextDirection.ltr
-                                  : TextDirection.rtl,
-                              child: Container(
-                                width: MediaQuery.of(context).size.width * 0.16,
+                      Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Directionality(
+                                textDirection: isEnglish
+                                    ? TextDirection.ltr
+                                    : TextDirection.rtl,
+                                child: Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.16,
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 5.0, vertical: 10.0),
+                                  child: InputDecorator(
+                                    decoration: InputDecoration(
+                                      border: const OutlineInputBorder(),
+                                      labelText: translations[selectedLanguage]
+                                              ?['SelectDentist'] ??
+                                          '',
+                                      labelStyle: const TextStyle(
+                                          color: Colors.blueAccent),
+                                      enabledBorder: const OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(15.0)),
+                                          borderSide: BorderSide(
+                                              color: Colors.blueAccent)),
+                                      focusedBorder: const OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(15.0)),
+                                          borderSide:
+                                              BorderSide(color: Colors.blue)),
+                                      errorBorder: const OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(15.0)),
+                                          borderSide:
+                                              BorderSide(color: Colors.red)),
+                                      focusedErrorBorder:
+                                          const OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(15.0)),
+                                              borderSide: BorderSide(
+                                                  color: Colors.red,
+                                                  width: 1.5)),
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: Container(
+                                        height: 18.0,
+                                        padding: EdgeInsets.zero,
+                                        child: DropdownButton(
+                                          isExpanded: true,
+                                          icon:
+                                              const Icon(Icons.arrow_drop_down),
+                                          value: defaultSelectedStaff,
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.black),
+                                          items: staffList.map((staff) {
+                                            return DropdownMenuItem<String>(
+                                              value: staff['staff_ID'],
+                                              alignment: Alignment.centerRight,
+                                              child: Text(staff['firstname'] +
+                                                  ' ' +
+                                                  staff['lastname']),
+                                            );
+                                          }).toList(),
+                                          onChanged: (String? newValue) {
+                                            setState(() {
+                                              defaultSelectedStaff = newValue;
+                                              staffID = int.parse(newValue!);
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                width: MediaQuery.of(context).size.width * 0.17,
                                 margin: const EdgeInsets.symmetric(
                                     horizontal: 5.0, vertical: 10.0),
-                                child: InputDecorator(
-                                  decoration: InputDecoration(
-                                    border: const OutlineInputBorder(),
-                                    labelText: translations[selectedLanguage]
-                                            ?['SelectDentist'] ??
-                                        '',
-                                    labelStyle: const TextStyle(
-                                        color: Colors.blueAccent),
-                                    enabledBorder: const OutlineInputBorder(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(15.0)),
-                                        borderSide: BorderSide(
-                                            color: Colors.blueAccent)),
-                                    focusedBorder: const OutlineInputBorder(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(15.0)),
-                                        borderSide:
-                                            BorderSide(color: Colors.blue)),
-                                    errorBorder: const OutlineInputBorder(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(15.0)),
-                                        borderSide:
-                                            BorderSide(color: Colors.red)),
-                                    focusedErrorBorder:
-                                        const OutlineInputBorder(
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(15.0)),
-                                            borderSide: BorderSide(
-                                                color: Colors.red, width: 1.5)),
-                                  ),
-                                  child: DropdownButtonHideUnderline(
-                                    child: Container(
-                                      height: 18.0,
-                                      padding: EdgeInsets.zero,
+                                child: Column(
+                                  children: [
+                                    Directionality(
+                                      textDirection: isEnglish
+                                          ? TextDirection.ltr
+                                          : TextDirection.rtl,
+                                      child: TypeAheadField(
+                                        suggestionsCallback: (search) async {
+                                          try {
+                                            final conn =
+                                                await onConnToSqliteDb();
+                                            var results = await conn.rawQuery(
+                                                'SELECT pat_ID, firstname, lastname, phone, age, sex FROM patients WHERE firstname LIKE ?',
+                                                ['%$search%']);
+
+                                            // Convert the results into a list of Patient objects
+                                            var suggestions = results
+                                                .map((row) => PatientDataModel(
+                                                    patientId:
+                                                        row["pat_ID"] as int,
+                                                    patientFName:
+                                                        row["firstname"]
+                                                            .toString(),
+                                                    patientLName:
+                                                        row["lastname"] == null
+                                                            ? ''
+                                                            : row["lastname"]
+                                                                .toString(),
+                                                    patientPhone:
+                                                        row["phone"].toString(),
+                                                    patientAge:
+                                                        row["age"] as int,
+                                                    patientGender:
+                                                        row["sex"].toString()))
+                                                .toList();
+                                            return suggestions;
+                                          } catch (e) {
+                                            print(
+                                                'Something wrong with patient searchable dropdown: $e');
+                                            return [];
+                                          }
+                                        },
+                                        builder:
+                                            (context, controller, focusNode) {
+                                          patientSearchableController =
+                                              controller;
+                                          return TextFormField(
+                                            controller: controller,
+                                            focusNode: focusNode,
+                                            autofocus: true,
+                                            validator: (value) {
+                                              if (value!.isEmpty) {
+                                                return 'Patient not selected';
+                                              }
+                                              return null;
+                                            },
+                                            decoration: InputDecoration(
+                                              border:
+                                                  const OutlineInputBorder(),
+                                              labelText:
+                                                  translations[selectedLanguage]
+                                                          ?['SelectPatient'] ??
+                                                      '',
+                                              labelStyle: const TextStyle(
+                                                  color: Colors.blue),
+                                              enabledBorder:
+                                                  const OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  15.0)),
+                                                      borderSide: BorderSide(
+                                                          color: Colors.blue)),
+                                              focusedBorder:
+                                                  const OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  15.0)),
+                                                      borderSide: BorderSide(
+                                                          color: Colors.blue)),
+                                              errorBorder:
+                                                  const OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  15.0)),
+                                                      borderSide: BorderSide(
+                                                          color: Colors.red)),
+                                              focusedErrorBorder:
+                                                  const OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  15.0)),
+                                                      borderSide: BorderSide(
+                                                          color: Colors.red,
+                                                          width: 1.5)),
+                                            ),
+                                          );
+                                        },
+                                        itemBuilder: (context, patient) {
+                                          return ListTile(
+                                            title: Text(
+                                                '${patient.patientFName} ${patient.patientLName}'),
+                                            subtitle:
+                                                Text(patient.patientPhone),
+                                          );
+                                        },
+                                        onSelected: (patient) {
+                                          setState(
+                                            () {
+                                              patientSearchableController.text =
+                                                  '${patient.patientFName} ${patient.patientLName}';
+                                              selectedPatientID =
+                                                  patient.patientId;
+                                              selectedPFName =
+                                                  patient.patientFName;
+                                              selectedPLName =
+                                                  patient.patientLName;
+                                              selectedPAge = patient.patientAge;
+                                              selectedPSex =
+                                                  patient.patientGender;
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width * 0.16,
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 5.0, vertical: 10.0),
+                            child: Directionality(
+                              textDirection: TextDirection.rtl,
+                              child: InputDecorator(
+                                decoration: const InputDecoration(
+                                  contentPadding:
+                                      EdgeInsets.symmetric(horizontal: 8.0),
+                                  border: OutlineInputBorder(),
+                                  labelText: 'Professions',
+                                  enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(10.0)),
+                                      borderSide:
+                                          BorderSide(color: Colors.grey)),
+                                  focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(10.0)),
+                                      borderSide:
+                                          BorderSide(color: Colors.blue)),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: SizedBox(
+                                    height: MediaQuery.of(context).size.height *
+                                        0.03,
+                                    child: ButtonTheme(
+                                      alignedDropdown: true,
                                       child: DropdownButton(
-                                        isExpanded: true,
+                                        padding: EdgeInsets.zero,
+                                        // isExpanded: true,
                                         icon: const Icon(Icons.arrow_drop_down),
-                                        value: defaultSelectedStaff,
-                                        style: const TextStyle(
-                                            fontSize: 12, color: Colors.black),
-                                        items: staffList.map((staff) {
+                                        value: selectedProfession,
+                                        items: dentistProfessions
+                                            .map<DropdownMenuItem<String>>(
+                                                (String value) {
                                           return DropdownMenuItem<String>(
-                                            value: staff['staff_ID'],
-                                            alignment: Alignment.centerRight,
-                                            child: Text(staff['firstname'] +
-                                                ' ' +
-                                                staff['lastname']),
+                                            value: value,
+                                            child: Text(value,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium),
                                           );
                                         }).toList(),
                                         onChanged: (String? newValue) {
                                           setState(() {
-                                            defaultSelectedStaff = newValue;
-                                            staffID = int.parse(newValue!);
+                                            selectedProfession = newValue!;
                                           });
                                         },
                                       ),
@@ -499,138 +808,8 @@ onCreatePrescription(BuildContext context) {
                                 ),
                               ),
                             ),
-                            Container(
-                              width: MediaQuery.of(context).size.width * 0.17,
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 5.0, vertical: 10.0),
-                              child: Column(
-                                children: [
-                                  Directionality(
-                                    textDirection: isEnglish
-                                        ? TextDirection.ltr
-                                        : TextDirection.rtl,
-                                    child: TypeAheadField(
-                                      suggestionsCallback: (search) async {
-                                        try {
-                                          final conn = await onConnToSqliteDb();
-                                          var results = await conn.rawQuery(
-                                              'SELECT pat_ID, firstname, lastname, phone, age, sex FROM patients WHERE firstname LIKE ?',
-                                              ['%$search%']);
-
-                                          // Convert the results into a list of Patient objects
-                                          var suggestions = results
-                                              .map((row) => PatientDataModel(
-                                                  patientId:
-                                                      row["pat_ID"] as int,
-                                                  patientFName: row["firstname"]
-                                                      .toString(),
-                                                  patientLName:
-                                                      row["lastname"] == null
-                                                          ? ''
-                                                          : row["lastname"]
-                                                              .toString(),
-                                                  patientPhone:
-                                                      row["phone"].toString(),
-                                                  patientAge: row["age"] as int,
-                                                  patientGender:
-                                                      row["sex"].toString()))
-                                              .toList();
-                                          return suggestions;
-                                        } catch (e) {
-                                          print(
-                                              'Something wrong with patient searchable dropdown: $e');
-                                          return [];
-                                        }
-                                      },
-                                      builder:
-                                          (context, controller, focusNode) {
-                                        patientSearchableController =
-                                            controller;
-                                        return TextFormField(
-                                          controller: controller,
-                                          focusNode: focusNode,
-                                          autofocus: true,
-                                          validator: (value) {
-                                            if (value!.isEmpty) {
-                                              return 'Patient not selected';
-                                            }
-                                            return null;
-                                          },
-                                          decoration: InputDecoration(
-                                            border: const OutlineInputBorder(),
-                                            labelText:
-                                                translations[selectedLanguage]
-                                                        ?['SelectPatient'] ??
-                                                    '',
-                                            labelStyle: const TextStyle(
-                                                color: Colors.blue),
-                                            enabledBorder:
-                                                const OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                            Radius.circular(
-                                                                15.0)),
-                                                    borderSide: BorderSide(
-                                                        color: Colors.blue)),
-                                            focusedBorder:
-                                                const OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                            Radius.circular(
-                                                                15.0)),
-                                                    borderSide: BorderSide(
-                                                        color: Colors.blue)),
-                                            errorBorder:
-                                                const OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                            Radius.circular(
-                                                                15.0)),
-                                                    borderSide: BorderSide(
-                                                        color: Colors.red)),
-                                            focusedErrorBorder:
-                                                const OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                            Radius.circular(
-                                                                15.0)),
-                                                    borderSide: BorderSide(
-                                                        color: Colors.red,
-                                                        width: 1.5)),
-                                          ),
-                                        );
-                                      },
-                                      itemBuilder: (context, patient) {
-                                        return ListTile(
-                                          title: Text(
-                                              '${patient.patientFName} ${patient.patientLName}'),
-                                          subtitle: Text(patient.patientPhone),
-                                        );
-                                      },
-                                      onSelected: (patient) {
-                                        setState(
-                                          () {
-                                            patientSearchableController.text =
-                                                '${patient.patientFName} ${patient.patientLName}';
-                                            selectedPatientID =
-                                                patient.patientId;
-                                            selectedPFName =
-                                                patient.patientFName;
-                                            selectedPLName =
-                                                patient.patientLName;
-                                            selectedPAge = patient.patientAge;
-                                            selectedPSex =
-                                                patient.patientGender;
-                                          },
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                       ...medicines.map((medicine) {
                         return Column(
@@ -1158,7 +1337,8 @@ List<Map<String, dynamic>> clinics = [];
 String? firstClinicID;
 String? firstClinicName;
 String? firstClinicAddr;
-String? firstClinicPhone;
+String? firstClinicPhone1;
+String? firstClinicPhone2;
 String? firstClinicEmail;
 Uint8List? firstClinicLogo;
 
@@ -1217,7 +1397,8 @@ class _PatientState extends State<Patient> {
       firstClinicID = clinics[0]["clinicId"];
       firstClinicName = clinics[0]["clinicName"];
       firstClinicAddr = clinics[0]["clinicAddr"];
-      firstClinicPhone = clinics[0]["clinicPhone"];
+      firstClinicPhone1 = clinics[0]["clinicPhone1"];
+      firstClinicPhone2 = clinics[0]["clinicPhone2"];
       firstClinicEmail = clinics[0]["clinicEmail"];
       if (clinics[0]["clinicLogo"] is Uint8List) {
         firstClinicLogo = clinics[0]["clinicLogo"];
