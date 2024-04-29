@@ -74,6 +74,7 @@ dependencies:
   archive: ^3.4.10
   sqflite: ^2.3.2
   sqflite_common_ffi: ^2.3.2+1
+  url_launcher: ^6.2.6
 
 
 dev_dependencies:

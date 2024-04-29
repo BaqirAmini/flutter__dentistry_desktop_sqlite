@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dentistry/config/developer_options.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
@@ -16,6 +15,7 @@ import 'login.dart';
 import 'package:flutter_dentistry/views/patients/patients.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Sidebar extends StatefulWidget {
   Sidebar({Key? key}) : super(key: key);
@@ -86,7 +86,7 @@ class _SidebarState extends State<Sidebar> {
         ),
         content: SizedBox(
           height: MediaQuery.of(context).size.height * 0.3,
-          width: MediaQuery.of(context).size.width * 0.3,
+          width: MediaQuery.of(context).size.width * 0.4,
           child: Center(
             child: SingleChildScrollView(
               child: Column(
@@ -132,6 +132,26 @@ class _SidebarState extends State<Sidebar> {
                             color: Colors.grey[600]),
                         const SizedBox(width: 8.0),
                         const Text('facebook.com/emransoft4you')
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10.0),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.2,
+                    child: Row(
+                      children: [
+                        Icon(FontAwesomeIcons.youtube, color: Colors.grey[600]),
+                        const SizedBox(width: 8.0),
+                        Container(
+                          width: 100.0,
+                          child: InkWell(
+                            onTap: () {
+                              launchUrl(Uri.parse(
+                                  'https://www.youtube.com/channel/UCDkAObFC2rRg8QI6gkI-kEQ')); // Open YouTube in browser
+                            },
+                            child: Text('Our Youtube'),
+                          ),
+                        ),
                       ],
                     ),
                   ),
