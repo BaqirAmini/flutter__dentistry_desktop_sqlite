@@ -37,6 +37,9 @@ List<Map<String, dynamic>> staffList = [];
 
 int? staffID;
 int? patientID;
+// Dentist's Profession related variables
+String? dentistEducation;
+String? dentistSecondPosition;
 
 // ignore: prefer_typing_uninitialized_variables
 var selectedLanguage;
@@ -59,6 +62,7 @@ onCreatePrescription(BuildContext context) {
       'descController': TextEditingController()
     }
   ];
+  int counter = 0;
   const regExOnlyAbc = "[a-zA-Z,، \u0600-\u06FFF]";
   TextEditingController patientSearchableController = TextEditingController();
   int? selectedPatientID;
@@ -81,6 +85,7 @@ onCreatePrescription(BuildContext context) {
   ];
 
   String selectedProfession = 'متخصص امراض جوف دهن و دندان';
+  bool maxMedicineReached = false;
 
 // Key for Form widget
   final formKeyPresc = GlobalKey<FormState>();
@@ -93,9 +98,21 @@ onCreatePrescription(BuildContext context) {
           return AlertDialog(
             title: Directionality(
               textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
-              child: Text(
-                translations[selectedLanguage]?['GenPrescHeading'] ?? '',
-                style: const TextStyle(color: Colors.blue),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    translations[selectedLanguage]?['GenPrescHeading'] ?? '',
+                    style: const TextStyle(color: Colors.blue),
+                  ),
+                  Visibility(
+                    visible: maxMedicineReached ? true : false,
+                    child: const Text(
+                      'Maximum medicines reached.',
+                      style: TextStyle(color: Colors.red, fontSize: 12.0),
+                    ),
+                  ),
+                ],
               ),
             ),
             actions: [
@@ -213,13 +230,46 @@ onCreatePrescription(BuildContext context) {
                                                     selectedProfession,
                                                     style: pw.TextStyle(
                                                       font: ttf,
-                                                      fontSize: 12,
+                                                      fontSize: 10,
                                                       color: const PdfColor(
                                                           51 / 255,
                                                           153 / 255,
                                                           255 / 255),
                                                     ),
                                                   ),
+                                                  if (dentistEducation !=
+                                                          null ||
+                                                      dentistEducation != null)
+                                                    pw.Text(
+                                                      textDirection:
+                                                          pw.TextDirection.rtl,
+                                                      '$dentistEducation',
+                                                      style: pw.TextStyle(
+                                                        font: ttf,
+                                                        fontSize: 10,
+                                                        color: const PdfColor(
+                                                            51 / 255,
+                                                            153 / 255,
+                                                            255 / 255),
+                                                      ),
+                                                    ),
+                                                  if (dentistSecondPosition !=
+                                                          null ||
+                                                      dentistSecondPosition !=
+                                                          null)
+                                                    pw.Text(
+                                                      textDirection:
+                                                          pw.TextDirection.rtl,
+                                                      '$dentistSecondPosition',
+                                                      style: pw.TextStyle(
+                                                        font: ttf,
+                                                        fontSize: 10,
+                                                        color: const PdfColor(
+                                                            51 / 255,
+                                                            153 / 255,
+                                                            255 / 255),
+                                                      ),
+                                                    ),
                                                 ]),
                                               ]),
                                         ),
@@ -271,170 +321,176 @@ onCreatePrescription(BuildContext context) {
                                                 ),
                                                 textDirection:
                                                     pw.TextDirection.rtl),
-                                            /*  pw.Paragraph(
-                                          text: 'تاریخ: $formattedDate'), */
                                           ],
                                         ),
                                         pw.Divider(
                                           height: 10,
                                           thickness: 1.0,
                                         ),
-                                        /* pw.SizedBox(
-                                          width: 300.0,
-                                          child: pw.Text('Rx'),
-                                        ), */
-                                        ...medicines
-                                            .map(
-                                                (medicine) => pw.Row(
-                                                        mainAxisAlignment: pw
-                                                            .MainAxisAlignment
-                                                            .start,
-                                                        crossAxisAlignment: pw
-                                                            .CrossAxisAlignment
-                                                            .start,
-                                                        children: [
-                                                          pw.SizedBox(
-                                                            width: 60.0,
-                                                            child: pw.Column(
-                                                              crossAxisAlignment:
-                                                                  pw.CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                pw.Text(
-                                                                    'Clinical Record',
-                                                                    style: pw.Theme.of(
-                                                                            context)
-                                                                        .header5),
-                                                                pw.SizedBox(
-                                                                    height:
-                                                                        40.0),
-                                                                pw.Text('B.P'),
-                                                                pw.SizedBox(
-                                                                    height:
-                                                                        50.0),
-                                                                pw.Text('P.R'),
-                                                                pw.SizedBox(
-                                                                    height:
-                                                                        50.0),
-                                                                pw.Text('R.R'),
-                                                                pw.SizedBox(
-                                                                    height:
-                                                                        50.0),
-                                                                pw.Text('P.T'),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                          pw.SizedBox(
-                                                              child: pw.VerticalDivider(
-                                                                  color:
-                                                                      const PdfColor(
-                                                                          0,
-                                                                          0,
-                                                                          0),
-                                                                  thickness:
-                                                                      1.0),
-                                                              height: 300.0),
-                                                          pw.Column(
-                                                              mainAxisAlignment:
-                                                                  pw.MainAxisAlignment
-                                                                      .start,
-                                                              crossAxisAlignment:
-                                                                  pw.CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                pw.Padding(
-                                                                  padding: pw
-                                                                          .EdgeInsets
-                                                                      .all(10),
-                                                                  child: pw.Text(
-                                                                      'Rx',
-                                                                      style: pw.Theme.of(
-                                                                              context)
-                                                                          .header1
-                                                                          .copyWith(
-                                                                              fontSize: 35.0)),
-                                                                ),
-                                                                pw.Padding(
-                                                                  padding: const pw
-                                                                      .EdgeInsets.only(
-                                                                      top: 10,
-                                                                      left:
-                                                                          15.0), // Adjust the value as needed
-                                                                  child:
-                                                                      pw.Align(
-                                                                    alignment: pw
-                                                                        .Alignment
-                                                                        .centerLeft,
-                                                                    child: pw
-                                                                        .Table(
-                                                                      columnWidths: {
-                                                                        0: const pw
-                                                                            .FixedColumnWidth(
-                                                                            150),
-                                                                        1: const pw
-                                                                            .FixedColumnWidth(
-                                                                            150),
-                                                                        2: const pw
-                                                                            .FixedColumnWidth(
-                                                                            80),
-                                                                        3: const pw
-                                                                            .FixedColumnWidth(
-                                                                            80),
-                                                                        4: const pw
-                                                                            .FixedColumnWidth(
-                                                                            80),
-                                                                        5: const pw
-                                                                            .FixedColumnWidth(
-                                                                            180),
-                                                                      }, // Make each column the same width
-                                                                      children: [
-                                                                        pw.TableRow(
-                                                                          children: [
-                                                                            pw.Text(
-                                                                                (medicine['type'] == 'Syrups')
-                                                                                    ? 'SYR'
-                                                                                    : (medicine['type'] == 'Capsules')
-                                                                                        ? 'CAP'
-                                                                                        : (medicine['type'] == 'Tablets')
-                                                                                            ? 'TAB'
-                                                                                            : (medicine['type'] == 'Ointments')
-                                                                                                ? 'UNG'
-                                                                                                : (medicine['type'] == 'Solutions')
-                                                                                                    ? 'SOL'
-                                                                                                    : (medicine['type'] == 'Ampoules')
-                                                                                                        ? 'AMP'
-                                                                                                        : (medicine['type'] == 'Flourides')
-                                                                                                            ? 'FL'
-                                                                                                            : (medicine['type']),
-                                                                                style: pw.TextStyle(font: ttf)),
-                                                                            pw.Text((medicine['nameController'].text),
-                                                                                style: pw.TextStyle(font: ttf)),
-                                                                            pw.Text('${medicine['piece']}',
-                                                                                style: pw.TextStyle(font: ttf)),
-                                                                            pw.Text('${medicine['dose']}',
-                                                                                style: pw.TextStyle(font: ttf)),
-                                                                            pw.Text('N = ${medicine['qty']}',
-                                                                                style: pw.TextStyle(font: ttf)),
-                                                                            pw.Directionality(
-                                                                              textDirection: pw.TextDirection.rtl,
-                                                                              child: pw.Text(
-                                                                                '${medicine['descController'].text ?? ''}',
-                                                                                style: pw.TextStyle(font: ttf),
-                                                                              ),
-                                                                            ), // Use an empty string if the description is null
-                                                                            pw.SizedBox(width: 2.0)
-                                                                          ],
-                                                                        ),
-                                                                      ],
-                                                                    ),
+                                        pw.Row(
+                                          mainAxisAlignment:
+                                              pw.MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              pw.CrossAxisAlignment.start,
+                                          children: [
+                                            pw.Container(
+                                              padding: pw.EdgeInsets.all(5.0),
+                                              width: 60.0,
+                                              child: pw.Column(
+                                                crossAxisAlignment:
+                                                    pw.CrossAxisAlignment.start,
+                                                children: [
+                                                  pw.Text('Clinical Record',
+                                                      style: pw.Theme.of(
+                                                              context)
+                                                          .header5
+                                                          .copyWith(
+                                                              fontSize: 12.0,
+                                                              fontWeight: pw
+                                                                  .FontWeight
+                                                                  .bold)),
+                                                  pw.SizedBox(height: 40.0),
+                                                  pw.Text('B.P'),
+                                                  pw.SizedBox(height: 50.0),
+                                                  pw.Text('P.R'),
+                                                  pw.SizedBox(height: 50.0),
+                                                  pw.Text('R.R'),
+                                                  pw.SizedBox(height: 50.0),
+                                                  pw.Text('P.T'),
+                                                ],
+                                              ),
+                                            ),
+                                            pw.SizedBox(
+                                                child: pw.VerticalDivider(
+                                                    color:
+                                                        const PdfColor(0, 0, 0),
+                                                    thickness: 1.0),
+                                                height: 530.0),
+                                            pw.Column(
+                                                mainAxisAlignment:
+                                                    pw.MainAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    pw.CrossAxisAlignment.start,
+                                                children: [
+                                                  pw.Padding(
+                                                    padding:
+                                                        const pw.EdgeInsets.all(
+                                                            10),
+                                                    child: pw.Text('Rx',
+                                                        style:
+                                                            pw.Theme.of(context)
+                                                                .header1
+                                                                .copyWith(
+                                                                    fontSize:
+                                                                        35.0)),
+                                                  ),
+                                                  pw.Column(
+                                                      crossAxisAlignment: pw
+                                                          .CrossAxisAlignment
+                                                          .start,
+                                                      mainAxisAlignment: pw
+                                                          .MainAxisAlignment
+                                                          .spaceBetween,
+                                                      children: [
+                                                        ...medicines
+                                                            .map((medicine) {
+                                                          counter++;
+                                                          return pw.Padding(
+                                                            padding: const pw
+                                                                .EdgeInsets.only(
+                                                                top: 10,
+                                                                left:
+                                                                    15.0), // Adjust the value as needed
+                                                            child: pw.Align(
+                                                              alignment: pw
+                                                                  .Alignment
+                                                                  .centerLeft,
+                                                              child: pw.Wrap(
+                                                                spacing: 15.0,
+                                                                // Make each column the same width
+                                                                children: [
+                                                                  pw.Text(
+                                                                      '$counter)'),
+                                                                  pw.Text(
+                                                                    (medicine['type'] ==
+                                                                            'Syrups')
+                                                                        ? 'SYR'
+                                                                        : (medicine['type'] ==
+                                                                                'Capsules')
+                                                                            ? 'CAP'
+                                                                            : (medicine['type'] == 'Tablets')
+                                                                                ? 'TAB'
+                                                                                : (medicine['type'] == 'Ointments')
+                                                                                    ? 'UNG'
+                                                                                    : (medicine['type'] == 'Solutions')
+                                                                                        ? 'SOL'
+                                                                                        : (medicine['type'] == 'Ampoules')
+                                                                                            ? 'AMP'
+                                                                                            : (medicine['type'] == 'Flourides')
+                                                                                                ? 'FL'
+                                                                                                : (medicine['type']),
+                                                                    style: pw.TextStyle(
+                                                                        font:
+                                                                            ttf),
                                                                   ),
-                                                                ),
-                                                              ]),
-                                                        ]))
-                                            .toList(),
-                                        pw.Spacer(),
-                                        pw.Text('Signature:'),
-                                        pw.SizedBox(height: 20.0),
+                                                                  pw.Text(
+                                                                      (medicine[
+                                                                              'nameController']
+                                                                          .text),
+                                                                      style: pw.TextStyle(
+                                                                          font:
+                                                                              ttf)),
+                                                                  pw.Text(
+                                                                      '${medicine['piece']}',
+                                                                      style: pw.TextStyle(
+                                                                          font:
+                                                                              ttf)),
+                                                                  pw.Text(
+                                                                      '${medicine['dose']}',
+                                                                      style: pw.TextStyle(
+                                                                          font:
+                                                                              ttf)),
+                                                                  pw.Text(
+                                                                      'N = ${medicine['qty']}',
+                                                                      style: pw.TextStyle(
+                                                                          font:
+                                                                              ttf)),
+                                                                  pw.Directionality(
+                                                                    textDirection: pw
+                                                                        .TextDirection
+                                                                        .rtl,
+                                                                    child:
+                                                                        pw.Text(
+                                                                      '${medicine['descController'].text ?? ''}',
+                                                                      style: pw.TextStyle(
+                                                                          font:
+                                                                              ttf),
+                                                                    ),
+                                                                  ), // Use an empty string if the description is null
+                                                                  pw.SizedBox(
+                                                                      width:
+                                                                          2.0)
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          );
+                                                        }).toList(),
+                                                        pw.SizedBox(
+                                                            height: 170.0),
+                                                        pw.Container(
+                                                          alignment: pw
+                                                              .Alignment
+                                                              .bottomCenter,
+                                                          margin: const pw
+                                                              .EdgeInsets.only(
+                                                              left: 150.0),
+                                                          child: pw.Text(
+                                                              'Signature:'),
+                                                        )
+                                                      ]),
+                                                ]),
+                                          ],
+                                        ),
                                         pw.Divider(
                                           height: 10,
                                           thickness: 1.0,
@@ -461,7 +517,7 @@ onCreatePrescription(BuildContext context) {
                                                     pw.Icon(
                                                       const pw.IconData(0xE0C8),
                                                       font: iconTtf,
-                                                      size: 12,
+                                                      size: 14,
                                                     ),
                                                   ]),
                                               pw.Row(
@@ -513,7 +569,7 @@ onCreatePrescription(BuildContext context) {
                                                     pw.Icon(
                                                       const pw.IconData(0xE0CD),
                                                       font: iconTtf,
-                                                      size: 12,
+                                                      size: 14,
                                                     ),
                                                   ]),
                                             ]),
@@ -778,61 +834,91 @@ onCreatePrescription(BuildContext context) {
                               ),
                             ],
                           ),
-                          Container(
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 20.0, vertical: 10.0),
-                            child: Directionality(
-                              textDirection: TextDirection.rtl,
-                              child: InputDecorator(
-                                decoration: const InputDecoration(
-                                  contentPadding:
-                                      EdgeInsets.symmetric(horizontal: 8.0),
-                                  border: OutlineInputBorder(),
-                                  labelText: 'Professions',
-                                  enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(10.0)),
-                                      borderSide:
-                                          BorderSide(color: Colors.grey)),
-                                  focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(10.0)),
-                                      borderSide:
-                                          BorderSide(color: Colors.blue)),
-                                ),
-                                child: DropdownButtonHideUnderline(
-                                  child: SizedBox(
-                                    height: MediaQuery.of(context).size.height *
-                                        0.03,
-                                    child: ButtonTheme(
-                                      alignedDropdown: true,
-                                      child: DropdownButton(
-                                        padding: EdgeInsets.zero,
-                                        // isExpanded: true,
-                                        icon: const Icon(Icons.arrow_drop_down),
-                                        value: selectedProfession,
-                                        items: dentistProfessions
-                                            .map<DropdownMenuItem<String>>(
-                                                (String value) {
-                                          return DropdownMenuItem<String>(
-                                            value: value,
-                                            child: Text(value,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodyMedium),
-                                          );
-                                        }).toList(),
-                                        onChanged: (String? newValue) {
-                                          setState(() {
-                                            selectedProfession = newValue!;
-                                          });
-                                        },
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Tooltip(
+                                message: 'بیشتر راجع به معالج',
+                                child: InkWell(
+                                  onTap: () =>
+                                      onAddMoreDetailsAboutDentist(context),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                          color: Colors.grey, width: 1.3),
+                                    ),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Icon(
+                                        Icons.notes_rounded,
+                                        color: Colors.grey,
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
+                              Container(
+                                width:
+                                    MediaQuery.of(context).size.width * 0.344,
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 20.0, vertical: 10.0),
+                                child: Directionality(
+                                  textDirection: TextDirection.rtl,
+                                  child: InputDecorator(
+                                    decoration: const InputDecoration(
+                                      contentPadding:
+                                          EdgeInsets.symmetric(horizontal: 8.0),
+                                      border: OutlineInputBorder(),
+                                      labelText: 'Professions',
+                                      enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(10.0)),
+                                          borderSide:
+                                              BorderSide(color: Colors.grey)),
+                                      focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(10.0)),
+                                          borderSide:
+                                              BorderSide(color: Colors.blue)),
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: SizedBox(
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.03,
+                                        child: ButtonTheme(
+                                          alignedDropdown: true,
+                                          child: DropdownButton(
+                                            padding: EdgeInsets.zero,
+                                            // isExpanded: true,
+                                            icon: const Icon(
+                                                Icons.arrow_drop_down),
+                                            value: selectedProfession,
+                                            items: dentistProfessions
+                                                .map<DropdownMenuItem<String>>(
+                                                    (String value) {
+                                              return DropdownMenuItem<String>(
+                                                value: value,
+                                                child: Text(value,
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyMedium),
+                                              );
+                                            }).toList(),
+                                            onChanged: (String? newValue) {
+                                              setState(() {
+                                                selectedProfession = newValue!;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -906,6 +992,7 @@ onCreatePrescription(BuildContext context) {
                                   bottom: 10.0),
                               child: TextFormField(
                                 controller: medicine['nameController'],
+                                autovalidateMode: AutovalidateMode.always,
                                 validator: (value) {
                                   if (value!.isEmpty) {
                                     return 'نام دارو الزامی میباشد.';
@@ -1108,6 +1195,7 @@ onCreatePrescription(BuildContext context) {
                                   bottom: 10.0),
                               child: TextFormField(
                                 controller: medicine['descController'],
+                                autovalidateMode: AutovalidateMode.always,
                                 validator: (value) {
                                   if (value!.isNotEmpty) {
                                     if (value.length > 25 || value.length < 5) {
@@ -1168,31 +1256,46 @@ onCreatePrescription(BuildContext context) {
                         height: 30,
                       ),
                       Tooltip(
-                        message: 'افزودن دارو',
+                        message: maxMedicineReached
+                            ? 'اقلام دارو تکمیل گردید.'
+                            : 'افزودن دارو',
                         child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              medicines.add({
-                                'type': 'Syrups',
-                                'piece': '150mg',
-                                'qty': '1',
-                                'dose': '1 x 1',
-                                'nameController': TextEditingController(),
-                                'descController': TextEditingController()
-                              });
-                            });
-                          },
+                          onTap: maxMedicineReached
+                              ? null
+                              : () {
+                                  setState(() {
+                                    if (medicines.length < 10) {
+                                      medicines.add({
+                                        'type': 'Syrups',
+                                        'piece': '150mg',
+                                        'qty': '1',
+                                        'dose': '1 x 1',
+                                        'nameController':
+                                            TextEditingController(),
+                                        'descController':
+                                            TextEditingController()
+                                      });
+                                    } else {
+                                      maxMedicineReached = true;
+                                    }
+                                  });
+                                },
                           child: Container(
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border:
-                                  Border.all(color: Colors.blue, width: 2.0),
+                              border: Border.all(
+                                  color: maxMedicineReached
+                                      ? Colors.grey
+                                      : Colors.blue,
+                                  width: 2.0),
                             ),
-                            child: const Padding(
-                              padding: EdgeInsets.all(8.0),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
                               child: Icon(
                                 Icons.add,
-                                color: Colors.blue,
+                                color: maxMedicineReached
+                                    ? Colors.grey
+                                    : Colors.blue,
                               ),
                             ),
                           ),
@@ -1571,6 +1674,191 @@ onDeletePatient(BuildContext context, Function onRefresh) {
       ],
     ),
   );
+}
+
+// This is to display an alert dialog to other profession-related values like Education & Trainer
+onAddMoreDetailsAboutDentist(BuildContext context) {
+  final formKeyProf = GlobalKey<FormState>();
+  TextEditingController educationController = TextEditingController();
+  TextEditingController secondPostController = TextEditingController();
+  bool eduPosAdded = false;
+  return showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Directionality(
+                textDirection:
+                    isEnglish ? TextDirection.ltr : TextDirection.rtl,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'تحصیلات و وظیفه معالج',
+                      style: Theme.of(context).textTheme.headlineSmall!.copyWith(color: Colors.blue),
+                    ),
+                    Visibility(
+                      visible: eduPosAdded ? true : false,
+                      child: const Text(
+                        'تحصیلات و یا وظیفه معالج در نسخه اضافه شد.',
+                        style: TextStyle(color: Colors.green, fontSize: 12.0),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              content: Directionality(
+                textDirection:
+                    isEnglish ? TextDirection.ltr : TextDirection.rtl,
+                child: Form(
+                  key: formKeyProf,
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.4,
+                    height: MediaQuery.of(context).size.height * 0.2,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(
+                              left: 20.0, right: 20.0, top: 10.0, bottom: 10.0),
+                          child: TextFormField(
+                            controller: educationController,
+                            validator: (value) {
+                              if (value!.isNotEmpty) {
+                                if (value.length > 30 || value.length < 8) {
+                                  return 'تحصیلات معالج باید حداقل 8 و حداکثر 30 حرف باشد.';
+                                }
+                              }
+                              return null;
+                            },
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(GlobalUsage.allowedEPChar),
+                              ),
+                            ],
+                            autovalidateMode: AutovalidateMode.always,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'Education (Optional)',
+                              hintText: 'مثال: تحصیلات عالی در دانشگاه ...',
+                              suffixIcon: Icon(Icons.school_outlined),
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(50.0)),
+                                  borderSide: BorderSide(color: Colors.grey)),
+                              focusedBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(50.0)),
+                                  borderSide: BorderSide(color: Colors.blue)),
+                              errorBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(50.0)),
+                                  borderSide: BorderSide(color: Colors.red)),
+                              focusedErrorBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(50.0)),
+                                  borderSide: BorderSide(
+                                      color: Colors.red, width: 1.5)),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(
+                              left: 20.0, right: 20.0, top: 10.0, bottom: 10.0),
+                          child: TextFormField(
+                            controller: secondPostController,
+                            autovalidateMode: AutovalidateMode.always,
+                            validator: (value) {
+                              if (value!.isNotEmpty) {
+                                if (value.length > 40 || value.length < 10) {
+                                  return 'وظیفه معالج باید حداقل 10 و حداکثر 40 حرف باشد.';
+                                }
+                              }
+                              return null;
+                            },
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(GlobalUsage.allowedEPChar),
+                              ),
+                            ],
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'Second Position (Optional)',
+                              hintText:
+                                  'مثال: ترینر یا موظف در شفاخانه علی آباد',
+                              suffixIcon: Icon(Icons.man_3_rounded),
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(50.0)),
+                                  borderSide: BorderSide(color: Colors.grey)),
+                              focusedBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(50.0)),
+                                  borderSide: BorderSide(color: Colors.blue)),
+                              errorBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(50.0)),
+                                  borderSide: BorderSide(color: Colors.red)),
+                              focusedErrorBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(50.0)),
+                                  borderSide: BorderSide(
+                                      color: Colors.red, width: 1.5)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              actions: [
+                SizedBox(
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisAlignment: !isEnglish
+                        ? MainAxisAlignment.start
+                        : MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                          tooltip: 'Close',
+                          splashRadius: 25.0,
+                          onPressed: () =>
+                              Navigator.of(context, rootNavigator: true).pop(),
+                          icon: const Icon(Icons.close, color: Colors.blue)),
+                      TextButton(
+                        onPressed: () {
+                          if (formKeyProf.currentState!.validate()) {
+                            dentistEducation = educationController.text.isEmpty
+                                ? ''
+                                : educationController.text;
+                            dentistSecondPosition =
+                                secondPostController.text.isEmpty
+                                    ? ''
+                                    : secondPostController.text;
+                            if (educationController.text.isNotEmpty ||
+                                secondPostController.text.isNotEmpty) {
+                              setState(() {
+                                eduPosAdded = true;
+                              });
+                            } else {
+                              setState(() {
+                                eduPosAdded = false;
+                              });
+                            }
+                          }
+                        },
+                        child: const Text('Add'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      });
 }
 
 final _editPatFormKey = GlobalKey<FormState>();
