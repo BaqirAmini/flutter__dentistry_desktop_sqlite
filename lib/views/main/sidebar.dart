@@ -131,7 +131,16 @@ class _SidebarState extends State<Sidebar> {
                         Icon(FontAwesomeIcons.facebookF,
                             color: Colors.grey[600]),
                         const SizedBox(width: 8.0),
-                        const Text('facebook.com/emransoft4you')
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.1,
+                          child: InkWell(
+                            onTap: () {
+                              launchUrl(Uri.parse(
+                                  'https://www.facebook.com/emransoft4you')); // Open YouTube in browser
+                            },
+                            child: const Text('See Our Facebook'),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -142,14 +151,14 @@ class _SidebarState extends State<Sidebar> {
                       children: [
                         Icon(FontAwesomeIcons.youtube, color: Colors.grey[600]),
                         const SizedBox(width: 8.0),
-                        Container(
-                          width: 100.0,
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.1,
                           child: InkWell(
                             onTap: () {
                               launchUrl(Uri.parse(
                                   'https://www.youtube.com/channel/UCDkAObFC2rRg8QI6gkI-kEQ')); // Open YouTube in browser
                             },
-                            child: Text('Our Youtube'),
+                            child: const Text('Learn More About Crown'),
                           ),
                         ),
                       ],
