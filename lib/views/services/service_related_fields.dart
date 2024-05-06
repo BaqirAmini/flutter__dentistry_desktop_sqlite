@@ -3,10 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
-import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/patients/adult_coordinate_system.dart';
 import 'package:flutter_dentistry/views/patients/child_coordinate_system.dart';
-import 'package:intl/intl.dart' as intl2;
 import 'package:provider/provider.dart';
 
 // Set global variables which are needed later.
