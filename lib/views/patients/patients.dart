@@ -858,7 +858,7 @@ onCreatePrescription(BuildContext context) {
                               children: [
                                 Container(
                                   width:
-                                      MediaQuery.of(context).size.width * 0.344,
+                                      MediaQuery.of(context).size.width * 0.31,
                                   margin: const EdgeInsets.symmetric(
                                       horizontal: 20.0, vertical: 10.0),
                                   child: Directionality(
@@ -1050,7 +1050,7 @@ onCreatePrescription(BuildContext context) {
                                         '',
                                     suffixIcon:
                                         const Icon(Icons.note_alt_outlined),
-                                        hintText: 'مثال: Amoxiciline',
+                                    hintText: 'مثال: Amoxiciline',
                                     enabledBorder: const OutlineInputBorder(
                                         borderRadius: BorderRadius.all(
                                             Radius.circular(50.0)),
@@ -1273,7 +1273,7 @@ onCreatePrescription(BuildContext context) {
                                     labelText: translations[selectedLanguage]
                                             ?['StaffDetail'] ??
                                         '',
-                                        hintText: 'مثال: بعد از غذا میل شود',
+                                    hintText: 'مثال: بعد از غذا میل شود',
                                     suffixIcon:
                                         const Icon(Icons.note_alt_outlined),
                                     enabledBorder: const OutlineInputBorder(
@@ -1784,112 +1784,119 @@ onAddMoreDetailsAboutDentist(BuildContext context) {
               content: Directionality(
                 textDirection:
                     isEnglish ? TextDirection.ltr : TextDirection.rtl,
-                child: Form(
-                  key: formKeyProf,
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.4,
-                    height: MediaQuery.of(context).size.height * 0.2,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.only(
-                              left: 20.0, right: 20.0, top: 10.0, bottom: 10.0),
-                          child: TextFormField(
-                            controller: educationController,
-                            validator: (value) {
-                              if (value!.isNotEmpty) {
-                                if (value.length > 30 || value.length < 8) {
-                                  return translations[selectedLanguage]
-                                          ?['DentEduLength'] ??
-                                      '';
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: formKeyProf,
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.4,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(
+                                left: 20.0,
+                                right: 20.0,
+                                top: 10.0,
+                                bottom: 10.0),
+                            child: TextFormField(
+                              controller: educationController,
+                              validator: (value) {
+                                if (value!.isNotEmpty) {
+                                  if (value.length > 30 || value.length < 8) {
+                                    return translations[selectedLanguage]
+                                            ?['DentEduLength'] ??
+                                        '';
+                                  }
                                 }
-                              }
-                              return null;
-                            },
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(GlobalUsage.allowedEPChar),
+                                return null;
+                              },
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(GlobalUsage.allowedEPChar),
+                                ),
+                              ],
+                              autovalidateMode: AutovalidateMode.always,
+                              decoration: InputDecoration(
+                                border: const OutlineInputBorder(),
+                                labelText: translations[selectedLanguage]
+                                        ?['DentEdu'] ??
+                                    '',
+                                hintText: 'مثال: تحصیلات عالی در دانشگاه',
+                                suffixIcon: const Icon(Icons.school_outlined),
+                                enabledBorder: const OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(color: Colors.grey)),
+                                focusedBorder: const OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(color: Colors.blue)),
+                                errorBorder: const OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(color: Colors.red)),
+                                focusedErrorBorder: const OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(
+                                        color: Colors.red, width: 1.5)),
                               ),
-                            ],
-                            autovalidateMode: AutovalidateMode.always,
-                            decoration: InputDecoration(
-                              border: const OutlineInputBorder(),
-                              labelText: translations[selectedLanguage]
-                                      ?['DentEdu'] ??
-                                  '',
-                              hintText: 'مثال: تحصیلات عالی در دانشگاه',
-                              suffixIcon: const Icon(Icons.school_outlined),
-                              enabledBorder: const OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(50.0)),
-                                  borderSide: BorderSide(color: Colors.grey)),
-                              focusedBorder: const OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(50.0)),
-                                  borderSide: BorderSide(color: Colors.blue)),
-                              errorBorder: const OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(50.0)),
-                                  borderSide: BorderSide(color: Colors.red)),
-                              focusedErrorBorder: const OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(50.0)),
-                                  borderSide: BorderSide(
-                                      color: Colors.red, width: 1.5)),
                             ),
                           ),
-                        ),
-                        Container(
-                          margin: const EdgeInsets.only(
-                              left: 20.0, right: 20.0, top: 10.0, bottom: 10.0),
-                          child: TextFormField(
-                            controller: secondPostController,
-                            autovalidateMode: AutovalidateMode.always,
-                            validator: (value) {
-                              if (value!.isNotEmpty) {
-                                if (value.length > 40 || value.length < 10) {
-                                  return translations['DentPosLength']
-                                          ?['DentPos'] ??
-                                      '';
+                          Container(
+                            margin: const EdgeInsets.only(
+                                left: 20.0,
+                                right: 20.0,
+                                top: 10.0,
+                                bottom: 10.0),
+                            child: TextFormField(
+                              controller: secondPostController,
+                              autovalidateMode: AutovalidateMode.always,
+                              validator: (value) {
+                                if (value!.isNotEmpty) {
+                                  if (value.length > 40 || value.length < 10) {
+                                    return translations['DentPosLength']
+                                            ?['DentPos'] ??
+                                        '';
+                                  }
                                 }
-                              }
-                              return null;
-                            },
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(GlobalUsage.allowedEPChar),
+                                return null;
+                              },
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(GlobalUsage.allowedEPChar),
+                                ),
+                              ],
+                              decoration: InputDecoration(
+                                border: const OutlineInputBorder(),
+                                labelText: translations[selectedLanguage]
+                                        ?['DentPos'] ??
+                                    '',
+                                hintText:
+                                    'مثال: ترینر یا موظف در شفاخانه علی آباد',
+                                suffixIcon: const Icon(Icons.man_3_rounded),
+                                enabledBorder: const OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(color: Colors.grey)),
+                                focusedBorder: const OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(color: Colors.blue)),
+                                errorBorder: const OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(color: Colors.red)),
+                                focusedErrorBorder: const OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(
+                                        color: Colors.red, width: 1.5)),
                               ),
-                            ],
-                            decoration: InputDecoration(
-                              border: const OutlineInputBorder(),
-                              labelText: translations[selectedLanguage]
-                                      ?['DentPos'] ??
-                                  '',
-                              hintText:
-                                  'مثال: ترینر یا موظف در شفاخانه علی آباد',
-                              suffixIcon: const Icon(Icons.man_3_rounded),
-                              enabledBorder: const OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(50.0)),
-                                  borderSide: BorderSide(color: Colors.grey)),
-                              focusedBorder: const OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(50.0)),
-                                  borderSide: BorderSide(color: Colors.blue)),
-                              errorBorder: const OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(50.0)),
-                                  borderSide: BorderSide(color: Colors.red)),
-                              focusedErrorBorder: const OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(50.0)),
-                                  borderSide: BorderSide(
-                                      color: Colors.red, width: 1.5)),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

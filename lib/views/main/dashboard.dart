@@ -1105,7 +1105,6 @@ class _DashboardState extends State<Dashboard> {
                   ),
                   content: SizedBox(
                     width: MediaQuery.of(context).size.width * 0.39,
-                    height: MediaQuery.of(context).size.height * 0.6,
                     child: Directionality(
                       textDirection: TextDirection.rtl,
                       child: Center(
@@ -1367,12 +1366,14 @@ class _DashboardState extends State<Dashboard> {
                                     validator: (value) {
                                       if (value!.isEmpty) {
                                         return 'این نمبر الزامی میباشد.';
-                                      } else if (value.startsWith('07')) {
+                                      } else if (value.startsWith('07') ||
+                                          value.startsWith('۰۷')) {
                                         if (value.length < 10 ||
                                             value.length > 10) {
                                           return 'نمبر تماس باید 10 رقم باشد.';
                                         }
-                                      } else if (value.startsWith('+93')) {
+                                      } else if (value.startsWith('+93') ||
+                                          value.startsWith('+۹۳')) {
                                         if (value.length < 12 ||
                                             value.length > 12) {
                                           return 'نمبر تماس همراه با کود کشور باید 12 رقم باشد.';
@@ -1427,12 +1428,14 @@ class _DashboardState extends State<Dashboard> {
                                     controller: clinicPhoneController2,
                                     validator: (value) {
                                       if (value!.isNotEmpty) {
-                                        if (value.startsWith('07')) {
+                                        if (value.startsWith('07') ||
+                                            value.startsWith('۰۷')) {
                                           if (value.length < 10 ||
                                               value.length > 10) {
                                             return 'نمبر تماس باید 10 رقم باشد.';
                                           }
-                                        } else if (value.startsWith('+93')) {
+                                        } else if (value.startsWith('+93') ||
+                                            value.startsWith('+۹۳')) {
                                           if (value.length < 12 ||
                                               value.length > 12) {
                                             return 'نمبر تماس همراه با کود کشور باید 12 رقم باشد.';

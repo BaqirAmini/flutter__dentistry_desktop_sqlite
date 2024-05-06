@@ -25,7 +25,7 @@ class GlobalUsage {
   //  alphabetical letters both in English & Persian allowed including comma
   static const allowedEPChar = "[a-zA-Z,، \u0600-\u06FFF]";
   // 0-9 and period(.) are allowed
-  static const allowedDigPeriod = "[0-9.]";
+  static const allowedDigPeriod = r"^\d*\.?\d{0,2}$";
   /* -------------------/. CHARACTERS/DIGITS ALLOWED ---------------- */
 
   static bool widgetVisible = false;
