@@ -21,11 +21,12 @@ class _FeeFormState extends State<FeeForm> {
   // Declare controllers for textfields
   final _feeController = TextEditingController();
   final _recievableController = TextEditingController();
+  final _discRateController = TextEditingController();
+  bool _noDiscountSet = true;
 
   // Declare for discount.
   bool _isVisibleForPayment = false;
   int _defaultDiscountRate = 0;
-  final List<int> _discountItems = [2, 5, 10, 15, 20, 30, 50];
   double _feeWithDiscount = 0;
   double _dueAmount = 0;
   // Create a function for setting discount
@@ -34,10 +35,11 @@ class _FeeFormState extends State<FeeForm> {
         _feeController.text.isEmpty ? 0 : double.parse(_feeController.text);
 
     setState(() {
-      if (_defaultDiscountRate == 0) {
+      if (_discRateController.text.isEmpty) {
         _feeWithDiscount = totalFee;
       } else {
-        double discountAmt = (_defaultDiscountRate * totalFee) / 100;
+        double discountAmt =
+            (double.parse(_discRateController.text) * totalFee) / 100;
         _feeWithDiscount = totalFee - discountAmt;
       }
     });
@@ -67,7 +69,9 @@ class _FeeFormState extends State<FeeForm> {
 // Assign the outputs into static class members for reusability.
     FeeInfo.fee = _feeWithDiscount;
     FeeInfo.dueAmount = _dueAmount;
-    FeeInfo.discountRate = _defaultDiscountRate;
+    FeeInfo.discountRate = (_discRateController.text.isEmpty
+        ? 0
+        : int.parse(_discRateController.text));
     FeeInfo.installment = _defaultInstallment;
     // _defaultInstallment == 0 means whole fee is paid by a patient. So, no due amount is remaining.
     FeeInfo.receivedAmount = (_defaultInstallment == 0)
@@ -99,8 +103,9 @@ class _FeeFormState extends State<FeeForm> {
                   Container(
                     width: MediaQuery.of(context).size.width * 0.3,
                     margin: const EdgeInsets.only(
-                        left: 20.0, right: 10.0, top: 10.0, bottom: 10.0),
+                        left: 20.0, right: 10.0, top: 10.0),
                     child: TextFormField(
+                      autovalidateMode: AutovalidateMode.always,
                       controller: _feeController,
                       validator: (value) {
                         if (value!.isEmpty) {
@@ -145,55 +150,74 @@ class _FeeFormState extends State<FeeForm> {
                 ],
               ),
               Container(
+                margin: const EdgeInsets.only(bottom: 10.0),
                 width: MediaQuery.of(context).size.width * 0.3,
-                margin: const EdgeInsets.only(
-                    left: 20.0, right: 15.0, top: 10.0, bottom: 10.0),
-                child: InputDecorator(
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    labelText:
-                        translations[selectedLanguage]?['DiscountRate'] ?? '',
-                    enabledBorder: const OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(50.0)),
-                        borderSide: BorderSide(color: Colors.grey)),
-                    focusedBorder: const OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(50.0)),
-                        borderSide: BorderSide(color: Colors.blue)),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: SizedBox(
-                      height: 26.0,
-                      child: DropdownButton(
-                        isExpanded: true,
-                        icon: const Icon(Icons.arrow_drop_down),
-                        value: _defaultDiscountRate,
-                        items: <DropdownMenuItem<int>>[
-                          DropdownMenuItem(
-                            value: 0,
-                            child: Text(translations[selectedLanguage]
-                                    ?['NoDiscount'] ??
-                                ''),
+                child: Directionality(
+                  textDirection:
+                      isEnglish ? TextDirection.ltr : TextDirection.rtl,
+                  child: Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: Checkbox(
+                            value: _noDiscountSet,
+                            onChanged: (bool? newValue) {
+                              setState(() {
+                                _noDiscountSet = newValue!;
+                              });
+                            },
                           ),
-                          ..._discountItems.map((int item) {
-                            return DropdownMenuItem(
-                              alignment: Alignment.centerRight,
-                              value: item,
-                              child: Directionality(
-                                textDirection: isEnglish
-                                    ? TextDirection.ltr
-                                    : TextDirection.rtl,
-                                child: Text('$item%'),
-                              ),
-                            );
-                          }).toList(),
-                        ],
-                        onChanged: (int? newValue) {
-                          setState(() {
-                            _defaultDiscountRate = newValue!;
-                          });
-                          _setDiscount(_defaultDiscountRate.toString());
-                        },
+                        ),
                       ),
+                      Text(translations[selectedLanguage]?['NoDiscount'] ?? ''),
+                    ],
+                  ),
+                ),
+              ),
+              Visibility(
+                visible: _noDiscountSet ? false : true,
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.3,
+                  margin: const EdgeInsets.only(
+                      left: 20.0, right: 10.0, top: 10.0, bottom: 10.0),
+                  child: TextFormField(
+                    controller: _discRateController,
+                    autovalidateMode: AutovalidateMode.always,
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'لطفاٌ فیصدی تخفیف را وارد کنید.';
+                      } else if (double.parse(value) <= 0 ||
+                          double.parse(value) >= 100) {
+                        return 'فیصدی تخفیف باید از 1 تا 90 باشد.';
+                      }
+                      return null;
+                    },
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                        RegExp(GlobalUsage.allowedDigPeriod),
+                      ),
+                    ],
+                    onChanged: _setDiscount,
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText:
+                          translations[selectedLanguage]?['DiscountRate'] ?? '',
+                      suffixIcon: const Icon(Icons.money_rounded),
+                      enabledBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(50.0)),
+                          borderSide: BorderSide(color: Colors.grey)),
+                      focusedBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(50.0)),
+                          borderSide: BorderSide(color: Colors.blue)),
+                      errorBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(50.0)),
+                          borderSide: BorderSide(color: Colors.red)),
+                      focusedErrorBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(50.0)),
+                          borderSide:
+                              BorderSide(color: Colors.red, width: 1.5)),
                     ),
                   ),
                 ),
