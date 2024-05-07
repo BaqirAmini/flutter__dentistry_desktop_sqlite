@@ -24,7 +24,7 @@ Future<Database> onConnToSqliteDb() async {
 
     // Open the database. The `onCreate` callback will be called if the database doesn't exist.
     final db =
-        await openDatabase(path, version: 1, onCreate: (db, version) async {
+        await openDatabase(path, version: 2, onCreate: (db, version) async {
       await db.execute('PRAGMA foreign_keys = ON');
       // TABLE = staff
       await db.execute('''
@@ -263,13 +263,13 @@ Future<Database> onConnToSqliteDb() async {
     }, onUpgrade: (db, oldVersion, newVersion) async {
       if (oldVersion < 2) {
         // Add phone1 and phone2 columns to the clinics table
-        await db.execute("ALTER TABLE clinics ADD COLUMN phone1 TEXT");
-        await db.execute("ALTER TABLE clinics ADD COLUMN phone2 TEXT");
+        await db.execute("ALTER TABLE clinics ADD COLUMN clinic_phone1 TEXT");
+        await db.execute("ALTER TABLE clinics ADD COLUMN clinic_phone2 TEXT");
 
         // Copy data from phone to phone1
         List<Map> results = await db.query("clinics");
         for (Map row in results) {
-          await db.update("clinics", {"phone1": row["phone"]},
+          await db.update("clinics", {"clinic_phone1": row["clinic_phone"]},
               where: "clinic_ID = ?", whereArgs: [row["clinic_ID"]]);
         }
 
@@ -279,15 +279,18 @@ Future<Database> onConnToSqliteDb() async {
               clinic_ID INTEGER PRIMARY KEY AUTOINCREMENT,
               clinic_name TEXT NOT NULL,
               clinic_address TEXT NOT NULL,
-              phone1 TEXT,
-              phone2 TEXT,
+              clinic_phone1 TEXT,
+              clinic_phone2 TEXT,
               clinic_email TEXT,
               clinic_founder INTEGER,
               clinic_logo BLOB,
               FOREIGN KEY(clinic_founder) REFERENCES staff(staff_ID) ON DELETE SET NULL ON UPDATE CASCADE)
           ''');
 
-        await db.execute('''INSERT INTO new_clinics SELECT clinic_ID, clinic_name, clinic_address, phone, clinic_email, clinic_founder, clinic_logo FROM clinics''');
+        await db.execute('''
+          INSERT INTO new_clinics (clinic_ID, clinic_name, clinic_address, clinic_phone1, clinic_email, clinic_founder, clinic_logo) 
+          SELECT clinic_ID, clinic_name, clinic_address, clinic_phone, clinic_email, clinic_founder, clinic_logo FROM clinics
+        ''');
 
         await db.execute("DROP TABLE clinics");
         await db.execute("ALTER TABLE new_clinics RENAME TO clinics");
