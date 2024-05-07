@@ -26,7 +26,6 @@ class _FeeFormState extends State<FeeForm> {
 
   // Declare for discount.
   bool _isVisibleForPayment = false;
-  int _defaultDiscountRate = 0;
   double _feeWithDiscount = 0;
   double _dueAmount = 0;
   // Create a function for setting discount
@@ -60,12 +59,23 @@ class _FeeFormState extends State<FeeForm> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _recievableController.text = '0';
+  }
+
+  @override
+  void dispose() {
+    _recievableController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Fetch translations keys based on the selected language.
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
-
 // Assign the outputs into static class members for reusability.
     FeeInfo.fee = _feeWithDiscount;
     FeeInfo.dueAmount = _dueAmount;
@@ -76,7 +86,8 @@ class _FeeFormState extends State<FeeForm> {
     // _defaultInstallment == 0 means whole fee is paid by a patient. So, no due amount is remaining.
     FeeInfo.receivedAmount = (_defaultInstallment == 0)
         ? _feeWithDiscount
-        : _recievableController.text.isEmpty
+        : _recievableController.text.isEmpty ||
+                double.parse(_recievableController.text) == 0
             ? 0
             : double.parse(_recievableController.text);
 
@@ -302,6 +313,7 @@ class _FeeFormState extends State<FeeForm> {
                           left: 20.0, right: 10.0, top: 10.0, bottom: 10.0),
                       child: TextFormField(
                         controller: _recievableController,
+                        autovalidateMode: AutovalidateMode.always,
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(
                             RegExp(GlobalUsage.allowedDigPeriod),
