@@ -1164,7 +1164,7 @@ onBackUpData() {
 // Fetch the selected language from shared preference.
 Future<String> getSelectedLanguage() async {
   final prefs = await SharedPreferences.getInstance();
-  return prefs.getString('selectedLanguage') ?? 'English';
+  return prefs.getString('selectedLanguage') ?? 'دری';
 }
 
 // This function is to change system languages

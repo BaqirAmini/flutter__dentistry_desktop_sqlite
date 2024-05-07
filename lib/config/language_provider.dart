@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LanguageProvider with ChangeNotifier {
-  String _selectedLanguage = 'English';
+  String _selectedLanguage = 'دری';
 
   String get selectedLanguage => _selectedLanguage;
 
@@ -18,7 +18,7 @@ class LanguageProvider with ChangeNotifier {
 
   Future<void> _loadSelectedLanguage() async {
     final prefs = await SharedPreferences.getInstance();
-    _selectedLanguage = prefs.getString('selectedLanguage') ?? 'English';
+    _selectedLanguage = prefs.getString('selectedLanguage') ?? 'دری';
     notifyListeners();
   }
 

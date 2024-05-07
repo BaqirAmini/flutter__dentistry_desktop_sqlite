@@ -35,9 +35,9 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   // Set dropdown items for languages
   var langList = [
-    'English',
     'دری',
     'پښتو',
+    'English',
   ];
 // The global for the form
   final _loginFormKey = GlobalKey<FormState>();
