@@ -230,46 +230,79 @@ class _PatientProfileState extends State<_PatientProfile> {
     final result = await conn.rawQuery(
         'SELECT photo FROM patients WHERE pat_ID = ?', [PatientInfo.patID]);
 
-    Uint8List? staffPhoto =
-        result.first['photo'] != null ? result.first['photo'] as Uint8List : null;
+    Uint8List? staffPhoto = result.first['photo'] != null
+        ? result.first['photo'] as Uint8List
+        : null;
 
     // Convert image of BLOB type to binary first.
-    uint8list =
-        staffPhoto != null ? Uint8List.fromList(staffPhoto) : null;
+    uint8list = staffPhoto != null ? Uint8List.fromList(staffPhoto) : null;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0.5,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
+    return Stack(
+      children: [
+        Card(
+          elevation: 0.5,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              FutureBuilder(
-                future: _onFetchPatientPhoto(PatientInfo.patID!),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  } else {
-                    return InkWell(
-                      onTap: _onUpdatePatientPhoto,
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        onEnter: (event) => _isHovering.value = true,
-                        onExit: (event) => _isHovering.value = false,
-                        child: ValueListenableBuilder<bool>(
-                          valueListenable: _isHovering,
-                          builder: (context, isHovering, child) {
-                            return isHovering
-                                ? Stack(
-                                    children: [
-                                      CircleAvatar(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  FutureBuilder(
+                    future: _onFetchPatientPhoto(PatientInfo.patID!),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      } else {
+                        return InkWell(
+                          onTap: _onUpdatePatientPhoto,
+                          child: MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            onEnter: (event) => _isHovering.value = true,
+                            onExit: (event) => _isHovering.value = false,
+                            child: ValueListenableBuilder<bool>(
+                              valueListenable: _isHovering,
+                              builder: (context, isHovering, child) {
+                                return isHovering
+                                    ? Stack(
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 30.0,
+                                            backgroundImage: _image = (uint8list !=
+                                                    null)
+                                                ? MemoryImage(uint8list!)
+                                                : const AssetImage(
+                                                        'assets/graphics/user_profile2.jpg')
+                                                    as ImageProvider,
+                                          ),
+                                          Positioned.fill(
+                                            child: BackdropFilter(
+                                              filter: ImageFilter.blur(
+                                                  sigmaX: 2.5, sigmaY: 2.5),
+                                              child: Container(
+                                                color:
+                                                    Colors.black.withOpacity(0),
+                                              ),
+                                            ),
+                                          ),
+                                          Positioned.fill(
+                                            child: Center(
+                                              child: _isLoadingPhoto
+                                                  ? const CircularProgressIndicator(
+                                                      color: Colors.white)
+                                                  : const Icon(Icons.camera_alt,
+                                                      color: Colors.white),
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : CircleAvatar(
                                         radius: 30.0,
                                         backgroundImage: _image = (uint8list !=
                                                 null)
@@ -277,81 +310,52 @@ class _PatientProfileState extends State<_PatientProfile> {
                                             : const AssetImage(
                                                     'assets/graphics/user_profile2.jpg')
                                                 as ImageProvider,
-                                      ),
-                                      Positioned.fill(
-                                        child: BackdropFilter(
-                                          filter: ImageFilter.blur(
-                                              sigmaX: 2.5, sigmaY: 2.5),
-                                          child: Container(
-                                            color: Colors.black.withOpacity(0),
-                                          ),
-                                        ),
-                                      ),
-                                      Positioned.fill(
-                                        child: Center(
-                                          child: _isLoadingPhoto
-                                              ? const CircularProgressIndicator(
-                                                  color: Colors.white)
-                                              : const Icon(Icons.camera_alt,
-                                                  color: Colors.white),
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                                : CircleAvatar(
-                                    radius: 30.0,
-                                    backgroundImage: _image = (uint8list !=
-                                            null)
-                                        ? MemoryImage(uint8list!)
-                                        : const AssetImage(
-                                                'assets/graphics/user_profile2.jpg')
-                                            as ImageProvider,
-                                  );
-                          },
-                        ),
-                      ),
-                    );
-                  }
-                },
-              ),
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.12,
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.1,
-                      child: Text(
-                          '${PatientInfo.firstName} ${PatientInfo.lastName}',
-                          style: Theme.of(context).textTheme.headlineSmall),
-                    ),
-                    const SizedBox(height: 10.0),
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal:
-                              MediaQuery.of(context).size.width * 0.017),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          const Icon(Icons.phone_android,
-                              color: Colors.grey, size: 14),
-                          const SizedBox(width: 5.0),
-                          Expanded(
-                            child: Text(
-                              '${PatientInfo.phone}',
-                              style: const TextStyle(
-                                  color: Colors.grey, fontSize: 14.0),
+                                      );
+                              },
                             ),
-                          )
-                        ],
-                      ),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.12,
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.1,
+                          child: Text(
+                              '${PatientInfo.firstName} ${PatientInfo.lastName}',
+                              style: Theme.of(context).textTheme.headlineSmall),
+                        ),
+                        const SizedBox(height: 10.0),
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  MediaQuery.of(context).size.width * 0.017),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.phone_android,
+                                  color: Colors.grey, size: 14),
+                              const SizedBox(width: 5.0),
+                              Expanded(
+                                child: Text(
+                                  '${PatientInfo.phone}',
+                                  style: const TextStyle(
+                                      color: Colors.grey, fontSize: 14.0),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          /*  SizedBox(
+              const SizedBox(height: 15),
+              /*  SizedBox(
             width: 260,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -395,8 +399,18 @@ class _PatientProfileState extends State<_PatientProfile> {
             ),
           ),
  */
-        ],
-      ),
+            ],
+          ),
+        ),
+        Positioned(
+          top: 20.0,
+          right: 20.0,
+          child: Card(child: Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: Text('${PatientInfo.formattedPatId}'),
+          )),
+        ),
+      ],
     );
   }
 }

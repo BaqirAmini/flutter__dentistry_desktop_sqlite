@@ -1,5 +1,6 @@
 class PatientInfo {
   static int? patID;
+  static String? formattedPatId;
   static String? firstName;
   static String? lastName;
   static String? phone;

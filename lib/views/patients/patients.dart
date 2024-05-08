@@ -2969,6 +2969,7 @@ class PatientDataSource extends DataTableSource {
               PatientInfo.bloodGroup = data[index].bloodGroup;
               PatientInfo.address = data[index].address;
               PatientInfo.maritalStatus = data[index].maritalStatus;
+              PatientInfo.formattedPatId = 'P-${data[index].age}${data[index].patID}';
               Navigator.push(
                       context,
                       MaterialPageRoute(
