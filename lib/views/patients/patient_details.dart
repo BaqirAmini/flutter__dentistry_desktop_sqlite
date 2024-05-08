@@ -402,14 +402,66 @@ class _PatientProfileState extends State<_PatientProfile> {
             ],
           ),
         ),
-        Positioned(
-          top: 20.0,
-          right: 20.0,
-          child: Card(child: Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Text('${PatientInfo.formattedPatId}'),
-          )),
-        ),
+        isEnglish
+            ? Positioned(
+                top: 20.0,
+                right: 20.0,
+                child: Tooltip(
+                  message: 'ID',
+                  child: Card(
+                    color: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    elevation: 1,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.025,
+                      height: MediaQuery.of(context).size.height * 0.025,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50)),
+                      child: Center(
+                        child: Text(
+                          '${PatientInfo.formattedPatId}',
+                          style:
+                              Theme.of(context).textTheme.labelMedium!.copyWith(
+                                    fontSize: 12.0,
+                                    color: Colors.green,
+                                  ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            : Positioned(
+                top: 20.0,
+                left: 20.0,
+                child: Tooltip(
+                  message: 'ID',
+                  child: Card(
+                    color: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    elevation: 1,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.025,
+                      height: MediaQuery.of(context).size.height * 0.025,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50)),
+                      child: Center(
+                        child: Text(
+                          '${PatientInfo.formattedPatId}',
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelMedium!
+                              .copyWith(fontSize: 12.0, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
       ],
     );
   }
@@ -436,11 +488,11 @@ class _NavigationArea extends StatelessWidget {
                   title: Row(
                     children: [
                       const Icon(FontAwesomeIcons.userDoctor,
-                          color: Colors.blue),
+                          color: Colors.green),
                       const SizedBox(width: 10.0),
                       Text(
                           translations[selectedLanguage]?['Appointments'] ?? '',
-                          style: const TextStyle(color: Colors.blue)),
+                          style: const TextStyle(color: Colors.green)),
                     ],
                   ),
                   indexNum: 100,
@@ -456,13 +508,13 @@ class _NavigationArea extends StatelessWidget {
                   title: Row(
                     children: [
                       const Icon(FontAwesomeIcons.moneyBill1,
-                          color: Colors.blue),
+                          color: Colors.green),
                       const SizedBox(width: 10.0),
                       Text(
                           translations[selectedLanguage]?['FeeInstallment'] ??
                               '',
                           style: const TextStyle(
-                              color: Colors.blue, fontSize: 18.0)),
+                              color: Colors.green, fontSize: 18.0)),
                     ],
                   ),
                   indexNum: 101,
@@ -483,11 +535,11 @@ class _NavigationArea extends StatelessWidget {
                   title: Row(
                     children: [
                       const Icon(FontAwesomeIcons.heartPulse,
-                          color: Colors.blue),
+                          color: Colors.green),
                       const SizedBox(width: 10.0),
                       Text(translations[selectedLanguage]?['Histories'] ?? '',
                           style: const TextStyle(
-                              color: Colors.blue, fontSize: 18.0)),
+                              color: Colors.green, fontSize: 18.0)),
                     ],
                   ),
                   indexNum: 102,
@@ -501,10 +553,10 @@ class _NavigationArea extends StatelessWidget {
                 child: HoverCard(
                   title: Row(
                     children: [
-                      Icon(FontAwesomeIcons.fileImage, color: Colors.blue),
+                      Icon(FontAwesomeIcons.fileImage, color: Colors.green),
                       SizedBox(width: 10.0),
                       Text('X-Rays / Files',
-                          style: TextStyle(color: Colors.blue, fontSize: 18.0)),
+                          style: TextStyle(color: Colors.green, fontSize: 18.0)),
                     ],
                   ),
                   indexNum: 103,
@@ -520,11 +572,11 @@ class _NavigationArea extends StatelessWidget {
             child: HoverCard(
               title: Row(
                 children: [
-                  const Icon(Icons.repeat, color: Colors.blue),
+                  const Icon(Icons.repeat, color: Colors.green),
                   const SizedBox(width: 10.0),
                   Text(translations[selectedLanguage]?['Retreatment'] ?? '',
                       style:
-                          const TextStyle(color: Colors.blue, fontSize: 18.0)),
+                          const TextStyle(color: Colors.green, fontSize: 18.0)),
                 ],
               ),
               indexNum: 104,
@@ -565,14 +617,14 @@ class _HoverCardState extends State<HoverCard> {
           height: 60,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10.2),
-            border: Border.all(color: Colors.blue, width: 0.5),
+            border: Border.all(color: Colors.green, width: 1.0),
           ),
           child: Center(
             child: ListTile(
               hoverColor: Colors.transparent,
               title: widget.title,
               trailing:
-                  const Icon(Icons.arrow_forward_ios_sharp, color: Colors.blue),
+                  const Icon(Icons.arrow_forward_ios_sharp, color: Colors.green),
               onTap: () {
                 if (widget.indexNum == 100) {
                   Navigator.push(
