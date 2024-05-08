@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
@@ -1390,7 +1391,7 @@ void createExcelForPatients() async {
 
   // Query data from the database.
   var results = await conn.rawQuery(
-      'SELECT firstname, lastname, age || \' سال \', sex, marital_status, phone, pat_ID, strftime("%Y-%m-%d", reg_date), blood_group, COALESCE(address, \' \') FROM patients ORDER BY reg_date DESC');
+      'SELECT pat_ID, firstname, lastname, age || \' سال \', sex, marital_status, phone, strftime("%Y-%m-%d", reg_date), blood_group, COALESCE(address, \' \') FROM patients ORDER BY reg_date DESC');
 
   // Create a new Excel document.
   final xls.Workbook workbook = xls.Workbook();
@@ -1398,13 +1399,13 @@ void createExcelForPatients() async {
 
   // Define column titles.
   var columnTitles = [
+    'ID',
     'First Name',
     'Last Name',
     'Age',
     'Sex',
     'Marital Status',
     'Phone',
-    'Patient ID',
     'Registration Date',
     'Blood Group',
     'Address'
@@ -1421,9 +1422,14 @@ void createExcelForPatients() async {
   for (var row in results) {
     var columnValues = row.values.toList();
     for (var i = 0; i < columnValues.length; i++) {
-      sheet
-          .getRangeByIndex(rowIndex + 1, i + 1)
-          .setText(columnValues[i].toString());
+      if (i == 0) {
+        sheet.getRangeByIndex(rowIndex + 1, i + 1).setText(
+            'P-${columnValues[3].toString().split(' ')[0]}${columnValues[0].toString()}');
+      } else {
+        sheet
+            .getRangeByIndex(rowIndex + 1, i + 1)
+            .setText(columnValues[i].toString());
+      }
     }
     rowIndex++;
   }
@@ -1449,7 +1455,7 @@ void createPdfForPatients() async {
 
   // Query data from the database.
   var results = await conn.rawQuery(
-      'SELECT firstname, lastname, age || \' سال \', sex, marital_status, phone, pat_ID, strftime("%Y-%m-%d", reg_date), blood_group, COALESCE(address, \' \') FROM patients ORDER BY reg_date DESC');
+      'SELECT pat_ID, firstname, lastname, age || \' سال \', sex, marital_status, phone, strftime("%Y-%m-%d", reg_date), blood_group, COALESCE(address, \' \') FROM patients ORDER BY reg_date DESC');
 
   // Create a new PDF document.
   final pdf = pw.Document();
@@ -1458,18 +1464,19 @@ void createPdfForPatients() async {
 
   // Define column titles.
   var columnTitles = [
+    'ID',
     'First Name',
     'Last Name',
     'Age',
     'Sex',
     'Marital Status',
     'Phone',
-    'Patient ID',
     'Registration Date',
     'Blood Group',
     'Address'
   ];
 
+  // Populate the PDF with data from the database.
   // Populate the PDF with data from the database.
   pdf.addPage(pw.MultiPage(
     build: (context) => [
@@ -1481,8 +1488,15 @@ void createPdfForPatients() async {
           context: context,
           data: <List<String>>[
             columnTitles,
-            ...results.map((row) =>
-                row.values.map((item) => item?.toString() ?? '--').toList()),
+            ...results.map((row) {
+              var formattedRow = row.values.toList();
+              var age = formattedRow[3].toString().split(' ')[0]; // Extract the age from the 'age سال' string
+              formattedRow[0] =
+                  'P-$age${formattedRow[0]}'; // Format the patient ID as 'P-age+id'
+              return formattedRow
+                  .map((item) => item?.toString() ?? '--')
+                  .toList();
+            }),
           ],
           border: null, // Remove cell borders
           headerStyle:
@@ -2764,6 +2778,24 @@ class _PatientDataTableState extends State<PatientDataTable> {
                   header: null,
                   columns: [
                     DataColumn(
+                      label: const Text(
+                        'ID',
+                        style: TextStyle(
+                            color: Colors.blue, fontWeight: FontWeight.bold),
+                      ),
+                      onSort: (columnIndex, ascending) {
+                        setState(() {
+                          _sortColumnIndex = columnIndex;
+                          _sortAscending = ascending;
+                          _filteredData
+                              .sort(((a, b) => a.patID.compareTo(b.patID)));
+                          if (!ascending) {
+                            _filteredData = _filteredData.reversed.toList();
+                          }
+                        });
+                      },
+                    ),
+                    DataColumn(
                       label: Text(
                         translations[selectedLanguage]?['FName'] ?? '',
                         style: const TextStyle(
@@ -2835,24 +2867,7 @@ class _PatientDataTableState extends State<PatientDataTable> {
                         });
                       },
                     ),
-                    DataColumn(
-                      label: Text(
-                        translations[selectedLanguage]?['Marital'] ?? '',
-                        style: const TextStyle(
-                            color: Colors.blue, fontWeight: FontWeight.bold),
-                      ),
-                      onSort: (columnIndex, ascending) {
-                        setState(() {
-                          _sortColumnIndex = columnIndex;
-                          _sortAscending = ascending;
-                          _filteredData.sort(((a, b) =>
-                              a.maritalStatus.compareTo(b.maritalStatus)));
-                          if (!ascending) {
-                            _filteredData = _filteredData.reversed.toList();
-                          }
-                        });
-                      },
-                    ),
+
                     DataColumn(
                       label: Text(
                         translations[selectedLanguage]?['Phone'] ?? '',
@@ -2927,12 +2942,12 @@ class PatientDataSource extends DataTableSource {
   @override
   DataRow getRow(int index) {
     return DataRow(cells: [
+      DataCell(Text('P-${data[index].age}${data[index].patID}')),
       DataCell(Text(data[index].firstName)),
       DataCell(Text(data[index].lastName)),
       DataCell(Text(
           '${data[index].age} ${translations[selectedLanguage]?['Year'] ?? ''}')),
       DataCell(Text(data[index].sex)),
-      DataCell(Text(data[index].maritalStatus)),
       DataCell(Text(data[index].phone)),
       // DataCell(Text(data[index].service)),
       DataCell(

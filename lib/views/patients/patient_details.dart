@@ -19,7 +19,6 @@ import 'package:flutter_dentistry/views/settings/settings_menu.dart';
 import 'package:flutter_dentistry/views/sf_calendar/patient_specific_sfcalendar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_dentistry/views/patients/patient_info.dart';
-import 'package:galileo_mysql/galileo_mysql.dart';
 import 'package:provider/provider.dart';
 
 void main() {
