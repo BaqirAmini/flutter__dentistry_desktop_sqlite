@@ -422,11 +422,14 @@ class _PatientProfileState extends State<_PatientProfile> {
                       child: Center(
                         child: Text(
                           '${PatientInfo.formattedPatId}',
-                          style:
-                              Theme.of(context).textTheme.labelMedium!.copyWith(
-                                    fontSize: 12.0,
-                                    color: Colors.green,
-                                  ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelMedium!
+                              .copyWith(
+                                fontSize:
+                                    MediaQuery.of(context).size.width * 0.008,
+                                color: Colors.white,
+                              ),
                         ),
                       ),
                     ),
@@ -455,7 +458,10 @@ class _PatientProfileState extends State<_PatientProfile> {
                           style: Theme.of(context)
                               .textTheme
                               .labelMedium!
-                              .copyWith(fontSize: 12.0, color: Colors.white),
+                              .copyWith(
+                                  fontSize:
+                                      MediaQuery.of(context).size.width * 0.008,
+                                  color: Colors.white),
                         ),
                       ),
                     ),
@@ -556,7 +562,8 @@ class _NavigationArea extends StatelessWidget {
                       Icon(FontAwesomeIcons.fileImage, color: Colors.green),
                       SizedBox(width: 10.0),
                       Text('X-Rays / Files',
-                          style: TextStyle(color: Colors.green, fontSize: 18.0)),
+                          style:
+                              TextStyle(color: Colors.green, fontSize: 18.0)),
                     ],
                   ),
                   indexNum: 103,
@@ -623,8 +630,8 @@ class _HoverCardState extends State<HoverCard> {
             child: ListTile(
               hoverColor: Colors.transparent,
               title: widget.title,
-              trailing:
-                  const Icon(Icons.arrow_forward_ios_sharp, color: Colors.green),
+              trailing: const Icon(Icons.arrow_forward_ios_sharp,
+                  color: Colors.green),
               onTap: () {
                 if (widget.indexNum == 100) {
                   Navigator.push(
