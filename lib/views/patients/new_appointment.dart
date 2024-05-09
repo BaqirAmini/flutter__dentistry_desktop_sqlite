@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_string_interpolations
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
@@ -119,12 +121,13 @@ class _NewAppointmentState extends State<NewAppointment> {
                   ElevatedButton(
                     onPressed: controls.onStepContinue,
                     child: Text((_currentStep == newApptStepList().length - 1)
-                        ? 'ثبت کردن'
-                        : 'ادامه'),
+                        ? '${translations[selectedLanguage]?['AddBtn'] ?? ''}'
+                        : '${translations[selectedLanguage]?['NextBtn'] ?? ''}'),
                   ),
                   TextButton(
                     onPressed: _currentStep == 0 ? null : controls.onStepCancel,
-                    child: const Text('بازگشت'),
+                    child:
+                        Text(translations[selectedLanguage]?['PrevBtn'] ?? ''),
                   ),
                 ],
               );

@@ -61,6 +61,7 @@ class _AppointmentState extends State<Appointment> {
         textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
         child: Scaffold(
           floatingActionButton: FloatingActionButton(
+            backgroundColor: Colors.green,
             onPressed: () {
               Navigator.push(
                 context,
@@ -71,7 +72,7 @@ class _AppointmentState extends State<Appointment> {
               // This is assigned to identify appointments.round i.e., if it is true round is stored '1' otherwise increamented by 1
               GlobalUsage.newPatientCreated = false;
             },
-            tooltip: 'افزودن جلسه جدید',
+            tooltip: translations[selectedLanguage]?['NewApptBtn'] ?? '',
             child: const Icon(
               Icons.add,
               color: Colors.white,

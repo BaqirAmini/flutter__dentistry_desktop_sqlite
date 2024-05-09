@@ -198,10 +198,10 @@ class _FeeFormState extends State<FeeForm> {
                     autovalidateMode: AutovalidateMode.always,
                     validator: (value) {
                       if (value!.isEmpty) {
-                        return 'لطفاٌ فیصدی تخفیف را وارد کنید.';
+                        return translations[selectedLanguage]?['DiscRateRequired'] ?? '';
                       } else if (double.parse(value) <= 0 ||
                           double.parse(value) >= 100) {
-                        return 'فیصدی تخفیف باید از 1 تا 90 باشد.';
+                        return translations[selectedLanguage]?['DiscRateRange'] ?? '';
                       }
                       return null;
                     },
