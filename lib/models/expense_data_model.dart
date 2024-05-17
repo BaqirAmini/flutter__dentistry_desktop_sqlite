@@ -294,7 +294,8 @@ class ExpenseDataTableState extends State<ExpenseDataTable> {
       key: _globalKeyExpDM,
       child: Scaffold(
         key: _scaffoldKey,
-        body: ListView(
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -464,111 +465,120 @@ class ExpenseDataTableState extends State<ExpenseDataTable> {
                 ],
               ),
             ),
-            if (_filteredData.isEmpty)
-              const SizedBox(
-                width: 200,
-                height: 200,
-                child:
-                    Center(child: Text('هیچ اطلاعاتی مربوط مصارف یافت نشد.')),
-              )
-            else
-              PaginatedDataTable(
-                sortAscending: _sortAscending,
-                sortColumnIndex: _sortColumnIndex,
-                header: null,
-                // header: const Text("همه مصارف |"),
-                columns: [
-                  DataColumn(
-                    label: Text(
-                      translations[selectedLanguage]?['ExpenseType'] ?? '',
-                      style: const TextStyle(
-                          color: Colors.blue, fontWeight: FontWeight.bold),
-                    ),
-                    onSort: (columnIndex, ascending) {
-                      setState(() {
-                        _sortColumnIndex = columnIndex;
-                        _sortAscending = ascending;
-                        _filteredData.sort(
-                            (a, b) => a.expenseType.compareTo(b.expenseType));
-                        if (!ascending) {
-                          _filteredData = _filteredData.reversed.toList();
-                        }
-                      });
-                    },
-                  ),
-                  DataColumn(
-                    label: Text(
-                      translations[selectedLanguage]?['Item'] ?? '',
-                      style: const TextStyle(
-                          color: Colors.blue, fontWeight: FontWeight.bold),
-                    ),
-                    onSort: (columnIndex, ascending) {
-                      setState(() {
-                        _sortColumnIndex = columnIndex;
-                        _sortAscending = ascending;
-                        _filteredData.sort(
-                            ((a, b) => a.expenseItem.compareTo(b.expenseItem)));
-                        if (!ascending) {
-                          _filteredData = _filteredData.reversed.toList();
-                        }
-                      });
-                    },
-                  ),
-                  DataColumn(
-                    label: Text(
-                      translations[selectedLanguage]?['QtyAmount'] ?? '',
-                      style: const TextStyle(
-                          color: Colors.blue, fontWeight: FontWeight.bold),
-                    ),
-                    onSort: (columnIndex, ascending) {
-                      setState(() {
-                        _sortColumnIndex = columnIndex;
-                        _sortAscending = ascending;
-                        _filteredData
-                            .sort(((a, b) => a.quantity.compareTo(b.quantity)));
-                        if (!ascending) {
-                          _filteredData = _filteredData.reversed.toList();
-                        }
-                      });
-                    },
-                  ),
-                  DataColumn(
-                    label: Text(
-                      translations[selectedLanguage]?['UnitPrice'] ?? '',
-                      style: const TextStyle(
-                          color: Colors.blue, fontWeight: FontWeight.bold),
-                    ),
-                    onSort: (columnIndex, ascending) {
-                      setState(() {
-                        _sortColumnIndex = columnIndex;
-                        _sortAscending = ascending;
-                        _filteredData.sort(
-                            ((a, b) => a.unitPrice.compareTo(b.unitPrice)));
-                        if (!ascending) {
-                          _filteredData = _filteredData.reversed.toList();
-                        }
-                      });
-                    },
-                  ),
-                  DataColumn(
-                    label: Text(
-                      translations[selectedLanguage]?['TotalPrice'] ?? '',
-                      style: const TextStyle(
-                          color: Colors.blue, fontWeight: FontWeight.bold),
-                    ),
-                    onSort: (columnIndex, ascending) {
-                      setState(() {
-                        _sortColumnIndex = columnIndex;
-                        _sortAscending = ascending;
-                        _filteredData.sort(
-                            ((a, b) => a.totalPrice.compareTo(b.totalPrice)));
-                        if (!ascending) {
-                          _filteredData = _filteredData.reversed.toList();
-                        }
-                      });
-                    },
-                  ),
-                  /*     DataColumn(
+            Expanded(
+              child: ListView(
+                children: [
+                  if (_filteredData.isEmpty)
+                    const SizedBox(
+                      width: 200,
+                      height: 200,
+                      child: Center(
+                          child: Text('هیچ اطلاعاتی مربوط مصارف یافت نشد.')),
+                    )
+                  else
+                    PaginatedDataTable(
+                      sortAscending: _sortAscending,
+                      sortColumnIndex: _sortColumnIndex,
+                      header: null,
+                      // header: const Text("همه مصارف |"),
+                      columns: [
+                        DataColumn(
+                          label: Text(
+                            translations[selectedLanguage]?['ExpenseType'] ??
+                                '',
+                            style: const TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          onSort: (columnIndex, ascending) {
+                            setState(() {
+                              _sortColumnIndex = columnIndex;
+                              _sortAscending = ascending;
+                              _filteredData.sort((a, b) =>
+                                  a.expenseType.compareTo(b.expenseType));
+                              if (!ascending) {
+                                _filteredData = _filteredData.reversed.toList();
+                              }
+                            });
+                          },
+                        ),
+                        DataColumn(
+                          label: Text(
+                            translations[selectedLanguage]?['Item'] ?? '',
+                            style: const TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          onSort: (columnIndex, ascending) {
+                            setState(() {
+                              _sortColumnIndex = columnIndex;
+                              _sortAscending = ascending;
+                              _filteredData.sort(((a, b) =>
+                                  a.expenseItem.compareTo(b.expenseItem)));
+                              if (!ascending) {
+                                _filteredData = _filteredData.reversed.toList();
+                              }
+                            });
+                          },
+                        ),
+                        DataColumn(
+                          label: Text(
+                            translations[selectedLanguage]?['QtyAmount'] ?? '',
+                            style: const TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          onSort: (columnIndex, ascending) {
+                            setState(() {
+                              _sortColumnIndex = columnIndex;
+                              _sortAscending = ascending;
+                              _filteredData.sort(
+                                  ((a, b) => a.quantity.compareTo(b.quantity)));
+                              if (!ascending) {
+                                _filteredData = _filteredData.reversed.toList();
+                              }
+                            });
+                          },
+                        ),
+                        DataColumn(
+                          label: Text(
+                            translations[selectedLanguage]?['UnitPrice'] ?? '',
+                            style: const TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          onSort: (columnIndex, ascending) {
+                            setState(() {
+                              _sortColumnIndex = columnIndex;
+                              _sortAscending = ascending;
+                              _filteredData.sort(((a, b) =>
+                                  a.unitPrice.compareTo(b.unitPrice)));
+                              if (!ascending) {
+                                _filteredData = _filteredData.reversed.toList();
+                              }
+                            });
+                          },
+                        ),
+                        DataColumn(
+                          label: Text(
+                            translations[selectedLanguage]?['TotalPrice'] ?? '',
+                            style: const TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          onSort: (columnIndex, ascending) {
+                            setState(() {
+                              _sortColumnIndex = columnIndex;
+                              _sortAscending = ascending;
+                              _filteredData.sort(((a, b) =>
+                                  a.totalPrice.compareTo(b.totalPrice)));
+                              if (!ascending) {
+                                _filteredData = _filteredData.reversed.toList();
+                              }
+                            });
+                          },
+                        ),
+                        /*     DataColumn(
               label: const Text(
                 "خریداری شده توسط",
                 style:
@@ -586,25 +596,26 @@ class ExpenseDataTableState extends State<ExpenseDataTable> {
                 });
               },
             ), */
-                  DataColumn(
-                    label: Text(
-                      translations[selectedLanguage]?['PurDate'] ?? '',
-                      style: const TextStyle(
-                          color: Colors.blue, fontWeight: FontWeight.bold),
-                    ),
-                    onSort: (columnIndex, ascending) {
-                      setState(() {
-                        _sortColumnIndex = columnIndex;
-                        _sortAscending = ascending;
-                        _filteredData.sort(((a, b) =>
-                            a.purchasedDate.compareTo(b.purchasedDate)));
-                        if (!ascending) {
-                          _filteredData = _filteredData.reversed.toList();
-                        }
-                      });
-                    },
-                  ),
-                  /*  DataColumn(
+                        DataColumn(
+                          label: Text(
+                            translations[selectedLanguage]?['PurDate'] ?? '',
+                            style: const TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          onSort: (columnIndex, ascending) {
+                            setState(() {
+                              _sortColumnIndex = columnIndex;
+                              _sortAscending = ascending;
+                              _filteredData.sort(((a, b) =>
+                                  a.purchasedDate.compareTo(b.purchasedDate)));
+                              if (!ascending) {
+                                _filteredData = _filteredData.reversed.toList();
+                              }
+                            });
+                          },
+                        ),
+                        /*  DataColumn(
               label: const Text(
                 "توضیحات",
                 style:
@@ -622,31 +633,35 @@ class ExpenseDataTableState extends State<ExpenseDataTable> {
                 });
               },
             ), */
-                  DataColumn(
-                    label: Text(
-                      translations[selectedLanguage]?['Details'] ?? '',
-                      style: const TextStyle(
-                          color: Colors.blue, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  DataColumn(
-                      label: Text(translations[selectedLanguage]?['Edit'] ?? '',
-                          style: const TextStyle(
-                              color: Colors.blue,
-                              fontWeight: FontWeight.bold))),
-                  DataColumn(
-                      label: Text(
-                          translations[selectedLanguage]?['Delete'] ?? '',
-                          style: const TextStyle(
-                              color: Colors.blue,
-                              fontWeight: FontWeight.bold))),
+                        DataColumn(
+                          label: Text(
+                            translations[selectedLanguage]?['Details'] ?? '',
+                            style: const TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        DataColumn(
+                            label: Text(
+                                translations[selectedLanguage]?['Edit'] ?? '',
+                                style: const TextStyle(
+                                    color: Colors.blue,
+                                    fontWeight: FontWeight.bold))),
+                        DataColumn(
+                            label: Text(
+                                translations[selectedLanguage]?['Delete'] ?? '',
+                                style: const TextStyle(
+                                    color: Colors.blue,
+                                    fontWeight: FontWeight.bold))),
+                      ],
+                      source: dataSource,
+                      rowsPerPage: _filteredData.length < 8
+                          ? _filteredData.length
+                          : 8,
+                    )
                 ],
-                source: dataSource,
-                rowsPerPage:
-                    _filteredData.length < _gu.calculateRowsPerPage(context)
-                        ? _filteredData.length
-                        : _gu.calculateRowsPerPage(context),
-              )
+              ),
+            ),
           ],
         ),
       ),

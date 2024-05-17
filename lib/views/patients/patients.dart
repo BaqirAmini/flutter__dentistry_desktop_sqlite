@@ -1490,7 +1490,9 @@ void createPdfForPatients() async {
             columnTitles,
             ...results.map((row) {
               var formattedRow = row.values.toList();
-              var age = formattedRow[3].toString().split(' ')[0]; // Extract the age from the 'age سال' string
+              var age = formattedRow[3]
+                  .toString()
+                  .split(' ')[0]; // Extract the age from the 'age سال' string
               formattedRow[0] =
                   'P-$age${formattedRow[0]}'; // Format the patient ID as 'P-age+id'
               return formattedRow
@@ -2914,9 +2916,8 @@ class _PatientDataTableState extends State<PatientDataTable> {
                       ),
                   ],
                   source: dataSource,
-                  rowsPerPage: _filteredData.length < 8
-                      ? _gu.calculateRowsPerPage(context)
-                      : _gu.calculateRowsPerPage(context),
+                  rowsPerPage:
+                      _filteredData.length < 8 ? _filteredData.length : 8,
                 )
             ],
           ),
@@ -2969,7 +2970,8 @@ class PatientDataSource extends DataTableSource {
               PatientInfo.bloodGroup = data[index].bloodGroup;
               PatientInfo.address = data[index].address;
               PatientInfo.maritalStatus = data[index].maritalStatus;
-              PatientInfo.formattedPatId = 'P-${data[index].age}${data[index].patID}';
+              PatientInfo.formattedPatId =
+                  'P-${data[index].age}${data[index].patID}';
               Navigator.push(
                       context,
                       MaterialPageRoute(

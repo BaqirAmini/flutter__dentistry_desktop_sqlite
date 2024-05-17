@@ -602,9 +602,7 @@ class _MyDataTableState extends State<MyDataTable> {
                       ),
                   ],
                   rowsPerPage:
-                      _filteredData.length < _gu.calculateRowsPerPage(context)
-                          ? _filteredData.length
-                          : _gu.calculateRowsPerPage(context),
+                      _filteredData.length < 8 ? _filteredData.length : 8,
                 )
             ],
           ),
