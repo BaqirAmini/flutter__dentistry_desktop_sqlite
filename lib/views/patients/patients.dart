@@ -2790,7 +2790,7 @@ class _PatientDataTableState extends State<PatientDataTable> {
                           _sortColumnIndex = columnIndex;
                           _sortAscending = ascending;
                           _filteredData
-                              .sort(((a, b) => a.patID.compareTo(b.patID)));
+                              .sort(((a, b) => a.age.compareTo(b.age)));
                           if (!ascending) {
                             _filteredData = _filteredData.reversed.toList();
                           }
