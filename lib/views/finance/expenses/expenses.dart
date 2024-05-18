@@ -63,10 +63,13 @@ class _ExpenseListState extends State<ExpenseList> {
                 return Tooltip(
                   message: translations[selectedLanguage]?['AddExpItem'] ?? '',
                   child: IconButton(
+                    splashRadius: 27.0,
                     onPressed: () async {
                       if (await Features.expenseLimitReached()) {
                         _onShowSnack(
-                            Colors.red, translations[selectedLanguage]?['RecordLimitMsg'] ?? '');
+                            Colors.red,
+                            translations[selectedLanguage]?['RecordLimitMsg'] ??
+                                '');
                       } else {
                         await fetchExpenseTypes();
                         await fetchStaff();
@@ -78,18 +81,7 @@ class _ExpenseListState extends State<ExpenseList> {
                   ),
                 );
               }),
-              const SizedBox(
-                width: 10.0,
-              ),
-              Builder(builder: (context) {
-                return Tooltip(
-                  message: translations[selectedLanguage]?['AddExpType'] ?? '',
-                  child: IconButton(
-                    onPressed: () => onCreateExpenseType(context),
-                    icon: const Icon(Icons.category_outlined),
-                  ),
-                );
-              }),
+              const SizedBox(width: 10.0),
             ],
             title: Text(translations[selectedLanguage]?['InterExpense'] ?? ''),
           ),
@@ -106,12 +98,153 @@ class _ExpenseListState extends State<ExpenseList> {
     var results = await conn.rawQuery('SELECT exp_ID, exp_name FROM expenses');
     setState(() {
       expenseTypes = results
-          .map((result) =>
-              {'exp_ID': result["exp_ID"].toString(), 'exp_name': result["exp_name"].toString()})
+          .map((result) => {
+                'exp_ID': result["exp_ID"].toString(),
+                'exp_name': result["exp_name"].toString()
+              })
           .toList();
     });
     selectedExpType =
         expenseTypes.isNotEmpty ? expenseTypes[0]['exp_ID'] : null;
+  }
+
+  // This dialog creates a new expense type
+  onCreateExpenseType(BuildContext context, Function onRefresh) {
+// The global for the form
+    final formKey1 = GlobalKey<FormState>();
+// The text editing controllers for the TextFormFields
+    final itemNameController = TextEditingController();
+
+    return showDialog(
+      context: context,
+      builder: ((context) {
+        return StatefulBuilder(
+          builder: ((context, setState) {
+            return AlertDialog(
+              title: Directionality(
+                textDirection: TextDirection.rtl,
+                child: Text(
+                  translations[selectedLanguage]?['AddExpType'] ?? '',
+                  style: const TextStyle(color: Colors.blue),
+                ),
+              ),
+              content: Directionality(
+                textDirection: TextDirection.rtl,
+                child: Form(
+                  key: formKey1,
+                  child: SizedBox(
+                    width: 500.0,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.all(20.0),
+                            child: TextFormField(
+                              controller: itemNameController,
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return translations[selectedLanguage]
+                                          ?['ETRequired'] ??
+                                      '';
+                                } else if (value.length < 3 ||
+                                    value.length > 20) {
+                                  return translations[selectedLanguage]
+                                          ?['ETError'] ??
+                                      '';
+                                }
+                              },
+                              decoration: InputDecoration(
+                                border: const OutlineInputBorder(),
+                                labelText: translations[selectedLanguage]
+                                        ?['ExpenseType'] ??
+                                    '',
+                                suffixIcon: const Icon(Icons.category),
+                                enabledBorder: const OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(color: Colors.grey)),
+                                focusedBorder: const OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(color: Colors.blue)),
+                                errorBorder: const OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(color: Colors.red)),
+                                focusedErrorBorder: const OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(
+                                        color: Colors.red, width: 1.5)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              actions: [
+                Directionality(
+                    textDirection: TextDirection.rtl,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(translations[selectedLanguage]
+                                    ?['CancelBtn'] ??
+                                '')),
+                        ElevatedButton(
+                          onPressed: () async {
+                            if (formKey1.currentState!.validate()) {
+                              String expName = itemNameController.text;
+                              var conn = await onConnToSqliteDb();
+                              // Avoid duplicate entry of expenses category
+                              var results1 = await conn.rawQuery(
+                                  'SELECT * FROM expenses WHERE exp_name = ?',
+                                  [expName]);
+                              if (results1.isNotEmpty) {
+                                _onShowSnack(
+                                    Colors.red,
+                                    translations[selectedLanguage]
+                                            ?['ETDupError'] ??
+                                        '');
+                                // ignore: use_build_context_synchronously
+                                Navigator.pop(context);
+                              } else {
+                                // Insert into expenses
+                                var result2 = await conn.rawInsert(
+                                    'INSERT INTO expenses (exp_name) VALUES (?)',
+                                    [expName]);
+                                if (result2 > 0) {
+                                  // ignore: use_build_context_synchronously
+                                  Navigator.pop(context);
+                                  onRefresh();
+                                } else {
+                                  _onShowSnack(
+                                      Colors.red,
+                                      translations[selectedLanguage]
+                                              ?['ETError'] ??
+                                          '');
+                                  // ignore: use_build_context_synchronously
+                                  Navigator.pop(context);
+                                }
+                              }
+                            }
+                          },
+                          child: Text(
+                              translations[selectedLanguage]?['AddBtn'] ?? ''),
+                        ),
+                      ],
+                    ))
+              ],
+            );
+          }),
+        );
+      }),
+    );
   }
 
   // Fetch staff for purchased by fields
@@ -196,55 +329,101 @@ class _ExpenseListState extends State<ExpenseList> {
                     child: SingleChildScrollView(
                       child: Column(
                         children: [
-                          Container(
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 20.0, vertical: 5.0),
-                            child: InputDecorator(
-                              decoration: InputDecoration(
-                                border: const OutlineInputBorder(),
-                                labelText: translations[selectedLanguage]
-                                        ?['ExpenseType'] ??
-                                    '',
-                                enabledBorder: const OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(50.0)),
-                                    borderSide: BorderSide(color: Colors.grey)),
-                                focusedBorder: const OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(50.0)),
-                                    borderSide: BorderSide(color: Colors.blue)),
-                                errorBorder: const OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(50.0)),
-                                    borderSide: BorderSide(color: Colors.red)),
-                                focusedErrorBorder: const OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(50.0)),
-                                    borderSide: BorderSide(
-                                        color: Colors.red, width: 1.5)),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: Container(
-                                  height: 26.0,
-                                  child: DropdownButton(
-                                    isExpanded: true,
-                                    icon: const Icon(Icons.arrow_drop_down),
-                                    value: selectedExpType,
-                                    items: expenseTypes.map((expense) {
-                                      return DropdownMenuItem<String>(
-                                        value: expense['exp_ID'],
-                                        alignment: Alignment.centerRight,
-                                        child: Text(expense['exp_name']),
-                                      );
-                                    }).toList(),
-                                    onChanged: (String? newValue) {
-                                      setState(() {
-                                        selectedExpType = newValue;
-                                      });
-                                    },
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                right: 20.0, bottom: 10.0, top: 10.0),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  flex: 4,
+                                  child: InputDecorator(
+                                    decoration: InputDecoration(
+                                      border: const OutlineInputBorder(),
+                                      labelText: translations[selectedLanguage]
+                                              ?['ExpenseType'] ??
+                                          '',
+                                      enabledBorder: const OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(50.0)),
+                                          borderSide:
+                                              BorderSide(color: Colors.grey)),
+                                      focusedBorder: const OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(50.0)),
+                                          borderSide:
+                                              BorderSide(color: Colors.blue)),
+                                      errorBorder: const OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(50.0)),
+                                          borderSide:
+                                              BorderSide(color: Colors.red)),
+                                      focusedErrorBorder:
+                                          const OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(50.0)),
+                                              borderSide: BorderSide(
+                                                  color: Colors.red,
+                                                  width: 1.5)),
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: Container(
+                                        height: 26.0,
+                                        child: DropdownButton(
+                                          isExpanded: true,
+                                          icon:
+                                              const Icon(Icons.arrow_drop_down),
+                                          value: selectedExpType,
+                                          items: expenseTypes.map((expense) {
+                                            return DropdownMenuItem<String>(
+                                              value: expense['exp_ID'],
+                                              alignment: Alignment.centerRight,
+                                              child: Text(expense['exp_name']),
+                                            );
+                                          }).toList(),
+                                          onChanged: (String? newValue) {
+                                            setState(() {
+                                              selectedExpType = newValue;
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
+                                Expanded(
+                                  flex: 1,
+                                  child: Tooltip(
+                                    message: translations[selectedLanguage]
+                                            ?['AddExpType'] ??
+                                        '',
+                                    child: InkWell(
+                                      hoverColor: Colors.transparent,
+                                      onTap: () =>
+                                          onCreateExpenseType(context, () {
+                                        setState(
+                                          () {
+                                            fetchExpenseTypes();
+                                          },
+                                        );
+                                      }),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                              color: Colors.grey, width: 1.3),
+                                        ),
+                                        child: const Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: Icon(
+                                            Icons.add_outlined,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              ],
                             ),
                           ),
                           Container(
@@ -746,147 +925,4 @@ class _ExpenseListState extends State<ExpenseList> {
       }),
     );
   }
-}
-
-// This dialog creates a new expense type
-onCreateExpenseType(BuildContext context) {
-// The global for the form
-  final formKey1 = GlobalKey<FormState>();
-// The text editing controllers for the TextFormFields
-  final itemNameController = TextEditingController();
-
-  return showDialog(
-    context: context,
-    builder: ((context) {
-      return StatefulBuilder(
-        builder: ((context, setState) {
-          return AlertDialog(
-            title: Directionality(
-              textDirection: TextDirection.rtl,
-              child: Text(
-                translations[selectedLanguage]?['AddExpType'] ?? '',
-                style: const TextStyle(color: Colors.blue),
-              ),
-            ),
-            content: Directionality(
-              textDirection: TextDirection.rtl,
-              child: Form(
-                key: formKey1,
-                child: SizedBox(
-                  width: 500.0,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.all(20.0),
-                          child: TextFormField(
-                            controller: itemNameController,
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return translations[selectedLanguage]
-                                        ?['ETRequired'] ??
-                                    '';
-                              } else if (value.length < 3 ||
-                                  value.length > 20) {
-                                return translations[selectedLanguage]
-                                        ?['ETError'] ??
-                                    '';
-                              }
-                            },
-                            decoration: InputDecoration(
-                              border: const OutlineInputBorder(),
-                              labelText: translations[selectedLanguage]
-                                      ?['ExpenseType'] ??
-                                  '',
-                              suffixIcon: const Icon(Icons.category),
-                              enabledBorder: const OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(50.0)),
-                                  borderSide: BorderSide(color: Colors.grey)),
-                              focusedBorder: const OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(50.0)),
-                                  borderSide: BorderSide(color: Colors.blue)),
-                              errorBorder: const OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(50.0)),
-                                  borderSide: BorderSide(color: Colors.red)),
-                              focusedErrorBorder: const OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(50.0)),
-                                  borderSide: BorderSide(
-                                      color: Colors.red, width: 1.5)),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            actions: [
-              Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text(translations[selectedLanguage]
-                                  ?['CancelBtn'] ??
-                              '')),
-                      ElevatedButton(
-                        onPressed: () async {
-                          if (formKey1.currentState!.validate()) {
-                            String expName = itemNameController.text;
-                            var conn = await onConnToSqliteDb();
-                            // Avoid duplicate entry of expenses category
-                            var results1 = await conn.rawQuery(
-                                'SELECT * FROM expenses WHERE exp_name = ?',
-                                [expName]);
-                            if (results1.isNotEmpty) {
-                              _onShowSnack(
-                                  Colors.red,
-                                  translations[selectedLanguage]
-                                          ?['ETDupError'] ??
-                                      '');
-                              // ignore: use_build_context_synchronously
-                              Navigator.pop(context);
-                            } else {
-                              // Insert into expenses
-                              var result2 = await conn.rawInsert(
-                                  'INSERT INTO expenses (exp_name) VALUES (?)',
-                                  [expName]);
-                              if (result2 > 0) {
-                                _onShowSnack(
-                                    Colors.green,
-                                    translations[selectedLanguage]
-                                            ?['ETSuccess'] ??
-                                        '');
-                                // ignore: use_build_context_synchronously
-                                Navigator.pop(context);
-                              } else {
-                                _onShowSnack(
-                                    Colors.red,
-                                    translations[selectedLanguage]
-                                            ?['ETError'] ??
-                                        '');
-                                // ignore: use_build_context_synchronously
-                                Navigator.pop(context);
-                              }
-                            }
-                          }
-                        },
-                        child: Text(
-                            translations[selectedLanguage]?['AddBtn'] ?? ''),
-                      ),
-                    ],
-                  ))
-            ],
-          );
-        }),
-      );
-    }),
-  );
 }
