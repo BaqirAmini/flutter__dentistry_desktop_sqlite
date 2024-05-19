@@ -110,6 +110,8 @@ class _ExpenseListState extends State<ExpenseList> {
 
   // This dialog creates a new expense type
   onCreateExpenseType(BuildContext context, Function onRefresh) {
+    // This flag is to show / hide expense types duplicate message
+    bool expenseDuplicated = false;
 // The global for the form
     final formKey1 = GlobalKey<FormState>();
 // The text editing controllers for the TextFormFields
@@ -136,9 +138,10 @@ class _ExpenseListState extends State<ExpenseList> {
                     width: 500.0,
                     child: SingleChildScrollView(
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            margin: const EdgeInsets.all(20.0),
+                            margin: const EdgeInsets.symmetric(vertical: 8.0),
                             child: TextFormField(
                               controller: itemNameController,
                               validator: (value) {
@@ -179,6 +182,19 @@ class _ExpenseListState extends State<ExpenseList> {
                               ),
                             ),
                           ),
+                          Visibility(
+                            visible: expenseDuplicated ? true : false,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 25.0),
+                              child: Text(
+                                translations[selectedLanguage]?['ETDupError'] ??
+                                    '',
+                                style: const TextStyle(
+                                    fontSize: 14.0,
+                                    color: Color.fromARGB(255, 247, 45, 45)),
+                              ),
+                            ),
+                          )
                         ],
                       ),
                     ),
@@ -206,22 +222,20 @@ class _ExpenseListState extends State<ExpenseList> {
                                   'SELECT * FROM expenses WHERE exp_name = ?',
                                   [expName]);
                               if (results1.isNotEmpty) {
-                                _onShowSnack(
-                                    Colors.red,
-                                    translations[selectedLanguage]
-                                            ?['ETDupError'] ??
-                                        '');
-                                // ignore: use_build_context_synchronously
-                                Navigator.pop(context);
+                                setState(
+                                  () {
+                                    expenseDuplicated = true;
+                                  },
+                                );
                               } else {
                                 // Insert into expenses
                                 var result2 = await conn.rawInsert(
                                     'INSERT INTO expenses (exp_name) VALUES (?)',
                                     [expName]);
                                 if (result2 > 0) {
+                                  onRefresh();
                                   // ignore: use_build_context_synchronously
                                   Navigator.pop(context);
-                                  onRefresh();
                                 } else {
                                   _onShowSnack(
                                       Colors.red,
