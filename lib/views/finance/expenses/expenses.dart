@@ -131,7 +131,8 @@ class _ExpenseListState extends State<ExpenseList> {
                 ),
               ),
               content: Directionality(
-                textDirection: TextDirection.rtl,
+                textDirection:
+                    isEnglish ? TextDirection.ltr : TextDirection.rtl,
                 child: Form(
                   key: formKey1,
                   child: SizedBox(
@@ -149,10 +150,10 @@ class _ExpenseListState extends State<ExpenseList> {
                                   return translations[selectedLanguage]
                                           ?['ETRequired'] ??
                                       '';
-                                } else if (value.length < 3 ||
+                                } else if (value.length < 2 ||
                                     value.length > 20) {
                                   return translations[selectedLanguage]
-                                          ?['ETError'] ??
+                                          ?['ETLength'] ??
                                       '';
                                 }
                               },
@@ -185,7 +186,9 @@ class _ExpenseListState extends State<ExpenseList> {
                           Visibility(
                             visible: expenseDuplicated ? true : false,
                             child: Padding(
-                              padding: const EdgeInsets.only(right: 25.0),
+                              padding: isEnglish
+                                  ? const EdgeInsets.only(left: 25.0)
+                                  : const EdgeInsets.only(right: 25.0),
                               child: Text(
                                 translations[selectedLanguage]?['ETDupError'] ??
                                     '',
@@ -335,7 +338,8 @@ class _ExpenseListState extends State<ExpenseList> {
                 ),
               ),
               content: Directionality(
-                textDirection: TextDirection.rtl,
+                textDirection:
+                    isEnglish ? TextDirection.ltr : TextDirection.rtl,
                 child: Form(
                   key: formKey2,
                   child: SizedBox(
@@ -344,8 +348,11 @@ class _ExpenseListState extends State<ExpenseList> {
                       child: Column(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.only(
-                                right: 20.0, bottom: 10.0, top: 10.0),
+                            padding: isEnglish
+                                ? const EdgeInsets.only(
+                                    left: 20.0, bottom: 10.0, top: 10.0)
+                                : const EdgeInsets.only(
+                                    right: 20.0, bottom: 10.0, top: 10.0),
                             child: Row(
                               children: [
                                 Expanded(
