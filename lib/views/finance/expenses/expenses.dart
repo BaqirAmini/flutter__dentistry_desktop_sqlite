@@ -343,7 +343,7 @@ class _ExpenseListState extends State<ExpenseList> {
                 child: Form(
                   key: formKey2,
                   child: SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.4,
+                    width: MediaQuery.of(context).size.width * 0.35,
                     child: SingleChildScrollView(
                       child: Column(
                         children: [
@@ -354,9 +354,11 @@ class _ExpenseListState extends State<ExpenseList> {
                                 : const EdgeInsets.only(
                                     right: 20.0, bottom: 10.0, top: 10.0),
                             child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                Expanded(
-                                  flex: 4,
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.3,
                                   child: InputDecorator(
                                     decoration: InputDecoration(
                                       border: const OutlineInputBorder(),
@@ -411,39 +413,20 @@ class _ExpenseListState extends State<ExpenseList> {
                                     ),
                                   ),
                                 ),
-                                Expanded(
-                                  flex: 1,
-                                  child: Tooltip(
-                                    message: translations[selectedLanguage]
+                                IconButton(
+                                  splashRadius: 25.0,
+                                    tooltip: translations[selectedLanguage]
                                             ?['AddExpType'] ??
                                         '',
-                                    child: InkWell(
-                                      hoverColor: Colors.transparent,
-                                      onTap: () =>
-                                          onCreateExpenseType(context, () {
-                                        setState(
-                                          () {
-                                            fetchExpenseTypes();
-                                          },
-                                        );
-                                      }),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                              color: Colors.grey, width: 1.3),
-                                        ),
-                                        child: const Padding(
-                                          padding: EdgeInsets.all(8.0),
-                                          child: Icon(
-                                            Icons.add_outlined,
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                )
+                                    onPressed: () =>
+                                        onCreateExpenseType(context, () {
+                                          setState(
+                                            () {
+                                              fetchExpenseTypes();
+                                            },
+                                          );
+                                        }),
+                                    icon: Icon(Icons.add, color: Colors.green)),
                               ],
                             ),
                           ),
