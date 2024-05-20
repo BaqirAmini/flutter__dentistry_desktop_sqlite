@@ -590,7 +590,10 @@ onCreatePrescription(BuildContext context) {
                                   await Printing.sharePdf(
                                       bytes: bytes, filename: fileName);
                                   // ignore: use_build_context_synchronously
-                                  Navigator.pop(context);
+                                  /* --------------------- Comment out to not close the dialog after the prescription PDF is generated ---------------------- */
+                                  // Navigator.pop(context);
+                                  /* ---------------------/. Comment out to not close the dialog after the prescription PDF is generated ---------------------- */
+
                                   /*   // Print the PDF
                             await Printing.layoutPdf(
                               onLayout: (PdfPageFormat format) async => bytes,
