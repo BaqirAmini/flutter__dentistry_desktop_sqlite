@@ -353,12 +353,9 @@ class ExpenseDataTableState extends State<ExpenseDataTable> {
                       IconButton(
                         splashRadius: 25.0,
                         tooltip: 'Refresh',
-                        onPressed: () {
-                          setState(() {
-                            fetchExpenseFilter();
-                          });
-                        },
-                        icon: const Icon(Icons.replay_rounded, color: Colors.green),
+                        onPressed: () => fetchExpenseFilter(),
+                        icon: const Icon(Icons.replay_rounded,
+                            color: Colors.green),
                       ),
                       const SizedBox(width: 20.0),
                       Container(
@@ -366,50 +363,65 @@ class ExpenseDataTableState extends State<ExpenseDataTable> {
                         height: 60.0,
                         margin: const EdgeInsets.only(top: 6.0, left: 6.0),
                         child: InputDecorator(
-                          decoration: InputDecoration(
-                            border: const OutlineInputBorder(),
-                            labelText: translations[selectedLanguage]
-                                    ?['FilterByType'] ??
-                                '',
-                            enabledBorder: const OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10.0)),
-                                borderSide: BorderSide(color: Colors.grey)),
-                            focusedBorder: const OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10.0)),
-                                borderSide: BorderSide(color: Colors.blue)),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: SizedBox(
-                              height: 25.0,
-                              child: ButtonTheme(
-                                alignedDropdown: true,
-                                child: DropdownButton(
-                                  // isExpanded: true,
-                                  icon: const Icon(Icons.arrow_drop_down),
-                                  value: selectedFilter,
-                                  style: const TextStyle(
-                                      fontSize: 14.0, color: Colors.black),
-                                  items: expenseTypes.map((expense) {
-                                    return DropdownMenuItem<String>(
-                                      value: expense['exp_ID'],
-                                      alignment: Alignment.centerRight,
-                                      child: Text(expense['exp_name']),
-                                    );
-                                  }).toList(),
-                                  onChanged: (String? newValue) {
-                                    setState(() {
-                                      selectedFilter = newValue;
-                                      expFilterValue = selectedFilter!;
-                                      _fetchData();
-                                    });
-                                  },
-                                ),
-                              ),
+                            decoration: InputDecoration(
+                              border: const OutlineInputBorder(),
+                              labelText: translations[selectedLanguage]
+                                      ?['FilterByType'] ??
+                                  '',
+                              enabledBorder: const OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10.0)),
+                                  borderSide: BorderSide(color: Colors.grey)),
+                              focusedBorder: const OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10.0)),
+                                  borderSide: BorderSide(color: Colors.blue)),
                             ),
-                          ),
-                        ),
+                            child: FutureBuilder(
+                              future: fetchExpenseFilter(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                } else if (snapshot.hasError) {
+                                  return Text('Error: ${snapshot.error}');
+                                } else {
+                                  return DropdownButtonHideUnderline(
+                                    child: SizedBox(
+                                      height: 25.0,
+                                      child: ButtonTheme(
+                                        alignedDropdown: true,
+                                        child: DropdownButton(
+                                          // isExpanded: true,
+                                          icon:
+                                              const Icon(Icons.arrow_drop_down),
+                                          value: selectedFilter,
+                                          style: const TextStyle(
+                                              fontSize: 14.0,
+                                              color: Colors.black),
+                                          items: expenseTypes.map((expense) {
+                                            return DropdownMenuItem<String>(
+                                              value: expense['exp_ID'],
+                                              alignment: Alignment.centerRight,
+                                              child: Text(expense['exp_name']),
+                                            );
+                                          }).toList(),
+                                          onChanged: (String? newValue) {
+                                            setState(() {
+                                              selectedFilter = newValue;
+                                              expFilterValue = selectedFilter!;
+                                              _fetchData();
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                            )),
                       ),
                     ],
                   ),
