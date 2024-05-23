@@ -1,6 +1,10 @@
+import 'dart:ffi';
+import 'dart:io';
+import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:win32/win32.dart';
 import 'package:windows_notification/notification_message.dart';
 import 'package:windows_notification/windows_notification.dart';
 import 'package:intl/intl.dart' as intl;
@@ -116,6 +120,41 @@ class GlobalUsage {
         "You have an appointment with $firstName $lastName");
     winNotifyPlugin.showNotificationPluginTemplate(message);
   }
+
+
+// This function fetches machine GUID.
+  String getMachineGuid() {
+    final hKey = calloc<HKEY>();
+    final lpcbData = calloc<DWORD>()..value = 256;
+    final lpData = calloc<Uint16>(lpcbData.value);
+
+    final strKeyPath = TEXT('SOFTWARE\\Microsoft\\Cryptography');
+    final strValueName = TEXT('MachineGuid');
+
+    var result =
+        RegOpenKeyEx(HKEY_LOCAL_MACHINE, strKeyPath, 0, KEY_READ, hKey);
+    if (result == ERROR_SUCCESS) {
+      result = RegQueryValueEx(
+          hKey.value, strValueName, nullptr, nullptr, lpData.cast(), lpcbData);
+      if (result == ERROR_SUCCESS) {
+        String machineGuid = lpData
+            .cast<Utf16>()
+            .toDartString(); // Use cast<Utf16>().toDartString() here
+        calloc.free(hKey);
+        calloc.free(lpcbData);
+        calloc.free(lpData);
+        return machineGuid;
+      }
+    }
+
+    calloc.free(hKey);
+    calloc.free(lpcbData);
+    calloc.free(lpData);
+
+    throw Exception('Failed to get MachineGuid');
+  }
+
+
 
 // Create instance of Flutter Secure Store
   final storage = const FlutterSecureStorage();
