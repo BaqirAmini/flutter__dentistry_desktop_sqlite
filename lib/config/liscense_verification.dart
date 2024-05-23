@@ -48,7 +48,7 @@ class _LiscenseVerificationState extends State<LiscenseVerification> {
   @override
   void initState() {
     super.initState();
-    _machineCodeController.text = getMachineGuid();
+    _machineCodeController.text = _globalUsage.getMachineGuid();
   }
 
   @override
@@ -357,37 +357,5 @@ class _LiscenseVerificationState extends State<LiscenseVerification> {
         ),
       ),
     );
-  }
-
-// This function fetches machine GUID.
-  String getMachineGuid() {
-    final hKey = calloc<HKEY>();
-    final lpcbData = calloc<DWORD>()..value = 256;
-    final lpData = calloc<Uint16>(lpcbData.value);
-
-    final strKeyPath = TEXT('SOFTWARE\\Microsoft\\Cryptography');
-    final strValueName = TEXT('MachineGuid');
-
-    var result =
-        RegOpenKeyEx(HKEY_LOCAL_MACHINE, strKeyPath, 0, KEY_READ, hKey);
-    if (result == ERROR_SUCCESS) {
-      result = RegQueryValueEx(
-          hKey.value, strValueName, nullptr, nullptr, lpData.cast(), lpcbData);
-      if (result == ERROR_SUCCESS) {
-        String machineGuid = lpData
-            .cast<Utf16>()
-            .toDartString(); // Use cast<Utf16>().toDartString() here
-        calloc.free(hKey);
-        calloc.free(lpcbData);
-        calloc.free(lpData);
-        return machineGuid;
-      }
-    }
-
-    calloc.free(hKey);
-    calloc.free(lpcbData);
-    calloc.free(lpData);
-
-    throw Exception('Failed to get MachineGuid');
   }
 }
