@@ -448,8 +448,8 @@ class _PatientProfileState extends State<_PatientProfile> {
                     ),
                     elevation: 1,
                     child: Container(
-                      width: MediaQuery.of(context).size.width * 0.025,
-                      height: MediaQuery.of(context).size.height * 0.025,
+                      width: MediaQuery.of(context).size.width * 0.033,
+                      height: MediaQuery.of(context).size.height * 0.028,
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(50)),
                       child: Center(
