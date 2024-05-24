@@ -6,6 +6,7 @@ import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/views/patients/adult_coordinate_system.dart';
 import 'package:flutter_dentistry/views/patients/child_coordinate_system.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart' as intl2;
 
 // Set global variables which are needed later.
 var selectedLanguage;
@@ -116,8 +117,8 @@ class _ServiceFormState extends State<ServiceForm> {
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
     ServiceInfo.serviceNote = _noteController.text;
-    ServiceInfo.meetingDate = _visitTimeController.text.toString();
     DateTime selectedDateTime = DateTime.now();
+    ServiceInfo.meetingDate = _visitTimeController.text;
 
     return Container(
       margin: (ServiceInfo.selectedServiceID == 1 ||
@@ -162,6 +163,7 @@ class _ServiceFormState extends State<ServiceForm> {
                           margin: const EdgeInsets.only(
                               left: 20.0, right: 10.0, top: 10.0, bottom: 10.0),
                           child: TextFormField(
+                            textDirection: TextDirection.ltr,
                             controller: _visitTimeController,
                             validator: (value) {
                               if (value!.isEmpty) {
@@ -197,8 +199,12 @@ class _ServiceFormState extends State<ServiceForm> {
                                     pickedTime.hour,
                                     pickedTime.minute,
                                   );
-                                  _visitTimeController.text =
-                                      selectedDateTime.toString();
+                                  // Fortmat to display a more user-friendly manner in the field like: 2024-05-04 07:00
+                                  final intl2.DateFormat formatter =
+                                      intl2.DateFormat('yyyy-MM-dd HH:mm');
+                                  String formattedDateTime =
+                                      formatter.format(selectedDateTime);
+                                  _visitTimeController.text = formattedDateTime;
                                 }
                               }
                             },
