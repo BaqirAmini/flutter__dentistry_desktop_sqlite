@@ -311,6 +311,7 @@ class _CalendarPageState extends State<CalendarPage> {
                             margin: const EdgeInsets.symmetric(
                                 horizontal: 10.0, vertical: 10.0),
                             child: TextFormField(
+                              textDirection: TextDirection.ltr,
                               controller: apptdatetimeController,
                               validator: (value) {
                                 if (value!.isEmpty) {
@@ -369,8 +370,12 @@ class _CalendarPageState extends State<CalendarPage> {
                                       pickedTime.hour,
                                       pickedTime.minute,
                                     );
+                                    final intl2.DateFormat formatter =
+                                        intl2.DateFormat('yyyy-MM-dd HH:mm');
+                                    String formattedDateTime =
+                                        formatter.format(selectedDateTime);
                                     apptdatetimeController.text =
-                                        selectedDateTime.toString();
+                                        formattedDateTime;
                                   }
                                 }
                               },
@@ -825,6 +830,7 @@ class _CalendarPageState extends State<CalendarPage> {
                             margin: const EdgeInsets.symmetric(
                                 horizontal: 10.0, vertical: 10.0),
                             child: TextFormField(
+                              textDirection: TextDirection.ltr,
                               controller: editApptTimeController,
                               validator: (value) {
                                 if (value!.isEmpty) {
@@ -883,8 +889,12 @@ class _CalendarPageState extends State<CalendarPage> {
                                       pickedTime.hour,
                                       pickedTime.minute,
                                     );
+                                    final intl2.DateFormat formatter =
+                                        intl2.DateFormat('yyyy-MM-dd HH:mm');
+                                    String formattedDateTime =
+                                        formatter.format(selectedDateTime);
                                     editApptTimeController.text =
-                                        selectedDateTime.toString();
+                                        formattedDateTime;
                                   }
                                 }
                               },

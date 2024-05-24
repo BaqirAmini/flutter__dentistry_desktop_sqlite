@@ -336,10 +336,18 @@ class _CalendarPageState extends State<CalendarPage> {
                                           // Convert the results into a list of Patient objects
                                           var suggestions = results
                                               .map((row) => PatientDataModel(
-                                                    patientId: row["pat_ID"] as int,
-                                                    patientFName: row["firstname"].toString(),
-                                                    patentLName: row["lastname"] == null ? '' : row["lastname"].toString(),
-                                                    patientPhone: row["phone"].toString(),
+                                                    patientId:
+                                                        row["pat_ID"] as int,
+                                                    patientFName:
+                                                        row["firstname"]
+                                                            .toString(),
+                                                    patentLName:
+                                                        row["lastname"] == null
+                                                            ? ''
+                                                            : row["lastname"]
+                                                                .toString(),
+                                                    patientPhone:
+                                                        row["phone"].toString(),
                                                   ))
                                               .toList();
                                           return suggestions;
@@ -548,6 +556,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                 margin: const EdgeInsets.symmetric(
                                     horizontal: 10.0, vertical: 10.0),
                                 child: TextFormField(
+                                  textDirection: TextDirection.ltr,
                                   controller: apptdatetimeController,
                                   validator: (value) {
                                     if (value!.isEmpty) {
@@ -608,8 +617,13 @@ class _CalendarPageState extends State<CalendarPage> {
                                           pickedTime.hour,
                                           pickedTime.minute,
                                         );
+                                        final intl2.DateFormat formatter =
+                                            intl2.DateFormat(
+                                                "yyyy-MM-dd HH:mm");
+                                        String formattedDateTime =
+                                            formatter.format(selectedDateTime);
                                         apptdatetimeController.text =
-                                            selectedDateTime.toString();
+                                            formattedDateTime;
                                       }
                                     }
                                   },
@@ -882,7 +896,7 @@ class _CalendarPageState extends State<CalendarPage> {
                         const Icon(Icons.calendar_month_outlined,
                             color: Colors.grey),
                         const SizedBox(width: 15.0),
-                        Text(formattedTime)
+                        Text(formattedTime, textDirection: TextDirection.ltr)
                       ],
                     ),
                   ),
@@ -1001,16 +1015,22 @@ class _CalendarPageState extends State<CalendarPage> {
                                     try {
                                       final conn = await onConnToSqliteDb();
                                       var results = await conn.rawQuery(
-                                          'SELECT pat_ID, firstname, lastname, phone FROM patients WHERE firstname LIKE ? OR CONCAT(firstname, " ", lastname) LIKE ?',
+                                          'SELECT pat_ID, firstname, lastname, phone FROM patients WHERE firstname LIKE ? OR firstname || " " || lastname LIKE ?',
                                           ['%$search%', '%$search%']);
 
                                       // Convert the results into a list of Patient objects
                                       var suggestions = results
                                           .map((row) => PatientDataModel(
                                                 patientId: row["pat_ID"] as int,
-                                                patientFName: row["firstname"].toString(),
-                                                patentLName: row["lastname"] == null ? '' : row["lastname"].toString(),
-                                                patientPhone: row["phone"].toString(),
+                                                patientFName:
+                                                    row["firstname"].toString(),
+                                                patentLName:
+                                                    row["lastname"] == null
+                                                        ? ''
+                                                        : row["lastname"]
+                                                            .toString(),
+                                                patientPhone:
+                                                    row["phone"].toString(),
                                               ))
                                           .toList();
                                       return suggestions;
@@ -1246,8 +1266,13 @@ class _CalendarPageState extends State<CalendarPage> {
                                       pickedTime.hour,
                                       pickedTime.minute,
                                     );
+
+                                    intl2.DateFormat formatter =
+                                        intl2.DateFormat('yyyy-MM-dd HH:mm');
+                                    String formattedDateTime =
+                                        formatter.format(selectedDateTime);
                                     editApptTimeController.text =
-                                        selectedDateTime.toString();
+                                        formattedDateTime;
                                   }
                                 }
                               },
@@ -1413,7 +1438,6 @@ class _CalendarPageState extends State<CalendarPage> {
                                       '',
                                   context);
                             }
-
                           } catch (e) {
                             print(
                                 'Appointment scheduling failed (General Calendar): $e');
@@ -1521,7 +1545,8 @@ class _CalendarPageState extends State<CalendarPage> {
                 dentistFName: row["fname"].toString(),
                 dentistLName: row["lname"].toString(),
                 serviceName: row["sname"].toString(),
-                comments: row["details"] == null ? '' : row["details"].toString(),
+                comments:
+                    row["details"] == null ? '' : row["details"].toString(),
                 visitTime: DateTime.parse(row["meet_date"].toString()),
                 apptId: row["apt_ID"] as int,
                 notifFreq: row["notif"].toString(),
@@ -1529,7 +1554,8 @@ class _CalendarPageState extends State<CalendarPage> {
                 staffID: row["staff_id"] as int,
                 patientID: row["pat_id"] as int,
                 patientFName: row["pfname"].toString(),
-                patientLName: row["plname"] == null ? '' : row["plname"].toString(),
+                patientLName:
+                    row["plname"] == null ? '' : row["plname"].toString(),
               ))
           .toList();
     } catch (e) {
