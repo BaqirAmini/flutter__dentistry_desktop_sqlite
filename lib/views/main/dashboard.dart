@@ -168,7 +168,7 @@ class _DashboardState extends State<Dashboard> {
 
     for (var row in results) {
       patientData.add(_PatientsData(
-          intl.DateFormat('MMM d, y')
+          intl.DateFormat('MMMM, y')
               .format(DateTime.parse(row["reg_date"].toString())),
           double.parse(row["count"].toString())));
     }
