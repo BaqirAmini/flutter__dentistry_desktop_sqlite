@@ -132,6 +132,9 @@ class _FeeContentState extends State<FeeContent> {
     int instIncrement = ++instCounter;
     _installmentController.text = '$instIncrement / $totalInstallment';
     DateTime selectedDateTime = DateTime.now();
+    (instCounter == totalInstallment)
+        ? _recievableController.text = dueAmount.toString()
+        : _recievableController.clear();
 
     return showDialog(
         context: context,
@@ -143,7 +146,6 @@ class _FeeContentState extends State<FeeContent> {
             builder: (context, setState) {
               String? errorMessage;
               // This function deducts from due amount
-
               void deductDueAmount(String text) {
                 receivable = text.isEmpty || double.parse(text) > dueAmount
                     ? 0
@@ -209,6 +211,7 @@ class _FeeContentState extends State<FeeContent> {
                                         margin: const EdgeInsets.symmetric(
                                             horizontal: 20.0, vertical: 10.0),
                                         child: TextFormField(
+                                          textDirection: TextDirection.ltr,
                                           controller: _payDateController,
                                           validator: (value) {
                                             if (value == null ||
@@ -246,8 +249,10 @@ class _FeeContentState extends State<FeeContent> {
                                                   pickedTime.hour,
                                                   pickedTime.minute,
                                                 );
-                                                _payDateController.text =
-                                                    selectedDateTime.toString();
+                                                _payDateController
+                                                    .text = intl2.DateFormat(
+                                                        'yyyy-MM-dd HH:mm')
+                                                    .format(selectedDateTime);
                                               }
                                             }
                                           },
@@ -562,7 +567,7 @@ class _FeeContentState extends State<FeeContent> {
                                                 const EdgeInsets.only(top: 8.0),
                                             child: Center(
                                               child: Text(
-                                                '$displayedDueAmount ${translations[selectedLanguage]?['Afn'] ?? ''}',
+                                                '${displayedDueAmount.toStringAsFixed(2)} ${translations[selectedLanguage]?['Afn'] ?? ''}',
                                                 style: const TextStyle(
                                                     fontWeight: FontWeight.bold,
                                                     color: Colors.blue),
@@ -611,8 +616,13 @@ class _FeeContentState extends State<FeeContent> {
                                       [
                                         instCounter,
                                         _payDateController.text,
-                                        receivable,
-                                        displayedDueAmount,
+                                        (instCounter == totalInstallment)
+                                            ? dueAmount
+                                            : receivable,
+                                        (instCounter == totalInstallment)
+                                            ? 0
+                                            : double.parse(displayedDueAmount
+                                                .toStringAsFixed(2)),
                                         displayedDueAmount == 0 ? 1 : 0,
                                         defaultSelectedStaff,
                                         apptID
@@ -841,7 +851,8 @@ class _FeeContentState extends State<FeeContent> {
                                                           'MMM d, y hh:mm a')
                                                       .format(DateTime.parse(
                                                           payment
-                                                              .paymentDateTime.toString())),
+                                                              .paymentDateTime
+                                                              .toString())),
                                                   style: const TextStyle(
                                                       fontSize: 18.0),
                                                 ),
