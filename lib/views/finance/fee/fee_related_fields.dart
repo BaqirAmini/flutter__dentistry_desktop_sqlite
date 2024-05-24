@@ -81,7 +81,7 @@ class _FeeFormState extends State<FeeForm> {
     FeeInfo.dueAmount = _dueAmount;
     FeeInfo.discountRate = (_discRateController.text.isEmpty
         ? 0
-        : int.parse(_discRateController.text));
+        : double.parse(_discRateController.text));
     FeeInfo.installment = _defaultInstallment;
     // _defaultInstallment == 0 means whole fee is paid by a patient. So, no due amount is remaining.
     FeeInfo.receivedAmount = (_defaultInstallment == 0)
@@ -451,5 +451,5 @@ class FeeInfo {
   static int installment = 0;
   static double receivedAmount = 0;
   static double dueAmount = 0;
-  static int? discountRate;
+  static double? discountRate;
 }
