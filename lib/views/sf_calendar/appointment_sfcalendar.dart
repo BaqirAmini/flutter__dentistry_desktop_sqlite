@@ -1975,14 +1975,14 @@ class _CalendarPageState extends State<CalendarPage> {
                                       return translations[selectedLanguage]
                                               ?['PhoneRequired'] ??
                                           '';
-                                    } else if (value.startsWith('07')) {
+                                    } else if (value.startsWith('07') || value.startsWith('۰۷')) {
                                       if (value.length < 10 ||
                                           value.length > 10) {
                                         return translations[selectedLanguage]
                                                 ?['Phone10'] ??
                                             '';
                                       }
-                                    } else if (value.startsWith('+93')) {
+                                    } else if (value.startsWith('+93') || value.startsWith('+۹۳')) {
                                       if (value.length < 12 ||
                                           value.length > 12) {
                                         return translations[selectedLanguage]
@@ -2236,7 +2236,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                       context);
                                 } else {
                                   final results = await conn.rawInsert(
-                                      'INSERT INTO patients (staff_ID, firstname, lastname, age, sex, marital_status, phone, blood_group, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                                      'INSERT INTO patients (staff_ID, firstname, lastname, age, sex, marital_status, phone, blood_group, address, reg_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                                       [
                                         staffId,
                                         firstName,
@@ -2246,7 +2246,8 @@ class _CalendarPageState extends State<CalendarPage> {
                                         marital,
                                         phone,
                                         bloodGroup,
-                                        address
+                                        address,
+                                        DateTime.now().toIso8601String()
                                       ]);
                                   if (results > 0) {
                                     Navigator.of(context, rootNavigator: true)
