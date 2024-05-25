@@ -445,7 +445,7 @@ class _DashboardState extends State<Dashboard> {
                         icon: const Icon(Icons.rotate_left_rounded)),
                     SizedBox(width: MediaQuery.of(context).size.width * 0.09),
                     Visibility(
-                      visible: _validDays < 4 ? true : false,
+                      visible: _validDays < 6 ? true : false,
                       child: Container(
                         margin: const EdgeInsets.only(left: 200),
                         child: Center(
