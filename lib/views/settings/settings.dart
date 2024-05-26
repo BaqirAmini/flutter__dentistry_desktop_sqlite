@@ -1,33 +1,32 @@
-import 'dart:io';
-
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
-import 'package:flutter_dentistry/config/liscense_verification.dart';
 import 'package:flutter_dentistry/config/private/private.dart';
 import 'package:flutter_dentistry/config/translations.dart';
-import 'package:flutter_dentistry/views/main/login.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import '/views/settings/settings_menu.dart';
+import 'package:intl/intl.dart' as intl;
 
 void main() => runApp(const Settings());
 // Create the global key at the top level of your Dart file
 final GlobalKey<ScaffoldMessengerState> _globalKeyRenewLicense =
     GlobalKey<ScaffoldMessengerState>();
 // This is shows snackbar when called
-void _onShowSnack(Color backColor, String msg) {
-  _globalKeyRenewLicense.currentState?.showSnackBar(
-    SnackBar(
-      backgroundColor: backColor,
-      content: SizedBox(
-        height: 20.0,
-        child: Center(
-          child: Text(msg),
-        ),
-      ),
+void _onShowSnack(Color backColor, String msg, BuildContext context) {
+  Flushbar(
+    backgroundColor: backColor,
+    flushbarStyle: FlushbarStyle.GROUNDED,
+    flushbarPosition: FlushbarPosition.BOTTOM,
+    messageText: Text(
+      msg,
+      textAlign: TextAlign.center,
+      style: const TextStyle(color: Colors.white),
     ),
-  );
+    duration: const Duration(seconds: 3),
+  ).show(context);
 }
 
 // ignore: prefer_typing_uninitialized_variables
@@ -42,7 +41,9 @@ class Settings extends StatefulWidget {
   State<Settings> createState() => _SettingsState();
 }
 
-class _SettingsState extends State<Settings> {
+class _SettingsState extends State<Settings>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
   // form controllers
   final TextEditingController _machineCodeController = TextEditingController();
   final TextEditingController _liscenseController = TextEditingController();
@@ -64,7 +65,7 @@ class _SettingsState extends State<Settings> {
   }
 
 // This dialog is to renew the license key (product key) of Crown
-  _renewLicenseKey(BuildContext context) {
+  _renewLicenseKey(BuildContext context, Function refresh) {
     _isCoppied = false;
     _notVerified = false;
     return showDialog(
@@ -304,16 +305,12 @@ class _SettingsState extends State<Settings> {
                                             _globalUsage.generateProductKey(
                                                 expiryDate,
                                                 _machineCodeController.text);
-                                        await _globalUsage
-                                            .storeExpiryDate(expiryDate);
 
-                                        print(
-                                            'Expiry Date: ${await _globalUsage.getExpiryDate()}');
-
+                                        // Store the expiry date temporarely which will be required later
+                                        await _saveExpiryDate(expiryDate);
                                         if (reEncryptedValue ==
                                             _liscenseController.text) {
-                                          if (await _globalUsage
-                                              .hasLicenseKeyExpired()) {
+                                          if (await _hasLicenseKeyExpired()) {
                                             setState(() {
                                               _notVerified = true;
                                               _verifyMsg =
@@ -329,12 +326,17 @@ class _SettingsState extends State<Settings> {
                                             Navigator.of(context,
                                                     rootNavigator: true)
                                                 .pop();
-                                            _onShowSnack(Colors.green,
-                                                'Congratulations, your product key updated!');
+
+                                            // ignore: use_build_context_synchronously
+                                            _onShowSnack(
+                                                Colors.green,
+                                                'Congratulations, your product key updated!',
+                                                context);
+                                            refresh();
                                           }
                                         } else {
                                           setState(() {
-                                            _notVerified = true;
+                                            _notVerified = false;
                                             _verifyMsg =
                                                 'Sorry, this product key is not valid!';
                                           });
@@ -375,6 +377,30 @@ class _SettingsState extends State<Settings> {
     );
   }
 
+// Create instance of Flutter Secure Store
+  final storage = const FlutterSecureStorage();
+  // Store the expiry date only for this page
+  Future<void> _saveExpiryDate(DateTime expiryDate) async {
+    var formatter = intl.DateFormat('yyyy-MM-dd HH:mm');
+    var formattedExpiryDate = formatter.format(expiryDate);
+    await storage.write(key: '_expiryDate', value: formattedExpiryDate);
+  }
+
+  // Get the expiry date only for this page
+  Future<DateTime?> _fetchExpiryDate() async {
+    var formatter = intl.DateFormat('yyyy-MM-dd HH:mm');
+    var formattedExpiryDate = await storage.read(key: '_expiryDate');
+    return formattedExpiryDate != null
+        ? formatter.parse(formattedExpiryDate)
+        : null;
+  }
+
+  // Check if the license key has expired
+  Future<bool> _hasLicenseKeyExpired() async {
+    var expiryDate = await _fetchExpiryDate();
+    return expiryDate != null && DateTime.now().isAfter(expiryDate);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -382,6 +408,16 @@ class _SettingsState extends State<Settings> {
       setState(() {});
     });
     _machineCodeController.text = _globalUsage.getMachineGuid();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 20),
+      vsync: this,
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -419,12 +455,20 @@ class _SettingsState extends State<Settings> {
                     visible: (_validDays <= 5) ? true : false,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                      child: IconButton(
-                        splashRadius: 25.0,
-                        tooltip: 'Renew Product Key',
-                        onPressed: () => _renewLicenseKey(context),
-                        icon: const Icon(Icons.key),
-                      ),
+                      child: RotationTransition(
+                          turns: _controller,
+                          child: Card(
+                            color: Colors.red[300],
+                            shape: const CircleBorder(),
+                            child: IconButton(
+                              splashRadius: 25.0,
+                              tooltip: 'Renew Product Key',
+                              onPressed: () => _renewLicenseKey(context, () {
+                                setState(() {});
+                              }),
+                              icon: const Icon(Icons.key),
+                            ),
+                          )),
                     ),
                   ),
                   const SizedBox(width: 15.0)
