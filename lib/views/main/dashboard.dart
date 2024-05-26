@@ -40,11 +40,11 @@ class _DashboardState extends State<Dashboard> {
     _fetchFinance();
     _retrieveClinics();
 
-    setState(() {
+   /*  setState(() {
       _alertNotification(); // Call the function immediately for the first alert
       _timer = Timer.periodic(
           const Duration(minutes: 5), (Timer t) => _alertNotification());
-    });
+    }); */
   }
 
   int _allPatients = 0;
