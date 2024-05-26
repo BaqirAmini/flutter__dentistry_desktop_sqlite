@@ -39,6 +39,12 @@ class _DashboardState extends State<Dashboard> {
     _fetchAllPatient();
     _fetchFinance();
     _retrieveClinics();
+
+    setState(() {
+      _alertNotification(); // Call the function immediately for the first alert
+      _timer = Timer.periodic(
+          const Duration(minutes: 5), (Timer t) => _alertNotification());
+    });
   }
 
   int _allPatients = 0;
@@ -138,6 +144,7 @@ class _DashboardState extends State<Dashboard> {
     _getPieData();
     _getLastSixMonthPatient();
     // Alert notifications
+    _alertNotification(); // Call the function immediately for the first alert
     _timer = Timer.periodic(
         const Duration(minutes: 5), (Timer t) => _alertNotification());
 
