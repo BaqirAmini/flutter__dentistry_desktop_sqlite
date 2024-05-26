@@ -1533,7 +1533,7 @@ class _CalendarPageState extends State<CalendarPage> {
           '''SELECT st.firstname AS fname, st.lastname AS lname, s.ser_name AS sname, a.details AS details, a.meet_date AS meet_date, a.apt_ID AS apt_ID, a.notification AS notif, a.service_ID AS service_id, a.staff_ID AS staff_id, p.pat_ID AS pat_id, p.firstname AS pfname, p.lastname AS plname FROM staff st 
              INNER JOIN appointments a ON st.staff_ID = a.staff_ID 
              INNER JOIN patients p ON p.pat_ID = a.pat_ID
-             INNER JOIN services s ON a.service_ID = s.ser_ID WHERE a.status = ? AND (LOWER(pfname) LIKE ? OR LOWER(pfname) LIKE ? OR ? = '')''',
+             INNER JOIN services s ON a.service_ID = s.ser_ID WHERE a.status = ? AND (LOWER(fname) LIKE ? OR LOWER(pfname) LIKE ? OR ? = '')''',
           [
             'Pending',
             '%$searchTerm%'.toLowerCase(),
