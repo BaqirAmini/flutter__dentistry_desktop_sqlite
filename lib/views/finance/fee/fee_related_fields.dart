@@ -3,7 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
+import 'package:flutter_dentistry/views/patients/patient_info.dart';
+import 'package:flutter_dentistry/views/staff/staff_detail.dart';
+import 'package:flutter_dentistry/views/staff/staff_info.dart';
+import 'package:pdf/pdf.dart';
+import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:intl/intl.dart' as intl;
 
 // Set global variables which are needed later.
 var selectedLanguage;
@@ -23,6 +30,15 @@ class _FeeFormState extends State<FeeForm> {
   final _recievableController = TextEditingController();
   final _discRateController = TextEditingController();
   bool _noDiscountSet = true;
+  // This list to be assigned clinic info.
+  List<Map<String, dynamic>> clinics = [];
+  String? firstClinicID;
+  String? firstClinicName;
+  String? firstClinicAddr;
+  String? firstClinicPhone1;
+  String? firstClinicPhone2;
+  String? firstClinicEmail;
+  Uint8List? firstClinicLogo;
 
   // Declare for discount.
   bool _isVisibleForPayment = false;
@@ -58,10 +74,193 @@ class _FeeFormState extends State<FeeForm> {
     });
   }
 
+  Future<void> _onCreateReceipt() async {
+    try {
+      // Current date
+      DateTime now = DateTime.now();
+      String formattedDate = intl.DateFormat('yyyy/MM/dd').format(now);
+      const assetImgProvider = AssetImage(
+        'assets/graphics/logo1.png',
+      );
+      ImageProvider? blobImgProvider;
+      final clinicLogo =
+          await flutterImageProvider(blobImgProvider ?? assetImgProvider);
+      final pdf = pw.Document();
+      final fontData = await rootBundle.load('assets/fonts/per_sans_font.ttf');
+      final ttf = pw.Font.ttf(fontData);
+      final iconData = await rootBundle.load('assets/fonts/material-icons.ttf');
+      final iconTtf = pw.Font.ttf(iconData);
+
+      pdf.addPage(pw.Page(
+        pageFormat: PdfPageFormat.a5.applyMargin(
+          left: 0.5 * PdfPageFormat.cm,
+          right: 0.5 * PdfPageFormat.cm,
+          top: 0.5 * PdfPageFormat.cm,
+          bottom: 0.5 * PdfPageFormat.cm, // Adjust this value as needed
+        ),
+        build: (pw.Context context) {
+          return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              mainAxisAlignment: pw.MainAxisAlignment.start,
+              children: [
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  '---------------------------------------------------------------------------',
+                ),
+                pw.Text(
+                    textDirection: pw.TextDirection.rtl,
+                    '$firstClinicName',
+                    style: pw.TextStyle(font: ttf)),
+                pw.Text(
+                    textDirection: pw.TextDirection.rtl,
+                    '$firstClinicAddr',
+                    style: pw.TextStyle(font: ttf)),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Dr. ${StaffInfo.firstName} ${StaffInfo.lastName}',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  '$firstClinicPhone1',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.SizedBox(height: 15),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Invoice NO: INV-123456',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Date: $formattedDate',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.SizedBox(height: 15),
+                (PatientInfo.newPatientCreated)
+                    ? pw.Text(
+                        textDirection: pw.TextDirection.rtl,
+                        'Patient: ${PatientInfo.newPatientFName} ${PatientInfo.newPatientLName}',
+                        style: pw.TextStyle(
+                          font: ttf,
+                        ),
+                      )
+                    : pw.Text(
+                        textDirection: pw.TextDirection.rtl,
+                        'Patient: ${PatientInfo.firstName} ${PatientInfo.lastName}',
+                        style: pw.TextStyle(
+                          font: ttf,
+                        ),
+                      ),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Procedure: Denture',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.SizedBox(height: 15),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Total: ${_feeController.text} AFN',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Installments: 3 / 1',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                (_discRateController.text.isEmpty)
+                    ? pw.Text(
+                        textDirection: pw.TextDirection.rtl,
+                        'Discount: 0',
+                        style: pw.TextStyle(
+                          font: ttf,
+                        ),
+                      )
+                    : pw.Text(
+                        textDirection: pw.TextDirection.rtl,
+                        'Discount: ${_discRateController.text}%',
+                        style: pw.TextStyle(
+                          font: ttf,
+                        ),
+                      ),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Payable: $_feeWithDiscount AFN',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Paid: 1000 AFN',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Due: 1300 AFN',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  '---------------------------------------------------------------------------',
+                ),
+              ]);
+        },
+      ));
+      // Save the PDF
+      final bytes = await pdf.save();
+      const fileName = 'Receipt.pdf';
+      await Printing.sharePdf(bytes: bytes, filename: fileName);
+    } catch (e) {
+      print('Exception: $e');
+    }
+  }
+
+// This function fetches clinic info by instantiation
+  final GlobalUsage _globalUsage = GlobalUsage();
+  void _retrieveClinics() async {
+    clinics = await _globalUsage.retrieveClinics();
+    setState(() {
+      firstClinicID = clinics[0]["clinicId"];
+      firstClinicName = clinics[0]["clinicName"];
+      firstClinicAddr = clinics[0]["clinicAddr"];
+      firstClinicPhone1 = clinics[0]["clinicPhone1"];
+      firstClinicPhone2 = clinics[0]["clinicPhone2"];
+      firstClinicEmail = clinics[0]["clinicEmail"];
+      if (clinics[0]["clinicLogo"] is Uint8List) {
+        firstClinicLogo = clinics[0]["clinicLogo"];
+      } else if (clinics[0]["clinicLogo"] == null) {
+        print('clinicLogo is null');
+      } else {
+        // Handle the case when clinicLogo is not a Uint8List
+        print('clinicLogo is not a Uint8List');
+      }
+    }); // Call setState to trigger a rebuild of the widget with the new data.
+  }
+
   @override
   void initState() {
     super.initState();
     _recievableController.text = '0';
+    _retrieveClinics();
   }
 
   @override
@@ -198,10 +397,14 @@ class _FeeFormState extends State<FeeForm> {
                     autovalidateMode: AutovalidateMode.always,
                     validator: (value) {
                       if (value!.isEmpty) {
-                        return translations[selectedLanguage]?['DiscRateRequired'] ?? '';
+                        return translations[selectedLanguage]
+                                ?['DiscRateRequired'] ??
+                            '';
                       } else if (double.parse(value) <= 0 ||
                           double.parse(value) >= 100) {
-                        return translations[selectedLanguage]?['DiscRateRange'] ?? '';
+                        return translations[selectedLanguage]
+                                ?['DiscRateRange'] ??
+                            '';
                       }
                       return null;
                     },
@@ -369,71 +572,98 @@ class _FeeFormState extends State<FeeForm> {
                   ],
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Column(
                 children: [
-                  Container(
-                    width: MediaQuery.of(context).size.width * 0.14,
-                    margin: const EdgeInsets.all(5),
-                    decoration: const BoxDecoration(
-                        border: Border(
-                      top: BorderSide(width: 1, color: Colors.grey),
-                      bottom: BorderSide(width: 1, color: Colors.grey),
-                    )),
-                    child: InputDecorator(
-                      decoration: InputDecoration(
-                          border: InputBorder.none,
-                          labelText:
-                              translations[selectedLanguage]?['TotalFee'] ?? '',
-                          floatingLabelAlignment:
-                              FloatingLabelAlignment.center),
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Center(
-                          child: Text(
-                            '$_feeWithDiscount ${translations[selectedLanguage]?['Afn'] ?? ''}',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: MediaQuery.of(context).size.width * 0.14,
+                        margin: const EdgeInsets.all(5),
+                        decoration: const BoxDecoration(
+                            border: Border(
+                          top: BorderSide(width: 1, color: Colors.grey),
+                          bottom: BorderSide(width: 1, color: Colors.grey),
+                        )),
+                        child: InputDecorator(
+                          decoration: InputDecoration(
+                              border: InputBorder.none,
+                              labelText: translations[selectedLanguage]
+                                      ?['TotalFee'] ??
+                                  '',
+                              floatingLabelAlignment:
+                                  FloatingLabelAlignment.center),
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Center(
+                              child: Text(
+                                '$_feeWithDiscount ${translations[selectedLanguage]?['Afn'] ?? ''}',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue),
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.all(5),
-                    width: MediaQuery.of(context).size.width * 0.14,
-                    decoration: const BoxDecoration(
-                        border: Border(
-                      top: BorderSide(width: 1, color: Colors.grey),
-                      bottom: BorderSide(width: 1, color: Colors.grey),
-                    )),
-                    child: InputDecorator(
-                      decoration: InputDecoration(
-                          border: InputBorder.none,
-                          labelText: translations[selectedLanguage]
-                                  ?['ReceivableFee'] ??
-                              '',
-                          floatingLabelAlignment:
-                              FloatingLabelAlignment.center),
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Center(
-                          child: _defaultInstallment == 0
-                              ? Text(
-                                  '${0.0} ${translations[selectedLanguage]?['Afn'] ?? ''}',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blue),
-                                )
-                              : Text(
-                                  '$_dueAmount ${translations[selectedLanguage]?['Afn'] ?? ''}',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blue),
-                                ),
+                      Container(
+                        margin: const EdgeInsets.all(5),
+                        width: MediaQuery.of(context).size.width * 0.14,
+                        decoration: const BoxDecoration(
+                            border: Border(
+                          top: BorderSide(width: 1, color: Colors.grey),
+                          bottom: BorderSide(width: 1, color: Colors.grey),
+                        )),
+                        child: InputDecorator(
+                          decoration: InputDecoration(
+                              border: InputBorder.none,
+                              labelText: translations[selectedLanguage]
+                                      ?['ReceivableFee'] ??
+                                  '',
+                              floatingLabelAlignment:
+                                  FloatingLabelAlignment.center),
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Center(
+                              child: _defaultInstallment == 0
+                                  ? Text(
+                                      '${0.0} ${translations[selectedLanguage]?['Afn'] ?? ''}',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.blue),
+                                    )
+                                  : Text(
+                                      '$_dueAmount ${translations[selectedLanguage]?['Afn'] ?? ''}',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.blue),
+                                    ),
+                            ),
+                          ),
                         ),
                       ),
+                    ],
+                  ),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: (_feeController.text.isEmpty)
+                              ? Colors.grey
+                              : Colors.green,
+                          width: 1.5),
+                    ),
+                    child: IconButton(
+                      tooltip: 'Create Bill',
+                      splashRadius: 25.0,
+                      onPressed: (_feeController.text.isEmpty)
+                          ? null
+                          : () => _onCreateReceipt(),
+                      icon: Icon(Icons.receipt_long_rounded,
+                          color: (_feeController.text.isEmpty)
+                              ? Colors.grey
+                              : Colors.green),
                     ),
                   ),
                 ],
