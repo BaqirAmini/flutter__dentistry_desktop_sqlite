@@ -646,6 +646,8 @@ class _FeeFormState extends State<FeeForm> {
                   ),
                   SizedBox(height: MediaQuery.of(context).size.height * 0.02),
                   Container(
+                    width: MediaQuery.of(context).size.width * 0.06,
+                    height: MediaQuery.of(context).size.height * 0.06,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -663,7 +665,7 @@ class _FeeFormState extends State<FeeForm> {
                       icon: Icon(Icons.receipt_long_rounded,
                           color: (_feeController.text.isEmpty)
                               ? Colors.grey
-                              : Colors.green),
+                              : Colors.green, size: MediaQuery.of(context).size.width * 0.015),
                     ),
                   ),
                 ],
