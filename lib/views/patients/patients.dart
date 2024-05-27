@@ -2688,6 +2688,7 @@ class _PatientDataTableState extends State<PatientDataTable> {
                               '',
                           context);
                     } else {
+                      PatientInfo.newPatientCreated = true;
                       // ignore: use_build_context_synchronously
                       Navigator.push(
                               context,
