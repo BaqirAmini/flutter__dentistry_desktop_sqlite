@@ -10,6 +10,9 @@ class PatientInfo {
   static String? maritalStatus;
   static String? bloodGroup;
   static String? regDate;
+  static bool newPatientCreated = false;
+  static String? newPatientFName;
+  static String? newPatientLName;
 
   // Declare a dropdown for ages
   static int ageDropDown = 0;
