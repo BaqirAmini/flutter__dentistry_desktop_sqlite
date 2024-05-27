@@ -6,6 +6,7 @@ import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/finance/fee/fee_related_fields.dart';
 import 'package:flutter_dentistry/views/patients/new_appointment.dart';
+import 'package:flutter_dentistry/views/patients/patient_info.dart';
 import 'package:flutter_dentistry/views/patients/tooth_selection_info.dart';
 import 'package:flutter_dentistry/views/services/service_related_fields.dart';
 import 'package:intl/intl.dart' as intl2;
@@ -1950,6 +1951,8 @@ class _NewPatientState extends State<NewPatient> {
                             _currentStep++;
                           }
                         }
+                        PatientInfo.newPatientFName = _nameController.text;
+                        PatientInfo.newPatientLName = _lNameController.text;
                       } else {
                         _currentStep++;
                       }
