@@ -63,6 +63,7 @@ class _AppointmentState extends State<Appointment> {
           floatingActionButton: FloatingActionButton(
             backgroundColor: Colors.green,
             onPressed: () {
+              PatientInfo.newPatientCreated = false;
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const NewAppointment()),
