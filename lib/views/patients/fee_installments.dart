@@ -144,6 +144,7 @@ class _FeeContentState extends State<FeeContent> {
       double dueAmount,
       int apptID,
       Function onRefreshPage) {
+    PatientInfo.newPatientCreated = false;
 // Call to fetch dentists
     _fetchStaff();
     // Any time a payment is made, installment should be incremented.
@@ -709,7 +710,8 @@ class _FeeContentState extends State<FeeContent> {
                                                     (instIncrement ==
                                                             totalInstallment)
                                                         ? 0
-                                                        : displayedDueAmount, _payDateController.text),
+                                                        : displayedDueAmount,
+                                                    _payDateController.text),
                                             icon: Icon(
                                                 Icons.receipt_long_rounded,
                                                 color: (_payDateController

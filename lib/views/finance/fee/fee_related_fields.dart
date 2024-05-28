@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:flutter_dentistry/config/private/private.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/views/patients/patient_info.dart';
 import 'package:flutter_dentistry/views/services/service_related_fields.dart';
@@ -73,190 +74,6 @@ class _FeeFormState extends State<FeeForm> {
     setState(() {
       _dueAmount = _feeWithDiscount - receivable;
     });
-  }
-
-  Future<void> _onCreateReceipt() async {
-    try {
-      // Current date
-      DateTime now = DateTime.now();
-      String formattedDate = intl.DateFormat('yyyy/MM/dd').format(now);
-      const assetImgProvider = AssetImage(
-        'assets/graphics/logo1.png',
-      );
-      ImageProvider? blobImgProvider;
-      final clinicLogo =
-          await flutterImageProvider(blobImgProvider ?? assetImgProvider);
-      final pdf = pw.Document();
-      final fontData = await rootBundle.load('assets/fonts/per_sans_font.ttf');
-      final ttf = pw.Font.ttf(fontData);
-      final iconData = await rootBundle.load('assets/fonts/material-icons.ttf');
-      final iconTtf = pw.Font.ttf(iconData);
-
-      pdf.addPage(pw.Page(
-        pageFormat: PdfPageFormat.a5.applyMargin(
-          left: 0.5 * PdfPageFormat.cm,
-          right: 0.5 * PdfPageFormat.cm,
-          top: 0.5 * PdfPageFormat.cm,
-          bottom: 0.5 * PdfPageFormat.cm, // Adjust this value as needed
-        ),
-        build: (pw.Context context) {
-          return pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              mainAxisAlignment: pw.MainAxisAlignment.start,
-              children: [
-                pw.Text(
-                  textDirection: pw.TextDirection.rtl,
-                  '---------------------------------------------------------------------------',
-                ),
-                pw.Text(
-                    textDirection: pw.TextDirection.rtl,
-                    '$firstClinicName',
-                    style: pw.TextStyle(font: ttf)),
-                pw.Text(
-                    textDirection: pw.TextDirection.rtl,
-                    '$firstClinicAddr',
-                    style: pw.TextStyle(font: ttf)),
-                pw.Text(
-                  textDirection: pw.TextDirection.rtl,
-                  'Dr. ${StaffInfo.firstName} ${StaffInfo.lastName}',
-                  style: pw.TextStyle(
-                    font: ttf,
-                  ),
-                ),
-                pw.Text(
-                  textDirection: pw.TextDirection.rtl,
-                  '$firstClinicPhone1',
-                  style: pw.TextStyle(
-                    font: ttf,
-                  ),
-                ),
-                pw.SizedBox(height: 15),
-                pw.Text(
-                  textDirection: pw.TextDirection.rtl,
-                  'Invoice NO: INV-${PatientInfo.age}${PatientInfo.patID}',
-                  style: pw.TextStyle(
-                    font: ttf,
-                  ),
-                ),
-                pw.Text(
-                  textDirection: pw.TextDirection.rtl,
-                  'Date: $formattedDate',
-                  style: pw.TextStyle(
-                    font: ttf,
-                  ),
-                ),
-                pw.SizedBox(height: 15),
-                (PatientInfo.newPatientCreated)
-                    ? pw.Text(
-                        textDirection: pw.TextDirection.rtl,
-                        'Patient: ${PatientInfo.newPatientFName} ${PatientInfo.newPatientLName}',
-                        style: pw.TextStyle(
-                          font: ttf,
-                        ),
-                      )
-                    : pw.Text(
-                        textDirection: pw.TextDirection.rtl,
-                        'Patient: ${PatientInfo.firstName} ${PatientInfo.lastName}',
-                        style: pw.TextStyle(
-                          font: ttf,
-                        ),
-                      ),
-                pw.Text(
-                  textDirection: pw.TextDirection.rtl,
-                  'Procedure: ${ServiceInfo.selectedServiceID}',
-                  style: pw.TextStyle(
-                    font: ttf,
-                  ),
-                ),
-                pw.SizedBox(height: 15),
-                pw.Text(
-                  textDirection: pw.TextDirection.rtl,
-                  'Total: ${_feeController.text} AFN',
-                  style: pw.TextStyle(
-                    font: ttf,
-                  ),
-                ),
-                (FeeInfo.installment == 0)
-                    ? pw.Text(
-                        textDirection: pw.TextDirection.rtl,
-                        'Installments: 1 / 1',
-                        style: pw.TextStyle(
-                          font: ttf,
-                        ),
-                      )
-                    : pw.Text(
-                        textDirection: pw.TextDirection.rtl,
-                        'Installments: ${FeeInfo.installment} / 1',
-                        style: pw.TextStyle(
-                          font: ttf,
-                        ),
-                      ),
-                (_discRateController.text.isEmpty)
-                    ? pw.Text(
-                        textDirection: pw.TextDirection.rtl,
-                        'Discount: 0',
-                        style: pw.TextStyle(
-                          font: ttf,
-                        ),
-                      )
-                    : pw.Text(
-                        textDirection: pw.TextDirection.rtl,
-                        'Discount: ${_discRateController.text}%',
-                        style: pw.TextStyle(
-                          font: ttf,
-                        ),
-                      ),
-                pw.Text(
-                  textDirection: pw.TextDirection.rtl,
-                  'Payable: $_feeWithDiscount AFN',
-                  style: pw.TextStyle(
-                    font: ttf,
-                  ),
-                ),
-                (FeeInfo.installment == 0)
-                    ? pw.Text(
-                        textDirection: pw.TextDirection.rtl,
-                        'Paid: $_feeWithDiscount AFN',
-                        style: pw.TextStyle(
-                          font: ttf,
-                        ),
-                      )
-                    : pw.Text(
-                        textDirection: pw.TextDirection.rtl,
-                        'Paid: ${FeeInfo.receivedAmount} AFN',
-                        style: pw.TextStyle(
-                          font: ttf,
-                        ),
-                      ),
-                (FeeInfo.installment == 0)
-                    ? pw.Text(
-                        textDirection: pw.TextDirection.rtl,
-                        'Due: 0 AFN',
-                        style: pw.TextStyle(
-                          font: ttf,
-                        ),
-                      )
-                    : pw.Text(
-                        textDirection: pw.TextDirection.rtl,
-                        'Due: ${FeeInfo.dueAmount} AFN',
-                        style: pw.TextStyle(
-                          font: ttf,
-                        ),
-                      ),
-                pw.Text(
-                  textDirection: pw.TextDirection.rtl,
-                  '---------------------------------------------------------------------------',
-                ),
-              ]);
-        },
-      ));
-      // Save the PDF
-      final bytes = await pdf.save();
-      const fileName = 'Receipt.pdf';
-      await Printing.sharePdf(bytes: bytes, filename: fileName);
-    } catch (e) {
-      print('Exception: $e');
-    }
   }
 
 // This function fetches clinic info by instantiation
@@ -697,7 +514,24 @@ class _FeeFormState extends State<FeeForm> {
                       splashRadius: 25.0,
                       onPressed: (_feeController.text.isEmpty)
                           ? null
-                          : () => _onCreateReceipt(),
+                          : () => _globalUsage.onCreateReceipt(
+                              firstClinicName!,
+                              firstClinicAddr!,
+                              firstClinicPhone1!,
+                              '${StaffInfo.firstName} ${StaffInfo.lastName}',
+                              ServiceInfo.selectedSerName!,
+                              _feeWithDiscount,
+                              (_defaultInstallment == 0)
+                                  ? 1
+                                  : _defaultInstallment,
+                              1,
+                              FeeInfo.discountRate!,
+                              _feeWithDiscount,
+                              (_defaultInstallment == 0)
+                                  ? _feeWithDiscount
+                                  : double.parse(_recievableController.text),
+                              (_defaultInstallment == 0) ? 0 : _dueAmount,
+                             DateTime.now().toString()),
                       icon: Icon(Icons.receipt_long_rounded,
                           color: (_feeController.text.isEmpty)
                               ? Colors.grey

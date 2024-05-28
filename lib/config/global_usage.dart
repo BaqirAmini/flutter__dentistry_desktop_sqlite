@@ -171,63 +171,138 @@ class GlobalUsage {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               mainAxisAlignment: pw.MainAxisAlignment.start,
               children: [
-                pw.Text(
-                  textDirection: pw.TextDirection.rtl,
-                  '---------------------------------------------------------------------------',
-                ),
-                pw.Text(
-                    textDirection: pw.TextDirection.rtl,
-                    clinicName,
-                    style: pw.TextStyle(font: ttf)),
-                pw.Text(
-                    textDirection: pw.TextDirection.rtl,
-                    clinicAddr,
-                    style: pw.TextStyle(font: ttf)),
-                pw.Text(
-                  textDirection: pw.TextDirection.rtl,
-                  'Dr. ${StaffInfo.fName} ${StaffInfo.lName}',
-                  style: pw.TextStyle(
-                    font: ttf,
-                  ),
-                ),
-                pw.Text(
-                  textDirection: pw.TextDirection.rtl,
-                  clinicPhone1,
-                  style: pw.TextStyle(
-                    font: ttf,
-                  ),
+                pw.Header(
+                  level: 0,
+                  child: pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Column(
+                            mainAxisAlignment: pw.MainAxisAlignment.start,
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text('INVOICE'),
+                              pw.SizedBox(height: 30),
+                              pw.Text(
+                                  textDirection: pw.TextDirection.rtl,
+                                  clinicName,
+                                  style: pw.TextStyle(font: ttf)),
+                              pw.Text(
+                                  textDirection: pw.TextDirection.rtl,
+                                  clinicAddr,
+                                  style: pw.TextStyle(font: ttf)),
+                              pw.Text(
+                                textDirection: pw.TextDirection.rtl,
+                                'Dr. $dentist',
+                                style: pw.TextStyle(
+                                  font: ttf,
+                                ),
+                              ),
+                              pw.Text(
+                                textDirection: pw.TextDirection.rtl,
+                                clinicPhone1,
+                                style: pw.TextStyle(
+                                  font: ttf,
+                                ),
+                              ),
+                            ]),
+                        pw.ClipOval(
+                            child: pw.Container(
+                          width: 50,
+                          height: 50,
+                          child: pw.Image(clinicLogo),
+                        )),
+                      ]),
                 ),
                 pw.SizedBox(height: 15),
-                pw.Text(
-                  textDirection: pw.TextDirection.rtl,
-                  'Invoice NO: INV-${PatientInfo.age}${PatientInfo.patID}',
-                  style: pw.TextStyle(
-                    font: ttf,
-                  ),
-                ),
-                pw.Text(
-                  textDirection: pw.TextDirection.rtl,
-                  'Date: $paidDate',
-                  style: pw.TextStyle(
-                    font: ttf,
-                  ),
-                ),
-                pw.SizedBox(height: 15),
-                (PatientInfo.newPatientCreated)
-                    ? pw.Text(
-                        textDirection: pw.TextDirection.rtl,
-                        'Patient: ${PatientInfo.newPatientFName} ${PatientInfo.newPatientLName}',
-                        style: pw.TextStyle(
-                          font: ttf,
-                        ),
-                      )
-                    : pw.Text(
-                        textDirection: pw.TextDirection.rtl,
-                        'Patient: ${PatientInfo.firstName} ${PatientInfo.lastName}',
-                        style: pw.TextStyle(
-                          font: ttf,
-                        ),
+                pw.Column(children: [
+                  pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        (PatientInfo.newPatientCreated)
+                            ? pw.Text(
+                                textDirection: pw.TextDirection.rtl,
+                                'Patient: ${PatientInfo.newPatientFName} ${PatientInfo.newPatientLName}',
+                                style: pw.TextStyle(
+                                  font: ttf,
+                                ),
+                              )
+                            : pw.Text(
+                                textDirection: pw.TextDirection.rtl,
+                                'Patient: ${PatientInfo.firstName} ${PatientInfo.lastName}',
+                                style: pw.TextStyle(
+                                  font: ttf,
+                                ),
+                              ),
+                        pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              (PatientInfo.newPatientCreated)
+                                  ? pw.Text(
+                                      textDirection: pw.TextDirection.rtl,
+                                      'Invoice NO: INV-1234',
+                                      style: pw.TextStyle(
+                                        font: ttf,
+                                      ),
+                                    )
+                                  : pw.Text(
+                                      textDirection: pw.TextDirection.rtl,
+                                      'Invoice NO: INV-${PatientInfo.age}${PatientInfo.patID}',
+                                      style: pw.TextStyle(
+                                        font: ttf,
+                                      ),
+                                    ),
+                              pw.Text(
+                                textDirection: pw.TextDirection.rtl,
+                                'Date: ${intl.DateFormat('yyyy-MM-dd HH:MM').format(DateTime.parse(paidDate))}',
+                                style: pw.TextStyle(
+                                  font: ttf,
+                                ),
+                              ),
+                              pw.Text(
+                                textDirection: pw.TextDirection.rtl,
+                                'Installments: $totalInstallment / $paidInstallment',
+                                style: pw.TextStyle(
+                                  font: ttf,
+                                ),
+                              ),
+                            ])
+                      ]),
+                  pw.Table(
+                    border: pw.TableBorder.all(),
+                    columnWidths: <int, pw.TableColumnWidth>{
+                      0: const pw.IntrinsicColumnWidth(),
+                      1: const pw.FlexColumnWidth(),
+                      2: const pw.FixedColumnWidth(100),
+                      3: const pw.FlexColumnWidth(),
+                    },
+                    defaultVerticalAlignment:
+                        pw.TableCellVerticalAlignment.middle,
+                    children: <pw.TableRow>[
+                      pw.TableRow(
+                        children: [
+                          pw.Text('Description',
+                              textAlign: pw.TextAlign.center),
+                          pw.Text('Quantity', textAlign: pw.TextAlign.center),
+                          pw.Text('Unit Price (AFN)',
+                              textAlign: pw.TextAlign.center),
+                          pw.Text('Amount (AFN)',
+                              textAlign: pw.TextAlign.center),
+                        ],
                       ),
+                      pw.TableRow(
+                        children: [
+                          pw.Text(service, textAlign: pw.TextAlign.center),
+                          pw.Text('1', textAlign: pw.TextAlign.center),
+                          pw.Text('$grossFee', textAlign: pw.TextAlign.center),
+                          pw.Text('$grossFee', textAlign: pw.TextAlign.center),
+                        ],
+                      ),
+                      // Add more TableRow widgets for more rows
+                    ],
+                  )
+                ]),
+                pw.SizedBox(height: 15),
                 pw.Text(
                   textDirection: pw.TextDirection.rtl,
                   'Procedure: $service',
@@ -239,13 +314,6 @@ class GlobalUsage {
                 pw.Text(
                   textDirection: pw.TextDirection.rtl,
                   'Total: $grossFee AFN',
-                  style: pw.TextStyle(
-                    font: ttf,
-                  ),
-                ),
-                pw.Text(
-                  textDirection: pw.TextDirection.rtl,
-                  'Installments: $totalInstallment / $paidInstallment',
                   style: pw.TextStyle(
                     font: ttf,
                   ),

@@ -264,13 +264,10 @@ class _ServiceFormState extends State<ServiceForm> {
                           child: SizedBox(
                             height: 26.0,
                             child: DropdownButton<String>(
-                              isExpanded: true,
-                              icon: const Icon(Icons.arrow_drop_down),
                               value: ServiceInfo.selectedServiceID.toString(),
                               items: services.map((service) {
                                 return DropdownMenuItem<String>(
                                   value: service['ser_ID'],
-                                  alignment: Alignment.centerRight,
                                   child: Text(service['ser_name']),
                                 );
                               }).toList(),
@@ -279,6 +276,12 @@ class _ServiceFormState extends State<ServiceForm> {
                                   // Assign the selected service id into the static one.
                                   ServiceInfo.selectedServiceID =
                                       int.parse(newValue!);
+                                  // Store the service name
+                                  ServiceInfo.selectedSerName =
+                                      services.firstWhere(
+                                    (service) => service['ser_ID'] == newValue,
+                                    orElse: () => {'ser_name': ''},
+                                  )['ser_name'];
                                 });
                               },
                             ),
@@ -1325,6 +1328,7 @@ class _ServiceFormState extends State<ServiceForm> {
 class ServiceInfo {
   static int? selectedDentistID;
   static int? selectedServiceID;
+  static String? selectedSerName;
   // This age is essential for teeth selection chart switch
   static int patAge = 1;
   static String? defaultOrthoType;
