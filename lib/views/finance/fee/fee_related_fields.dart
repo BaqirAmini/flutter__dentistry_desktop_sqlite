@@ -4,6 +4,7 @@ import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/views/patients/patient_info.dart';
+import 'package:flutter_dentistry/views/services/service_related_fields.dart';
 import 'package:flutter_dentistry/views/staff/staff_detail.dart';
 import 'package:flutter_dentistry/views/staff/staff_info.dart';
 import 'package:pdf/pdf.dart';
@@ -132,7 +133,7 @@ class _FeeFormState extends State<FeeForm> {
                 pw.SizedBox(height: 15),
                 pw.Text(
                   textDirection: pw.TextDirection.rtl,
-                  'Invoice NO: INV-123456',
+                  'Invoice NO: INV-${PatientInfo.age}${PatientInfo.patID}',
                   style: pw.TextStyle(
                     font: ttf,
                   ),
@@ -162,7 +163,7 @@ class _FeeFormState extends State<FeeForm> {
                       ),
                 pw.Text(
                   textDirection: pw.TextDirection.rtl,
-                  'Procedure: Denture',
+                  'Procedure: ${ServiceInfo.selectedServiceID}',
                   style: pw.TextStyle(
                     font: ttf,
                   ),
@@ -175,13 +176,21 @@ class _FeeFormState extends State<FeeForm> {
                     font: ttf,
                   ),
                 ),
-                pw.Text(
-                  textDirection: pw.TextDirection.rtl,
-                  'Installments: 3 / 1',
-                  style: pw.TextStyle(
-                    font: ttf,
-                  ),
-                ),
+                (FeeInfo.installment == 0)
+                    ? pw.Text(
+                        textDirection: pw.TextDirection.rtl,
+                        'Installments: 1 / 1',
+                        style: pw.TextStyle(
+                          font: ttf,
+                        ),
+                      )
+                    : pw.Text(
+                        textDirection: pw.TextDirection.rtl,
+                        'Installments: ${FeeInfo.installment} / 1',
+                        style: pw.TextStyle(
+                          font: ttf,
+                        ),
+                      ),
                 (_discRateController.text.isEmpty)
                     ? pw.Text(
                         textDirection: pw.TextDirection.rtl,
@@ -204,20 +213,36 @@ class _FeeFormState extends State<FeeForm> {
                     font: ttf,
                   ),
                 ),
-                pw.Text(
-                  textDirection: pw.TextDirection.rtl,
-                  'Paid: 1000 AFN',
-                  style: pw.TextStyle(
-                    font: ttf,
-                  ),
-                ),
-                pw.Text(
-                  textDirection: pw.TextDirection.rtl,
-                  'Due: 1300 AFN',
-                  style: pw.TextStyle(
-                    font: ttf,
-                  ),
-                ),
+                (FeeInfo.installment == 0)
+                    ? pw.Text(
+                        textDirection: pw.TextDirection.rtl,
+                        'Paid: $_feeWithDiscount AFN',
+                        style: pw.TextStyle(
+                          font: ttf,
+                        ),
+                      )
+                    : pw.Text(
+                        textDirection: pw.TextDirection.rtl,
+                        'Paid: ${FeeInfo.receivedAmount} AFN',
+                        style: pw.TextStyle(
+                          font: ttf,
+                        ),
+                      ),
+                (FeeInfo.installment == 0)
+                    ? pw.Text(
+                        textDirection: pw.TextDirection.rtl,
+                        'Due: 0 AFN',
+                        style: pw.TextStyle(
+                          font: ttf,
+                        ),
+                      )
+                    : pw.Text(
+                        textDirection: pw.TextDirection.rtl,
+                        'Due: ${FeeInfo.dueAmount} AFN',
+                        style: pw.TextStyle(
+                          font: ttf,
+                        ),
+                      ),
                 pw.Text(
                   textDirection: pw.TextDirection.rtl,
                   '---------------------------------------------------------------------------',
@@ -376,6 +401,17 @@ class _FeeFormState extends State<FeeForm> {
                             onChanged: (bool? newValue) {
                               setState(() {
                                 _noDiscountSet = newValue!;
+                                if (_noDiscountSet) {
+                                  _discRateController.clear();
+                                  _feeWithDiscount = _feeController.text.isEmpty
+                                      ? 0
+                                      : double.parse(_feeController.text);
+                                  _dueAmount = _feeWithDiscount -
+                                      ((_recievableController.text.isEmpty)
+                                          ? 0
+                                          : double.parse(
+                                              _recievableController.text));
+                                }
                               });
                             },
                           ),
@@ -665,7 +701,8 @@ class _FeeFormState extends State<FeeForm> {
                       icon: Icon(Icons.receipt_long_rounded,
                           color: (_feeController.text.isEmpty)
                               ? Colors.grey
-                              : Colors.green, size: MediaQuery.of(context).size.width * 0.015),
+                              : Colors.green,
+                          size: MediaQuery.of(context).size.width * 0.015),
                     ),
                   ),
                 ],
