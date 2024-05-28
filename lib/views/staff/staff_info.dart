@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter_dentistry/models/db_conn.dart';
 
-
 class StaffInfo {
   static int? staffID;
   static String? staffRole;
@@ -16,6 +15,10 @@ class StaffInfo {
   static Uint8List? userPhoto;
   static Uint8List? contractFile;
   static String? fileType;
+
+  // Denitst's firstname and listname needed only for billing
+  static String? fName;
+  static String? lName;
 
   // position types dropdown variables
   static String staffDefaultPosistion = 'داکتر دندان';
@@ -34,11 +37,11 @@ class StaffInfo {
     final result = await conn
         .rawQuery('SELECT photo FROM staff WHERE staff_ID = ?', [staffID]);
 
-    Uint8List? staffPhoto =
-        result.first['photo'] != null ? result.first['photo'] as Uint8List : null;
+    Uint8List? staffPhoto = result.first['photo'] != null
+        ? result.first['photo'] as Uint8List
+        : null;
 
     // Convert image of BLOB type to binary first.
-    uint8list =
-        staffPhoto != null ? Uint8List.fromList(staffPhoto) : null;
+    uint8list = staffPhoto != null ? Uint8List.fromList(staffPhoto) : null;
   }
 }
