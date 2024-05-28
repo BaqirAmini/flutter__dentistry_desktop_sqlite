@@ -2,13 +2,21 @@ import 'dart:ffi';
 import 'dart:io';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
+import 'package:flutter_dentistry/views/finance/fee/fee_related_fields.dart';
+import 'package:flutter_dentistry/views/patients/patient_info.dart';
+import 'package:flutter_dentistry/views/services/service_related_fields.dart';
+import 'package:flutter_dentistry/views/staff/staff_info.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:pdf/pdf.dart';
+import 'package:printing/printing.dart';
 import 'package:win32/win32.dart';
 import 'package:windows_notification/notification_message.dart';
 import 'package:windows_notification/windows_notification.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:flutter_dentistry/config/private/private.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 class GlobalUsage {
   // A toast message to be used anywhere required
@@ -121,6 +129,170 @@ class GlobalUsage {
     winNotifyPlugin.showNotificationPluginTemplate(message);
   }
 
+  Future<void> onCreateReceipt(
+      String clinicName,
+      String clinicAddr,
+      String clinicPhone1,
+      String dentist,
+      String service,
+      double grossFee,
+      int totalInstallment,
+      int paidInstallment,
+      double discRate,
+      double payableFee,
+      double paidFee,
+      double dueFee,
+      String paidDate) async {
+    try {
+      // Current date
+      DateTime now = DateTime.now();
+      String formattedDate = intl.DateFormat('yyyy/MM/dd').format(now);
+      const assetImgProvider = AssetImage(
+        'assets/graphics/logo1.png',
+      );
+      ImageProvider? blobImgProvider;
+      final clinicLogo =
+          await flutterImageProvider(blobImgProvider ?? assetImgProvider);
+      final pdf = pw.Document();
+      final fontData = await rootBundle.load('assets/fonts/per_sans_font.ttf');
+      final ttf = pw.Font.ttf(fontData);
+      final iconData = await rootBundle.load('assets/fonts/material-icons.ttf');
+      final iconTtf = pw.Font.ttf(iconData);
+
+      pdf.addPage(pw.Page(
+        pageFormat: PdfPageFormat.a5.applyMargin(
+          left: 0.5 * PdfPageFormat.cm,
+          right: 0.5 * PdfPageFormat.cm,
+          top: 0.5 * PdfPageFormat.cm,
+          bottom: 0.5 * PdfPageFormat.cm, // Adjust this value as needed
+        ),
+        build: (pw.Context context) {
+          return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              mainAxisAlignment: pw.MainAxisAlignment.start,
+              children: [
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  '---------------------------------------------------------------------------',
+                ),
+                pw.Text(
+                    textDirection: pw.TextDirection.rtl,
+                    clinicName,
+                    style: pw.TextStyle(font: ttf)),
+                pw.Text(
+                    textDirection: pw.TextDirection.rtl,
+                    clinicAddr,
+                    style: pw.TextStyle(font: ttf)),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Dr. ${StaffInfo.fName} ${StaffInfo.lName}',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  clinicPhone1,
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.SizedBox(height: 15),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Invoice NO: INV-${PatientInfo.age}${PatientInfo.patID}',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Date: $paidDate',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.SizedBox(height: 15),
+                (PatientInfo.newPatientCreated)
+                    ? pw.Text(
+                        textDirection: pw.TextDirection.rtl,
+                        'Patient: ${PatientInfo.newPatientFName} ${PatientInfo.newPatientLName}',
+                        style: pw.TextStyle(
+                          font: ttf,
+                        ),
+                      )
+                    : pw.Text(
+                        textDirection: pw.TextDirection.rtl,
+                        'Patient: ${PatientInfo.firstName} ${PatientInfo.lastName}',
+                        style: pw.TextStyle(
+                          font: ttf,
+                        ),
+                      ),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Procedure: $service',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.SizedBox(height: 15),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Total: $grossFee AFN',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Installments: $totalInstallment / $paidInstallment',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Discount: $discRate%',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Payable: $payableFee AFN',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Paid: $paidFee AFN',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  'Due: $dueFee AFN',
+                  style: pw.TextStyle(
+                    font: ttf,
+                  ),
+                ),
+                pw.Text(
+                  textDirection: pw.TextDirection.rtl,
+                  '---------------------------------------------------------------------------',
+                ),
+              ]);
+        },
+      ));
+      // Save the PDF
+      final bytes = await pdf.save();
+      const fileName = 'Receipt.pdf';
+      await Printing.sharePdf(bytes: bytes, filename: fileName);
+    } catch (e) {
+      print('Exception: $e');
+    }
+  }
 
 // This function fetches machine GUID.
   String getMachineGuid() {
@@ -153,8 +325,6 @@ class GlobalUsage {
 
     throw Exception('Failed to get MachineGuid');
   }
-
-
 
 // Create instance of Flutter Secure Store
   final storage = const FlutterSecureStorage();
