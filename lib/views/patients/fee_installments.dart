@@ -7,6 +7,7 @@ import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/main/dashboard.dart';
 import 'package:flutter_dentistry/views/patients/patient_info.dart';
 import 'package:flutter_dentistry/views/patients/patients.dart';
+import 'package:flutter_dentistry/views/staff/staff_info.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart' as intl2;
@@ -123,9 +124,26 @@ class _FeeContentState extends State<FeeContent> {
   final TextEditingController _recievableController = TextEditingController();
   final TextEditingController _installmentController = TextEditingController();
 
+  // This list to be assigned clinic info.
+  List<Map<String, dynamic>> clinics = [];
+  String? firstClinicID;
+  String? firstClinicName;
+  String? firstClinicAddr;
+  String? firstClinicPhone1;
+  String? firstClinicPhone2;
+  String? firstClinicEmail;
+  Uint8List? firstClinicLogo;
+
 // This is to add payment made by a patient
-  _onMakePayment(BuildContext context, int instCounter, int totalInstallment,
-      double totalFee, double dueAmount, int apptID, Function onRefreshPage) {
+  _onMakePayment(
+      BuildContext context,
+      String service,
+      int instCounter,
+      int totalInstallment,
+      double totalFee,
+      double dueAmount,
+      int apptID,
+      Function onRefreshPage) {
 // Call to fetch dentists
     _fetchStaff();
     // Any time a payment is made, installment should be incremented.
@@ -135,6 +153,8 @@ class _FeeContentState extends State<FeeContent> {
     (instCounter == totalInstallment)
         ? _recievableController.text = dueAmount.toString()
         : _recievableController.clear();
+
+    GlobalUsage globalUsage = GlobalUsage();
 
     return showDialog(
         context: context,
@@ -179,414 +199,539 @@ class _FeeContentState extends State<FeeContent> {
                   ),
                 ),
                 content: Directionality(
-                  textDirection:
-                      isEnglish ? TextDirection.ltr : TextDirection.rtl,
-                  child: SizedBox(
-                    height: 450.0,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(translations[selectedLanguage]?['FormHintMsg'] ??
-                            ''),
-                        Form(
-                          key: _formKey4Payment,
-                          child: SizedBox(
-                            width: 500.0,
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const Text(
-                                        '*',
-                                        style: TextStyle(
-                                            color: Colors.red,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      Container(
-                                        width: 450,
-                                        margin: const EdgeInsets.symmetric(
-                                            horizontal: 20.0, vertical: 10.0),
-                                        child: TextFormField(
-                                          textDirection: TextDirection.ltr,
-                                          controller: _payDateController,
-                                          validator: (value) {
-                                            if (value == null ||
-                                                value.isEmpty) {
-                                              return translations[
-                                                          selectedLanguage]
-                                                      ?['FeeDateRequired'] ??
-                                                  '';
-                                            }
-                                            return errorMessage;
-                                          },
-                                          onTap: () async {
-                                            FocusScope.of(context)
-                                                .requestFocus(FocusNode());
-                                            final DateTime? pickedDate =
-                                                await showDatePicker(
-                                              context: context,
-                                              initialDate: DateTime.now(),
-                                              firstDate: DateTime(2000),
-                                              lastDate: DateTime(2100),
-                                            );
-                                            if (pickedDate != null) {
-                                              // ignore: use_build_context_synchronously
-                                              final TimeOfDay? pickedTime =
-                                                  // ignore: use_build_context_synchronously
-                                                  await showTimePicker(
-                                                context: context,
-                                                initialTime: TimeOfDay.now(),
-                                              );
-                                              if (pickedTime != null) {
-                                                selectedDateTime = DateTime(
-                                                  pickedDate.year,
-                                                  pickedDate.month,
-                                                  pickedDate.day,
-                                                  pickedTime.hour,
-                                                  pickedTime.minute,
-                                                );
-                                                _payDateController
-                                                    .text = intl2.DateFormat(
-                                                        'yyyy-MM-dd HH:mm')
-                                                    .format(selectedDateTime);
-                                              }
-                                            }
-                                          },
-                                          inputFormatters: [
-                                            FilteringTextInputFormatter.allow(
-                                                RegExp(r'[0-9.]'))
-                                          ],
-                                          decoration: InputDecoration(
-                                            border: const OutlineInputBorder(),
-                                            labelText:
-                                                translations[selectedLanguage]
-                                                        ?['PayDate'] ??
-                                                    '',
-                                            suffixIcon: const Icon(
-                                                Icons.calendar_month_outlined),
-                                            enabledBorder:
-                                                const OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                            Radius.circular(
-                                                                50.0)),
-                                                    borderSide: BorderSide(
-                                                        color: Colors.grey)),
-                                            focusedBorder:
-                                                const OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                            Radius.circular(
-                                                                50.0)),
-                                                    borderSide: BorderSide(
-                                                        color: Colors.blue)),
-                                            errorBorder:
-                                                const OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                            Radius.circular(
-                                                                50.0)),
-                                                    borderSide: BorderSide(
-                                                        color: Colors.red)),
-                                            focusedErrorBorder:
-                                                const OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                            Radius.circular(
-                                                                50.0)),
-                                                    borderSide: BorderSide(
-                                                        color: Colors.red,
-                                                        width: 1.5)),
-                                          ),
+                    textDirection:
+                        isEnglish ? TextDirection.ltr : TextDirection.rtl,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(translations[selectedLanguage]?['FormHintMsg'] ??
+                              ''),
+                          Form(
+                            key: _formKey4Payment,
+                            child: SizedBox(
+                              width: 500.0,
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Text(
+                                          '*',
+                                          style: TextStyle(
+                                              color: Colors.red,
+                                              fontWeight: FontWeight.bold),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  Container(
-                                    width: 500.0,
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 20.0, vertical: 10.0),
-                                    child: InputDecorator(
-                                      decoration: InputDecoration(
-                                        border: const OutlineInputBorder(),
-                                        labelText:
-                                            translations[selectedLanguage]
-                                                    ?['FeeReceivedBy'] ??
-                                                '',
-                                        enabledBorder: const OutlineInputBorder(
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(50.0)),
-                                            borderSide:
-                                                BorderSide(color: Colors.grey)),
-                                        focusedBorder: const OutlineInputBorder(
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(50.0)),
-                                            borderSide:
-                                                BorderSide(color: Colors.blue)),
-                                      ),
-                                      child: DropdownButtonHideUnderline(
-                                        child: Container(
-                                          height: 18.0,
-                                          padding: EdgeInsets.zero,
-                                          child: DropdownButton(
-                                            isExpanded: true,
-                                            icon: const Icon(
-                                                Icons.arrow_drop_down),
-                                            value: defaultSelectedStaff,
-                                            style: const TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.black),
-                                            items: staffList.map((staff) {
-                                              return DropdownMenuItem<String>(
-                                                value: staff['staff_ID'],
-                                                alignment:
-                                                    Alignment.centerRight,
-                                                child: Text(staff['firstname'] +
-                                                    ' ' +
-                                                    staff['lastname']),
-                                              );
-                                            }).toList(),
-                                            onChanged: (String? newValue) {
-                                              setState(() {
-                                                defaultSelectedStaff = newValue;
-                                                staffID = int.parse(newValue!);
-                                              });
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    width: 450.0,
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 20.0, vertical: 10.0),
-                                    child: TextFormField(
-                                      controller: _installmentController,
-                                      readOnly: true,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.allow(
-                                          RegExp(GlobalUsage.allowedDigPeriod),
-                                        ),
-                                      ],
-                                      decoration: InputDecoration(
-                                        border: const OutlineInputBorder(),
-                                        labelText:
-                                            translations[selectedLanguage]
-                                                    ?['PayInstallment'] ??
-                                                '',
-                                        suffixIcon:
-                                            const Icon(Icons.money_rounded),
-                                        enabledBorder: const OutlineInputBorder(
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(50.0)),
-                                            borderSide:
-                                                BorderSide(color: Colors.grey)),
-                                        focusedBorder: const OutlineInputBorder(
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(50.0)),
-                                            borderSide:
-                                                BorderSide(color: Colors.blue)),
-                                        errorBorder: const OutlineInputBorder(
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(50.0)),
-                                            borderSide:
-                                                BorderSide(color: Colors.red)),
-                                        focusedErrorBorder:
-                                            const OutlineInputBorder(
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(50.0)),
-                                                borderSide: BorderSide(
-                                                    color: Colors.red,
-                                                    width: 1.5)),
-                                      ),
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      const Text(
-                                        '*',
-                                        style: TextStyle(
-                                            color: Colors.red,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      Container(
-                                        width: 450.0,
-                                        margin: const EdgeInsets.symmetric(
-                                            horizontal: 20.0, vertical: 10.0),
-                                        child: TextFormField(
-                                          controller: _recievableController,
-                                          inputFormatters: [
-                                            FilteringTextInputFormatter.allow(
-                                              RegExp(
-                                                  GlobalUsage.allowedDigPeriod),
-                                            ),
-                                          ],
-                                          validator: (value) {
-                                            double receivedAmount =
-                                                value!.isEmpty
-                                                    ? 0
-                                                    : double.parse(value);
-                                            if (value.isEmpty) {
-                                              return translations[
-                                                          selectedLanguage]
-                                                      ?['PayAmountRequired'] ??
-                                                  '';
-                                            } else if (receivedAmount >
-                                                dueAmount) {
-                                              return translations[
-                                                          selectedLanguage]
-                                                      ?['PayAmountValid'] ??
-                                                  '';
-                                            } else if (instCounter ==
-                                                totalInstallment) {
-                                              if (receivedAmount < dueAmount) {
+                                        Container(
+                                          width: 450,
+                                          margin: const EdgeInsets.symmetric(
+                                              horizontal: 20.0, vertical: 10.0),
+                                          child: TextFormField(
+                                            textDirection: TextDirection.ltr,
+                                            controller: _payDateController,
+                                            validator: (value) {
+                                              if (value == null ||
+                                                  value.isEmpty) {
                                                 return translations[
                                                             selectedLanguage]
-                                                        ?['LastInstallment'] ??
+                                                        ?['FeeDateRequired'] ??
                                                     '';
+                                              }
+                                              return errorMessage;
+                                            },
+                                            onTap: () async {
+                                              FocusScope.of(context)
+                                                  .requestFocus(FocusNode());
+                                              final DateTime? pickedDate =
+                                                  await showDatePicker(
+                                                context: context,
+                                                initialDate: DateTime.now(),
+                                                firstDate: DateTime(2000),
+                                                lastDate: DateTime(2100),
+                                              );
+                                              if (pickedDate != null) {
+                                                // ignore: use_build_context_synchronously
+                                                final TimeOfDay? pickedTime =
+                                                    // ignore: use_build_context_synchronously
+                                                    await showTimePicker(
+                                                  context: context,
+                                                  initialTime: TimeOfDay.now(),
+                                                );
+                                                if (pickedTime != null) {
+                                                  selectedDateTime = DateTime(
+                                                    pickedDate.year,
+                                                    pickedDate.month,
+                                                    pickedDate.day,
+                                                    pickedTime.hour,
+                                                    pickedTime.minute,
+                                                  );
+                                                  _payDateController
+                                                      .text = intl2.DateFormat(
+                                                          'yyyy-MM-dd HH:mm')
+                                                      .format(selectedDateTime);
+                                                }
+                                              }
+                                            },
+                                            inputFormatters: [
+                                              FilteringTextInputFormatter.allow(
+                                                  RegExp(r'[0-9.]'))
+                                            ],
+                                            decoration: InputDecoration(
+                                              border:
+                                                  const OutlineInputBorder(),
+                                              labelText:
+                                                  translations[selectedLanguage]
+                                                          ?['PayDate'] ??
+                                                      '',
+                                              suffixIcon: const Icon(Icons
+                                                  .calendar_month_outlined),
+                                              enabledBorder:
+                                                  const OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  50.0)),
+                                                      borderSide: BorderSide(
+                                                          color: Colors.grey)),
+                                              focusedBorder:
+                                                  const OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  50.0)),
+                                                      borderSide: BorderSide(
+                                                          color: Colors.blue)),
+                                              errorBorder:
+                                                  const OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  50.0)),
+                                                      borderSide: BorderSide(
+                                                          color: Colors.red)),
+                                              focusedErrorBorder:
+                                                  const OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  50.0)),
+                                                      borderSide: BorderSide(
+                                                          color: Colors.red,
+                                                          width: 1.5)),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Container(
+                                      width: 500.0,
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 20.0, vertical: 10.0),
+                                      child: InputDecorator(
+                                        decoration: InputDecoration(
+                                          border: const OutlineInputBorder(),
+                                          labelText:
+                                              translations[selectedLanguage]
+                                                      ?['FeeReceivedBy'] ??
+                                                  '',
+                                          enabledBorder:
+                                              const OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(
+                                                              50.0)),
+                                                  borderSide: BorderSide(
+                                                      color: Colors.grey)),
+                                          focusedBorder:
+                                              const OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(
+                                                              50.0)),
+                                                  borderSide: BorderSide(
+                                                      color: Colors.blue)),
+                                        ),
+                                        child: DropdownButtonHideUnderline(
+                                          child: Container(
+                                            height: 18.0,
+                                            padding: EdgeInsets.zero,
+                                            child: DropdownButton(
+                                              isExpanded: true,
+                                              icon: const Icon(
+                                                  Icons.arrow_drop_down),
+                                              value: defaultSelectedStaff,
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.black),
+                                              items: staffList.map((staff) {
+                                                return DropdownMenuItem<String>(
+                                                  value: staff['staff_ID'],
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  child: Text(
+                                                      staff['firstname'] +
+                                                          ' ' +
+                                                          staff['lastname']),
+                                                );
+                                              }).toList(),
+                                              onChanged: (String? newValue) {
+                                                setState(() {
+                                                  defaultSelectedStaff =
+                                                      newValue;
+                                                  staffID =
+                                                      int.parse(newValue!);
+                                                  StaffInfo.fName =
+                                                      staffList.firstWhere(
+                                                    (staff) =>
+                                                        staff['staff_ID'] ==
+                                                        newValue,
+                                                    orElse: () =>
+                                                        {'firstname': ''},
+                                                  )['firstname'];
+                                                  StaffInfo.lName =
+                                                      staffList.firstWhere(
+                                                    (staff) =>
+                                                        staff['staff_ID'] ==
+                                                        newValue,
+                                                    orElse: () =>
+                                                        {'lastname': ''},
+                                                  )['lastname'];
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 450.0,
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 20.0, vertical: 10.0),
+                                      child: TextFormField(
+                                        controller: _installmentController,
+                                        readOnly: true,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.allow(
+                                            RegExp(
+                                                GlobalUsage.allowedDigPeriod),
+                                          ),
+                                        ],
+                                        decoration: InputDecoration(
+                                          border: const OutlineInputBorder(),
+                                          labelText:
+                                              translations[selectedLanguage]
+                                                      ?['PayInstallment'] ??
+                                                  '',
+                                          suffixIcon:
+                                              const Icon(Icons.money_rounded),
+                                          enabledBorder:
+                                              const OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(
+                                                              50.0)),
+                                                  borderSide: BorderSide(
+                                                      color: Colors.grey)),
+                                          focusedBorder:
+                                              const OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(
+                                                              50.0)),
+                                                  borderSide: BorderSide(
+                                                      color: Colors.blue)),
+                                          errorBorder: const OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(50.0)),
+                                              borderSide: BorderSide(
+                                                  color: Colors.red)),
+                                          focusedErrorBorder:
+                                              const OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(
+                                                              50.0)),
+                                                  borderSide: BorderSide(
+                                                      color: Colors.red,
+                                                      width: 1.5)),
+                                        ),
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        const Text(
+                                          '*',
+                                          style: TextStyle(
+                                              color: Colors.red,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Container(
+                                          width: 450.0,
+                                          margin: const EdgeInsets.symmetric(
+                                              horizontal: 20.0, vertical: 10.0),
+                                          child: TextFormField(
+                                            controller: _recievableController,
+                                            inputFormatters: [
+                                              FilteringTextInputFormatter.allow(
+                                                RegExp(GlobalUsage
+                                                    .allowedDigPeriod),
+                                              ),
+                                            ],
+                                            validator: (value) {
+                                              double receivedAmount =
+                                                  value!.isEmpty
+                                                      ? 0
+                                                      : double.parse(value);
+                                              if (value.isEmpty) {
+                                                return translations[
+                                                            selectedLanguage]?[
+                                                        'PayAmountRequired'] ??
+                                                    '';
+                                              } else if (receivedAmount >
+                                                  dueAmount) {
+                                                return translations[
+                                                            selectedLanguage]
+                                                        ?['PayAmountValid'] ??
+                                                    '';
+                                              } else if (instCounter ==
+                                                  totalInstallment) {
+                                                if (receivedAmount <
+                                                    dueAmount) {
+                                                  return translations[
+                                                              selectedLanguage]
+                                                          ?[
+                                                          'LastInstallment'] ??
+                                                      '';
+                                                } else {
+                                                  return null;
+                                                }
                                               } else {
                                                 return null;
                                               }
-                                            } else {
-                                              return null;
-                                            }
-                                          },
-                                          onChanged: (text) {
-                                            deductDueAmount(text);
-                                          },
-                                          decoration: InputDecoration(
-                                            border: const OutlineInputBorder(),
-                                            labelText:
-                                                translations[selectedLanguage]
-                                                        ?['PayAmount'] ??
-                                                    '',
-                                            suffixIcon:
-                                                const Icon(Icons.money_rounded),
-                                            enabledBorder:
-                                                const OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                            Radius.circular(
-                                                                50.0)),
-                                                    borderSide: BorderSide(
-                                                        color: Colors.grey)),
-                                            focusedBorder:
-                                                const OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                            Radius.circular(
-                                                                50.0)),
-                                                    borderSide: BorderSide(
-                                                        color: Colors.blue)),
-                                            errorBorder:
-                                                const OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                            Radius.circular(
-                                                                50.0)),
-                                                    borderSide: BorderSide(
-                                                        color: Colors.red)),
-                                            focusedErrorBorder:
-                                                const OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                            Radius.circular(
-                                                                50.0)),
-                                                    borderSide: BorderSide(
-                                                        color: Colors.red,
-                                                        width: 1.5)),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                        width: 180.0,
-                                        margin: const EdgeInsets.all(5),
-                                        decoration: const BoxDecoration(
-                                            border: Border(
-                                          top: BorderSide(
-                                              width: 1, color: Colors.grey),
-                                          bottom: BorderSide(
-                                              width: 1, color: Colors.grey),
-                                        )),
-                                        child: InputDecorator(
-                                          decoration: InputDecoration(
-                                              border: InputBorder.none,
+                                            },
+                                            onChanged: (text) {
+                                              deductDueAmount(text);
+                                            },
+                                            decoration: InputDecoration(
+                                              border:
+                                                  const OutlineInputBorder(),
                                               labelText:
                                                   translations[selectedLanguage]
-                                                          ?['TotalFee'] ??
+                                                          ?['PayAmount'] ??
                                                       '',
-                                              floatingLabelAlignment:
-                                                  FloatingLabelAlignment
-                                                      .center),
-                                          child: Padding(
-                                            padding:
-                                                const EdgeInsets.only(top: 8.0),
-                                            child: Center(
-                                              child: Text(
-                                                '$totalFee ${translations[selectedLanguage]?['Afn'] ?? ''}',
-                                                style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.blue),
-                                              ),
+                                              suffixIcon: const Icon(
+                                                  Icons.money_rounded),
+                                              enabledBorder:
+                                                  const OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  50.0)),
+                                                      borderSide: BorderSide(
+                                                          color: Colors.grey)),
+                                              focusedBorder:
+                                                  const OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  50.0)),
+                                                      borderSide: BorderSide(
+                                                          color: Colors.blue)),
+                                              errorBorder:
+                                                  const OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  50.0)),
+                                                      borderSide: BorderSide(
+                                                          color: Colors.red)),
+                                              focusedErrorBorder:
+                                                  const OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  50.0)),
+                                                      borderSide: BorderSide(
+                                                          color: Colors.red,
+                                                          width: 1.5)),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      Container(
-                                        margin: const EdgeInsets.all(5),
-                                        width: 180.0,
-                                        decoration: const BoxDecoration(
-                                            border: Border(
-                                          top: BorderSide(
-                                              width: 1, color: Colors.grey),
-                                          bottom: BorderSide(
-                                              width: 1, color: Colors.grey),
-                                        )),
-                                        child: InputDecorator(
-                                          decoration: InputDecoration(
-                                              border: InputBorder.none,
-                                              labelText:
-                                                  translations[selectedLanguage]
-                                                          ?['ReceivableFee'] ??
-                                                      '',
-                                              floatingLabelAlignment:
-                                                  FloatingLabelAlignment
-                                                      .center),
-                                          child: Padding(
-                                            padding:
-                                                const EdgeInsets.only(top: 8.0),
-                                            child: Center(
-                                              child: Text(
-                                                '${displayedDueAmount.toStringAsFixed(2)} ${translations[selectedLanguage]?['Afn'] ?? ''}',
-                                                style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.blue),
+                                      ],
+                                    ),
+                                    Column(
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              width: 180.0,
+                                              margin: const EdgeInsets.all(5),
+                                              decoration: const BoxDecoration(
+                                                  border: Border(
+                                                top: BorderSide(
+                                                    width: 1,
+                                                    color: Colors.grey),
+                                                bottom: BorderSide(
+                                                    width: 1,
+                                                    color: Colors.grey),
+                                              )),
+                                              child: InputDecorator(
+                                                decoration: InputDecoration(
+                                                    border: InputBorder.none,
+                                                    labelText: translations[
+                                                                selectedLanguage]
+                                                            ?['TotalFee'] ??
+                                                        '',
+                                                    floatingLabelAlignment:
+                                                        FloatingLabelAlignment
+                                                            .center),
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 8.0),
+                                                  child: Center(
+                                                    child: Text(
+                                                      '$totalFee ${translations[selectedLanguage]?['Afn'] ?? ''}',
+                                                      style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.blue),
+                                                    ),
+                                                  ),
+                                                ),
                                               ),
                                             ),
+                                            Container(
+                                              margin: const EdgeInsets.all(5),
+                                              width: 180.0,
+                                              decoration: const BoxDecoration(
+                                                  border: Border(
+                                                top: BorderSide(
+                                                    width: 1,
+                                                    color: Colors.grey),
+                                                bottom: BorderSide(
+                                                    width: 1,
+                                                    color: Colors.grey),
+                                              )),
+                                              child: InputDecorator(
+                                                decoration: InputDecoration(
+                                                    border: InputBorder.none,
+                                                    labelText: translations[
+                                                                selectedLanguage]
+                                                            ?[
+                                                            'ReceivableFee'] ??
+                                                        '',
+                                                    floatingLabelAlignment:
+                                                        FloatingLabelAlignment
+                                                            .center),
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 8.0),
+                                                  child: Center(
+                                                    child: (instIncrement ==
+                                                            totalInstallment)
+                                                        ? Text(
+                                                            '0.0 ${translations[selectedLanguage]?['Afn'] ?? ''}',
+                                                            style: const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color: Colors
+                                                                    .blue),
+                                                          )
+                                                        : Text(
+                                                            '${displayedDueAmount.toStringAsFixed(2)} ${translations[selectedLanguage]?['Afn'] ?? ''}',
+                                                            style: const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color: Colors
+                                                                    .blue),
+                                                          ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(
+                                            height: MediaQuery.of(context)
+                                                    .size
+                                                    .height *
+                                                0.02),
+                                        Container(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.06,
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.06,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                                color: (_payDateController
+                                                        .text.isEmpty)
+                                                    ? Colors.grey
+                                                    : Colors.green,
+                                                width: 1.5),
+                                          ),
+                                          child: IconButton(
+                                            tooltip: 'Create Bill',
+                                            splashRadius: 25.0,
+                                            onPressed: (_payDateController
+                                                    .text.isEmpty)
+                                                ? null
+                                                : () => globalUsage.onCreateReceipt(
+                                                    firstClinicName!,
+                                                    firstClinicAddr!,
+                                                    firstClinicPhone1!,
+                                                    defaultSelectedStaff!,
+                                                    service,
+                                                    totalFee,
+                                                    totalInstallment,
+                                                    instIncrement,
+                                                    0,
+                                                    totalFee,
+                                                    _recievableController
+                                                            .text.isEmpty
+                                                        ? 0
+                                                        : double.parse(
+                                                            _recievableController
+                                                                .text),
+                                                    (instIncrement ==
+                                                            totalInstallment)
+                                                        ? 0
+                                                        : displayedDueAmount, _payDateController.text),
+                                            icon: Icon(
+                                                Icons.receipt_long_rounded,
+                                                color: (_payDateController
+                                                        .text.isEmpty)
+                                                    ? Colors.grey
+                                                    : Colors.green,
+                                                size: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.015),
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                        ],
+                      ),
+                    )),
                 actions: [
                   Row(
                     mainAxisAlignment: isEnglish
@@ -672,6 +817,28 @@ class _FeeContentState extends State<FeeContent> {
         staffList.isNotEmpty ? staffList[0]['staff_ID'] : null;
   }
 
+  // This function fetches clinic info by instantiation
+  final GlobalUsage _globalUsage = GlobalUsage();
+  void _retrieveClinics() async {
+    clinics = await _globalUsage.retrieveClinics();
+    setState(() {
+      firstClinicID = clinics[0]["clinicId"];
+      firstClinicName = clinics[0]["clinicName"];
+      firstClinicAddr = clinics[0]["clinicAddr"];
+      firstClinicPhone1 = clinics[0]["clinicPhone1"];
+      firstClinicPhone2 = clinics[0]["clinicPhone2"];
+      firstClinicEmail = clinics[0]["clinicEmail"];
+      if (clinics[0]["clinicLogo"] is Uint8List) {
+        firstClinicLogo = clinics[0]["clinicLogo"];
+      } else if (clinics[0]["clinicLogo"] == null) {
+        print('clinicLogo is null');
+      } else {
+        // Handle the case when clinicLogo is not a Uint8List
+        print('clinicLogo is not a Uint8List');
+      }
+    }); // Call setState to trigger a rebuild of the widget with the new data.
+  }
+
   Future<bool> _fetchPaidDate(String date, int aptID) async {
     try {
       final conn = await onConnToSqliteDb();
@@ -726,6 +893,7 @@ class _FeeContentState extends State<FeeContent> {
   void initState() {
     super.initState();
     _fetchStaff();
+    _retrieveClinics();
   }
 
   @override
@@ -1026,6 +1194,7 @@ class _FeeContentState extends State<FeeContent> {
                                         ? null
                                         : () => _onMakePayment(
                                                 context,
+                                                serviceName,
                                                 payments.first.instCounter,
                                                 payments.first.totalInstallment,
                                                 payments.first.totalFee,
@@ -1105,6 +1274,7 @@ class _FeeContentState extends State<FeeContent> {
                                         ? null
                                         : () => _onMakePayment(
                                                 context,
+                                                serviceName,
                                                 payments.first.instCounter,
                                                 payments.first.totalInstallment,
                                                 payments.first.totalFee,
