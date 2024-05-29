@@ -94,6 +94,8 @@ class _ServiceFormState extends State<ServiceForm> {
         services = service;
         ServiceInfo.selectedServiceID =
             services.isNotEmpty ? int.parse(services[0]['ser_ID']) : null;
+        ServiceInfo.selectedSerName =
+            services.isNotEmpty ? services[0]['ser_name'] : null;
       });
     });
     // Call to fetch staff
