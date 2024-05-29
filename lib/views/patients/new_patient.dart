@@ -1953,6 +1953,8 @@ class _NewPatientState extends State<NewPatient> {
                         }
                         PatientInfo.newPatientFName = _nameController.text;
                         PatientInfo.newPatientLName = _lNameController.text;
+                        PatientInfo.newPatientAge = ageDropDown.toString();
+                        PatientInfo.newPatientPhone = _phoneController.text;
                       } else {
                         _currentStep++;
                       }
