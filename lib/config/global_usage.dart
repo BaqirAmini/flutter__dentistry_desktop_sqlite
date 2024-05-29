@@ -1,14 +1,11 @@
 import 'dart:async';
 import 'dart:ffi';
-
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
-
 import 'package:flutter_dentistry/views/patients/patient_info.dart';
-
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
@@ -18,6 +15,7 @@ import 'package:windows_notification/windows_notification.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:flutter_dentistry/config/private/private.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'dart:ui' as ui;
 
 class GlobalUsage {
   // A toast message to be used anywhere required
@@ -145,6 +143,7 @@ class GlobalUsage {
       String? clinicName,
       String? clinicAddr,
       String? clinicPhone1,
+      Uint8List? firtClinicLogo,
       String? dentist,
       String? service,
       double? grossFee,
@@ -161,14 +160,14 @@ class GlobalUsage {
       );
       ImageProvider? blobImgProvider;
 
-/*       Uint8List? firstClinicLogoBuffer = clinicLogo?.buffer.asUint8List();
+      Uint8List? firstClinicLogoBuffer = firtClinicLogo?.buffer.asUint8List();
       if (firstClinicLogoBuffer != null && firstClinicLogoBuffer.isNotEmpty) {
         final Completer<ui.Image> completer = Completer();
         ui.decodeImageFromList(firstClinicLogoBuffer, (ui.Image img) {
           return completer.complete(img);
         });
         blobImgProvider = MemoryImage(firstClinicLogoBuffer);
-      } */
+      }
 
       final clinicLogo =
           await flutterImageProvider(blobImgProvider ?? assetImgProvider);
@@ -196,14 +195,16 @@ class GlobalUsage {
                 pw.Column(children: [
                   pw.Row(
                       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      crossAxisAlignment: pw.CrossAxisAlignment.center,
                       children: [
-                        pw.ClipOval(
-                            child: pw.Container(
-                          width: 80,
-                          height: 80,
-                          child: pw.Image(clinicLogo),
-                        )),
+                        pw.Container(
+                          width: 50,
+                          height: 50,
+                          child: pw.FittedBox(
+                            child: pw.Image(clinicLogo),
+                            fit: pw.BoxFit.contain,
+                          ),
+                        ),
                         pw.Container(
                           padding:
                               const pw.EdgeInsets.symmetric(horizontal: 25.0),

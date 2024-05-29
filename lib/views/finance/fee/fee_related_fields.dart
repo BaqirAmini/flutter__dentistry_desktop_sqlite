@@ -518,6 +518,7 @@ class _FeeFormState extends State<FeeForm> {
                               firstClinicName!,
                               firstClinicAddr!,
                               firstClinicPhone1!,
+                              firstClinicLogo,
                               '${StaffInfo.firstName} ${StaffInfo.lastName}',
                               ServiceInfo.selectedSerName!,
                               double.parse(_feeController.text),

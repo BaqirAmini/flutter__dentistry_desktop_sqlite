@@ -696,6 +696,7 @@ class _FeeContentState extends State<FeeContent> {
                                                     firstClinicName!,
                                                     firstClinicAddr!,
                                                     firstClinicPhone1!,
+                                                    firstClinicLogo,
                                                     '${StaffInfo.fName} ${StaffInfo.lName}',
                                                     service,
                                                     totalFee,
