@@ -1112,6 +1112,7 @@ class _DashboardState extends State<Dashboard> {
                   ),
                   content: SizedBox(
                     width: MediaQuery.of(context).size.width * 0.39,
+                    height: MediaQuery.of(context).size.height * 0.51,
                     child: Directionality(
                       textDirection: TextDirection.rtl,
                       child: Center(
