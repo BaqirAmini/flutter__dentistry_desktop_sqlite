@@ -4,6 +4,7 @@ import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
+import 'package:flutter_dentistry/views/finance/fee/fee_related_fields.dart';
 import 'package:flutter_dentistry/views/main/dashboard.dart';
 import 'package:flutter_dentistry/views/patients/patient_info.dart';
 import 'package:flutter_dentistry/views/patients/patients.dart';
@@ -141,6 +142,7 @@ class _FeeContentState extends State<FeeContent> {
       int instCounter,
       int totalInstallment,
       double totalFee,
+      double discount,
       double dueAmount,
       int apptID,
       Function onRefreshPage) {
@@ -694,13 +696,13 @@ class _FeeContentState extends State<FeeContent> {
                                                     firstClinicName!,
                                                     firstClinicAddr!,
                                                     firstClinicPhone1!,
-                                                    defaultSelectedStaff!,
+                                                    '${StaffInfo.fName} ${StaffInfo.lName}',
                                                     service,
                                                     totalFee,
                                                     totalInstallment,
                                                     instIncrement,
-                                                    0,
-                                                    totalFee,
+                                                    discount,
+                                                    displayedDueAmount,
                                                     _recievableController
                                                             .text.isEmpty
                                                         ? 0
@@ -817,6 +819,8 @@ class _FeeContentState extends State<FeeContent> {
         .toList();
     defaultSelectedStaff =
         staffList.isNotEmpty ? staffList[0]['staff_ID'] : null;
+    StaffInfo.fName = staffList.isNotEmpty ? staffList[0]['firstname'] : null;
+    StaffInfo.lName = staffList.isNotEmpty ? staffList[0]['lastname'] : null;
   }
 
   // This function fetches clinic info by instantiation
@@ -862,7 +866,7 @@ class _FeeContentState extends State<FeeContent> {
   Future<List<ApptFeeDataModel>> _fetchApptFee() async {
     final conn = await onConnToSqliteDb();
     final results = await conn.rawQuery(
-        '''SELECT s.ser_name AS ser_name, a.installment AS installment, a.total_fee AS total_fee, a.round AS round, fp.payment_ID AS payment_id, 
+        '''SELECT s.ser_name AS ser_name, a.installment AS installment, a.total_fee AS total_fee, a.discount AS discount, a.round AS round, fp.payment_ID AS payment_id, 
             fp.installment_counter AS int_counter, fp.payment_date AS payment_date, fp.paid_amount AS paid_amount, fp.due_amount AS due_amount, fp.whole_fee_paid AS whole_paid, fp.apt_ID AS apt_id,
             st.firstname AS first_name, st.lastname AS last_name FROM services s 
             INNER JOIN appointments a ON s.ser_ID = a.service_ID
@@ -877,6 +881,7 @@ class _FeeContentState extends State<FeeContent> {
             totalInstallment:
                 row['installment'] as int == 0 ? 1 : row['installment'] as int,
             totalFee: row['total_fee'] as double,
+            discount: row['discount'] as double,
             round: row['round'] as int,
             paymentID: row['payment_id'] as int,
             instCounter: row['int_counter'] as int,
@@ -1200,6 +1205,7 @@ class _FeeContentState extends State<FeeContent> {
                                                 payments.first.instCounter,
                                                 payments.first.totalInstallment,
                                                 payments.first.totalFee,
+                                                payments.first.discount,
                                                 payments.first.dueAmount,
                                                 payments.first.apptID, () {
                                               setState(() {});
@@ -1280,6 +1286,7 @@ class _FeeContentState extends State<FeeContent> {
                                                 payments.first.instCounter,
                                                 payments.first.totalInstallment,
                                                 payments.first.totalFee,
+                                                payments.first.discount,
                                                 payments.first.dueAmount,
                                                 payments.first.apptID, () {
                                               setState(() {});
@@ -1376,6 +1383,7 @@ class ApptFeeDataModel {
   final String serviceName;
   final int totalInstallment;
   final double totalFee;
+  final double discount;
   final int round;
   final int paymentID;
   final int instCounter;
@@ -1391,6 +1399,7 @@ class ApptFeeDataModel {
       {required this.serviceName,
       required this.totalInstallment,
       required this.totalFee,
+      required this.discount,
       required this.round,
       required this.paymentID,
       required this.instCounter,
