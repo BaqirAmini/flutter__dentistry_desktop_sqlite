@@ -520,7 +520,7 @@ class _FeeFormState extends State<FeeForm> {
                               firstClinicPhone1!,
                               '${StaffInfo.firstName} ${StaffInfo.lastName}',
                               ServiceInfo.selectedSerName!,
-                              _feeWithDiscount,
+                              double.parse(_feeController.text),
                               (_defaultInstallment == 0)
                                   ? 1
                                   : _defaultInstallment,
@@ -531,7 +531,7 @@ class _FeeFormState extends State<FeeForm> {
                                   ? _feeWithDiscount
                                   : double.parse(_recievableController.text),
                               (_defaultInstallment == 0) ? 0 : _dueAmount,
-                             DateTime.now().toString()),
+                              ServiceInfo.meetingDate),
                       icon: Icon(Icons.receipt_long_rounded,
                           color: (_feeController.text.isEmpty)
                               ? Colors.grey
