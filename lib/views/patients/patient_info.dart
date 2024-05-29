@@ -11,8 +11,11 @@ class PatientInfo {
   static String? bloodGroup;
   static String? regDate;
   static bool newPatientCreated = false;
+  // These are only used for invoice generating
   static String? newPatientFName;
   static String? newPatientLName;
+  static String? newPatientAge;
+  static String? newPatientPhone;
 
   // Declare a dropdown for ages
   static int ageDropDown = 0;
