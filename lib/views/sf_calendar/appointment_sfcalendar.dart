@@ -332,8 +332,12 @@ class _CalendarPageState extends State<CalendarPage> {
                                         try {
                                           final conn = await onConnToSqliteDb();
                                           var results = await conn.rawQuery(
-                                              'SELECT pat_ID, firstname, lastname, phone FROM patients WHERE firstname LIKE ?',
-                                              ['%$search%']);
+                                              'SELECT pat_ID, firstname, lastname, phone FROM patients WHERE firstname LIKE ? OR lastname LIKE ? OR phone LIKE ?',
+                                              [
+                                                '%$search%',
+                                                '%$search%',
+                                                '%$search%'
+                                              ]);
 
                                           // Convert the results into a list of Patient objects
                                           var suggestions = results
@@ -856,7 +860,8 @@ class _CalendarPageState extends State<CalendarPage> {
                       child: Row(
                         children: [
                           Icon(Icons.phone_in_talk_outlined,
-                              size: MediaQuery.of(context).size.width * 0.009, color: Colors.grey[600]),
+                              size: MediaQuery.of(context).size.width * 0.009,
+                              color: Colors.grey[600]),
                           const SizedBox(width: 8.0),
                           Text(patientPhone,
                               textDirection: TextDirection.ltr,
@@ -1047,15 +1052,20 @@ class _CalendarPageState extends State<CalendarPage> {
                                       try {
                                         final conn = await onConnToSqliteDb();
                                         var results = await conn.rawQuery(
-                                            'SELECT pat_ID, firstname, lastname, phone FROM patients WHERE firstname LIKE ? OR firstname || " " || lastname LIKE ?',
-                                            ['%$search%', '%$search%']);
-                                            
+                                            'SELECT pat_ID, firstname, lastname, phone FROM patients WHERE firstname LIKE ? OR firstname || " " || lastname LIKE ? OR phone LIKE ?',
+                                            [
+                                              '%$search%',
+                                              '%$search%',
+                                              '%$search%'
+                                            ]);
+
                                         // Convert the results into a list of Patient objects
                                         var suggestions = results
                                             .map((row) => PatientDataModel(
-                                                  patientId: row["pat_ID"] as int,
-                                                  patientFName:
-                                                      row["firstname"].toString(),
+                                                  patientId:
+                                                      row["pat_ID"] as int,
+                                                  patientFName: row["firstname"]
+                                                      .toString(),
                                                   patentLName:
                                                       row["lastname"] == null
                                                           ? ''
@@ -1084,27 +1094,35 @@ class _CalendarPageState extends State<CalendarPage> {
                                               translations[selectedLanguage]
                                                       ?['SelectPatient'] ??
                                                   '',
-                                          labelStyle:
-                                              const TextStyle(color: Colors.grey),
-                                          enabledBorder: const OutlineInputBorder(
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(50.0)),
-                                              borderSide:
-                                                  BorderSide(color: Colors.grey)),
-                                          focusedBorder: const OutlineInputBorder(
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(50.0)),
-                                              borderSide:
-                                                  BorderSide(color: Colors.blue)),
+                                          labelStyle: const TextStyle(
+                                              color: Colors.grey),
+                                          enabledBorder:
+                                              const OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(
+                                                              50.0)),
+                                                  borderSide: BorderSide(
+                                                      color: Colors.grey)),
+                                          focusedBorder:
+                                              const OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(
+                                                              50.0)),
+                                                  borderSide: BorderSide(
+                                                      color: Colors.blue)),
                                           errorBorder: const OutlineInputBorder(
                                               borderRadius: BorderRadius.all(
                                                   Radius.circular(50.0)),
-                                              borderSide:
-                                                  BorderSide(color: Colors.red)),
+                                              borderSide: BorderSide(
+                                                  color: Colors.red)),
                                           focusedErrorBorder:
                                               const OutlineInputBorder(
-                                                  borderRadius: BorderRadius.all(
-                                                      Radius.circular(50.0)),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(
+                                                              50.0)),
                                                   borderSide: BorderSide(
                                                       color: Colors.red,
                                                       width: 1.5)),
@@ -1146,21 +1164,23 @@ class _CalendarPageState extends State<CalendarPage> {
                                   labelStyle:
                                       const TextStyle(color: Colors.blueAccent),
                                   enabledBorder: const OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(50.0)),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(50.0)),
                                       borderSide:
                                           BorderSide(color: Colors.blueAccent)),
                                   focusedBorder: const OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(15.0)),
-                                      borderSide: BorderSide(color: Colors.blue)),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(15.0)),
+                                      borderSide:
+                                          BorderSide(color: Colors.blue)),
                                   errorBorder: const OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(15.0)),
-                                      borderSide: BorderSide(color: Colors.red)),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(15.0)),
+                                      borderSide:
+                                          BorderSide(color: Colors.red)),
                                   focusedErrorBorder: const OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(15.0)),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(15.0)),
                                       borderSide: BorderSide(
                                           color: Colors.red, width: 1.5)),
                                 ),
@@ -1172,7 +1192,8 @@ class _CalendarPageState extends State<CalendarPage> {
                                       isExpanded: true,
                                       icon: const Icon(Icons.arrow_drop_down),
                                       value: selectedStaffId.toString(),
-                                      style: const TextStyle(color: Colors.black),
+                                      style:
+                                          const TextStyle(color: Colors.black),
                                       items: staffList.map((staff) {
                                         return DropdownMenuItem<String>(
                                           value: staff['staff_ID'],
@@ -1184,7 +1205,8 @@ class _CalendarPageState extends State<CalendarPage> {
                                       }).toList(),
                                       onChanged: (String? newValue) {
                                         setState(() {
-                                          selectedStaffId = int.parse(newValue!);
+                                          selectedStaffId =
+                                              int.parse(newValue!);
                                         });
                                       },
                                     ),
@@ -1202,13 +1224,15 @@ class _CalendarPageState extends State<CalendarPage> {
                                           ?['َDentalService'] ??
                                       '',
                                   enabledBorder: const OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(50.0)),
-                                      borderSide: BorderSide(color: Colors.grey)),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(50.0)),
+                                      borderSide:
+                                          BorderSide(color: Colors.grey)),
                                   focusedBorder: const OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(50.0)),
-                                      borderSide: BorderSide(color: Colors.blue)),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(50.0)),
+                                      borderSide:
+                                          BorderSide(color: Colors.blue)),
                                 ),
                                 child: DropdownButtonHideUnderline(
                                   child: SizedBox(
@@ -1257,20 +1281,23 @@ class _CalendarPageState extends State<CalendarPage> {
                                       '',
                                   suffixIcon: const Icon(Icons.access_time),
                                   enabledBorder: const OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(50.0)),
-                                      borderSide: BorderSide(color: Colors.grey)),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(50.0)),
+                                      borderSide:
+                                          BorderSide(color: Colors.grey)),
                                   focusedBorder: const OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(50.0)),
-                                      borderSide: BorderSide(color: Colors.blue)),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(50.0)),
+                                      borderSide:
+                                          BorderSide(color: Colors.blue)),
                                   errorBorder: const OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(50.0)),
-                                      borderSide: BorderSide(color: Colors.red)),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(50.0)),
+                                      borderSide:
+                                          BorderSide(color: Colors.red)),
                                   focusedErrorBorder: const OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(50.0)),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(50.0)),
                                       borderSide: BorderSide(
                                           color: Colors.red, width: 1.5)),
                                 ),
@@ -1298,7 +1325,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                         pickedTime.hour,
                                         pickedTime.minute,
                                       );
-                                            
+
                                       intl2.DateFormat formatter =
                                           intl2.DateFormat('yyyy-MM-dd HH:mm');
                                       String formattedDateTime =
@@ -1338,22 +1365,25 @@ class _CalendarPageState extends State<CalendarPage> {
                                   suffixIcon:
                                       const Icon(Icons.description_outlined),
                                   enabledBorder: const OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(50.0)),
-                                      borderSide: BorderSide(color: Colors.grey)),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(50.0)),
+                                      borderSide:
+                                          BorderSide(color: Colors.grey)),
                                   focusedBorder: const OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(50.0)),
-                                      borderSide: BorderSide(color: Colors.blue)),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(50.0)),
+                                      borderSide:
+                                          BorderSide(color: Colors.blue)),
                                   errorBorder: const OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(50.0)),
-                                      borderSide: BorderSide(color: Colors.red)),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(50.0)),
+                                      borderSide:
+                                          BorderSide(color: Colors.red)),
                                   focusedErrorBorder: const OutlineInputBorder(
                                     borderRadius:
                                         BorderRadius.all(Radius.circular(50.0)),
-                                    borderSide:
-                                        BorderSide(color: Colors.red, width: 1.5),
+                                    borderSide: BorderSide(
+                                        color: Colors.red, width: 1.5),
                                   ),
                                 ),
                               ),
