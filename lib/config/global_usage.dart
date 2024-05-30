@@ -140,6 +140,7 @@ class GlobalUsage {
 
 // This function creates a receipt for a patient
   Future<void> onCreateReceipt(
+      int? patientId,
       String? clinicName,
       String? clinicAddr,
       String? clinicPhone1,
@@ -313,13 +314,23 @@ class GlobalUsage {
                                       crossAxisAlignment:
                                           pw.CrossAxisAlignment.start,
                                       children: [
-                                        pw.Text(
-                                          textDirection: pw.TextDirection.rtl,
-                                          'Invoice NO: ${generateInvoiceNumber()}',
-                                          style: pw.TextStyle(
-                                            font: ttf,
-                                          ),
-                                        ),
+                                        (PatientInfo.newPatientCreated)
+                                            ? pw.Text(
+                                                textDirection:
+                                                    pw.TextDirection.rtl,
+                                                'Invoice NO: P-${PatientInfo.newPatientAge}$patientId',
+                                                style: pw.TextStyle(
+                                                  font: ttf,
+                                                ),
+                                              )
+                                            : pw.Text(
+                                                textDirection:
+                                                    pw.TextDirection.rtl,
+                                                'Invoice NO: ${PatientInfo.formattedPatId}',
+                                                style: pw.TextStyle(
+                                                  font: ttf,
+                                                ),
+                                              ),
                                         pw.Text(
                                           textDirection: pw.TextDirection.rtl,
                                           'Date: ${intl.DateFormat('yyyy-MM-dd hh:mm a').format(DateTime.parse(paidDate.toString()))}',
