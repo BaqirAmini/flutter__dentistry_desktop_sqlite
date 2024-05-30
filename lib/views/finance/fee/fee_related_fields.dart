@@ -4,6 +4,7 @@ import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:flutter_dentistry/config/private/private.dart';
 import 'package:flutter_dentistry/config/translations.dart';
+import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/patients/patient_info.dart';
 import 'package:flutter_dentistry/views/services/service_related_fields.dart';
 import 'package:flutter_dentistry/views/staff/staff_detail.dart';
@@ -504,39 +505,101 @@ class _FeeFormState extends State<FeeForm> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: (_feeController.text.isEmpty)
-                              ? Colors.grey
-                              : Colors.green,
+                          color: (_noDiscountSet)
+                              ? (_feeController.text.isEmpty)
+                                  ? Colors.grey
+                                  : Colors.green
+                              : (_discRateController.text.isEmpty)
+                                  ? Colors.grey
+                                  : Colors.green,
                           width: 1.5),
                     ),
                     child: IconButton(
                       tooltip: 'Create Bill',
                       splashRadius: 25.0,
-                      onPressed: (_feeController.text.isEmpty)
-                          ? null
-                          : () => _globalUsage.onCreateReceipt(
-                              firstClinicName!,
-                              firstClinicAddr!,
-                              firstClinicPhone1!,
-                              firstClinicLogo,
-                              '${StaffInfo.firstName} ${StaffInfo.lastName}',
-                              ServiceInfo.selectedSerName!,
-                              double.parse(_feeController.text),
-                              (_defaultInstallment == 0)
-                                  ? 1
-                                  : _defaultInstallment,
-                              1,
-                              FeeInfo.discountRate!,
-                              _feeWithDiscount,
-                              (_defaultInstallment == 0)
-                                  ? _feeWithDiscount
-                                  : double.parse(_recievableController.text),
-                              (_defaultInstallment == 0) ? 0 : _dueAmount,
-                              ServiceInfo.meetingDate),
+                      onPressed: (_noDiscountSet)
+                          ? (_feeController.text.isEmpty)
+                              ? null
+                              : () async {
+                                  try {
+                                    final conn = await onConnToSqliteDb();
+                                    var results = await conn.rawQuery(
+                                        'SELECT pat_ID FROM patients ORDER BY pat_ID DESC');
+                                    int lastPID =
+                                        results.first['pat_ID'] as int;
+                                    _globalUsage.onCreateReceipt(
+                                        ++lastPID,
+                                        firstClinicName!,
+                                        firstClinicAddr!,
+                                        firstClinicPhone1!,
+                                        firstClinicLogo,
+                                        '${StaffInfo.firstName} ${StaffInfo.lastName}',
+                                        ServiceInfo.selectedSerName!,
+                                        double.parse(_feeController.text),
+                                        (_defaultInstallment == 0)
+                                            ? 1
+                                            : _defaultInstallment,
+                                        1,
+                                        FeeInfo.discountRate!,
+                                        _feeWithDiscount,
+                                        (_defaultInstallment == 0)
+                                            ? _feeWithDiscount
+                                            : double.parse(
+                                                _recievableController.text),
+                                        (_defaultInstallment == 0)
+                                            ? 0
+                                            : _dueAmount,
+                                        ServiceInfo.meetingDate);
+                                  } catch (e) {
+                                    print(
+                                        'Retrieving patient ID fialed for invoice: $e');
+                                  }
+                                }
+                          : (_discRateController.text.isEmpty)
+                              ? null
+                              : () async {
+                                  try {
+                                    final conn = await onConnToSqliteDb();
+                                    var results = await conn.rawQuery(
+                                        'SELECT pat_ID FROM patients ORDER BY pat_ID DESC');
+                                    int lastPID =
+                                        results.first['pat_ID'] as int;
+                                    _globalUsage.onCreateReceipt(
+                                        ++lastPID,
+                                        firstClinicName!,
+                                        firstClinicAddr!,
+                                        firstClinicPhone1!,
+                                        firstClinicLogo,
+                                        '${StaffInfo.firstName} ${StaffInfo.lastName}',
+                                        ServiceInfo.selectedSerName!,
+                                        double.parse(_feeController.text),
+                                        (_defaultInstallment == 0)
+                                            ? 1
+                                            : _defaultInstallment,
+                                        1,
+                                        FeeInfo.discountRate!,
+                                        _feeWithDiscount,
+                                        (_defaultInstallment == 0)
+                                            ? _feeWithDiscount
+                                            : double.parse(
+                                                _recievableController.text),
+                                        (_defaultInstallment == 0)
+                                            ? 0
+                                            : _dueAmount,
+                                        ServiceInfo.meetingDate);
+                                  } catch (e) {
+                                    print(
+                                        'Retrieving patient ID fialed for invoice: $e');
+                                  }
+                                },
                       icon: Icon(Icons.receipt_long_rounded,
-                          color: (_feeController.text.isEmpty)
-                              ? Colors.grey
-                              : Colors.green,
+                          color: (_noDiscountSet)
+                              ? (_feeController.text.isEmpty)
+                                  ? Colors.grey
+                                  : Colors.green
+                              : (_discRateController.text.isEmpty)
+                                  ? Colors.grey
+                                  : Colors.green,
                           size: MediaQuery.of(context).size.width * 0.015),
                     ),
                   ),
