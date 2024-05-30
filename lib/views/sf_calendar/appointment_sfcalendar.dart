@@ -233,6 +233,7 @@ class _CalendarPageState extends State<CalendarPage> {
                     int pID = appointment.patientID;
                     String pFirstName = appointment.patientFName;
                     String pLastName = appointment.patientLName;
+                    String pPhone = appointment.patientPhone;
                     // Call this function to see more details of an schedule appointment
                     _showAppoinmentDetails(
                         context,
@@ -244,6 +245,7 @@ class _CalendarPageState extends State<CalendarPage> {
                         pID,
                         pFirstName,
                         pLastName,
+                        pPhone,
                         serviceName,
                         scheduleTime.toString(),
                         description,
@@ -824,6 +826,7 @@ class _CalendarPageState extends State<CalendarPage> {
       int patientID,
       String patientFName,
       String patientLName,
+      String patientPhone,
       String service,
       String time,
       String description,
@@ -839,9 +842,33 @@ class _CalendarPageState extends State<CalendarPage> {
             title: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                    '${translations[selectedLanguage]?['PatFullname'] ?? ''}$patientFName $patientLName',
-                    style: const TextStyle(color: Colors.blue, fontSize: 15.0)),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${translations[selectedLanguage]?['PatFullname'] ?? ''}$patientFName $patientLName',
+                      style:
+                          const TextStyle(color: Colors.blue, fontSize: 15.0),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: [
+                          Icon(Icons.phone_in_talk_outlined,
+                              size: MediaQuery.of(context).size.width * 0.009, color: Colors.grey[600]),
+                          const SizedBox(width: 8.0),
+                          Text(patientPhone,
+                              textDirection: TextDirection.ltr,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge!
+                                  .copyWith(color: Colors.grey[600]))
+                        ],
+                      ),
+                    )
+                  ],
+                ),
                 Row(
                   children: [
                     IconButton(
@@ -991,397 +1018,403 @@ class _CalendarPageState extends State<CalendarPage> {
               title: Directionality(
                   textDirection:
                       isEnglish ? TextDirection.ltr : TextDirection.rtl,
-                  child:
-                      Text(translations[selectedLanguage]?['EditAppt'] ?? '')),
+                  child: Text(translations[selectedLanguage]?['EditAppt'] ?? '',
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineSmall!
+                          .copyWith(color: Colors.blue))),
               content: Directionality(
                 textDirection:
                     isEnglish ? TextDirection.ltr : TextDirection.rtl,
                 child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.6,
+                  height: MediaQuery.of(context).size.height * 0.5,
                   width: MediaQuery.of(context).size.width * 0.3,
                   child: SingleChildScrollView(
                     child: Form(
                       key: _editApptCalFormKey,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Container(
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 10.0, vertical: 10.0),
-                            child: Column(
-                              children: [
-                                TypeAheadField(
-                                  suggestionsCallback: (search) async {
-                                    try {
-                                      final conn = await onConnToSqliteDb();
-                                      var results = await conn.rawQuery(
-                                          'SELECT pat_ID, firstname, lastname, phone FROM patients WHERE firstname LIKE ? OR firstname || " " || lastname LIKE ?',
-                                          ['%$search%', '%$search%']);
-
-                                      // Convert the results into a list of Patient objects
-                                      var suggestions = results
-                                          .map((row) => PatientDataModel(
-                                                patientId: row["pat_ID"] as int,
-                                                patientFName:
-                                                    row["firstname"].toString(),
-                                                patentLName:
-                                                    row["lastname"] == null
-                                                        ? ''
-                                                        : row["lastname"]
-                                                            .toString(),
-                                                patientPhone:
-                                                    row["phone"].toString(),
-                                              ))
-                                          .toList();
-                                      return suggestions;
-                                    } catch (e) {
-                                      print(
-                                          'Something wrong with patient searchable dropdown in edit dialog (General Calendar): $e');
-                                      return [];
-                                    }
-                                  },
-                                  builder: (context, controller, focusNode) {
-                                    editPSearchableCntr = controller;
-                                    return TextFormField(
-                                      controller: controller,
-                                      focusNode: focusNode,
-                                      autofocus: true,
-                                      decoration: InputDecoration(
-                                        border: const OutlineInputBorder(),
-                                        labelText:
-                                            translations[selectedLanguage]
-                                                    ?['SelectPatient'] ??
-                                                '',
-                                        labelStyle:
-                                            const TextStyle(color: Colors.grey),
-                                        enabledBorder: const OutlineInputBorder(
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(50.0)),
-                                            borderSide:
-                                                BorderSide(color: Colors.grey)),
-                                        focusedBorder: const OutlineInputBorder(
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(50.0)),
-                                            borderSide:
-                                                BorderSide(color: Colors.blue)),
-                                        errorBorder: const OutlineInputBorder(
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(50.0)),
-                                            borderSide:
-                                                BorderSide(color: Colors.red)),
-                                        focusedErrorBorder:
-                                            const OutlineInputBorder(
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(50.0)),
-                                                borderSide: BorderSide(
-                                                    color: Colors.red,
-                                                    width: 1.5)),
-                                      ),
-                                    );
-                                  },
-                                  itemBuilder: (context, patient) {
-                                    return Directionality(
-                                      textDirection: TextDirection.rtl,
-                                      child: ListTile(
-                                        title: Text(
-                                            '${patient.patientFName} ${patient.patentLName}'),
-                                        subtitle: Text(patient.patientPhone),
-                                      ),
-                                    );
-                                  },
-                                  onSelected: (patient) {
-                                    setState(
-                                      () {
-                                        editPSearchableCntr.text =
-                                            '${patient.patientFName} ${patient.patentLName}';
-                                        currentPatID = patient.patientId;
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Container(
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 10.0, vertical: 10.0),
+                              child: Column(
+                                children: [
+                                  TypeAheadField(
+                                    suggestionsCallback: (search) async {
+                                      try {
+                                        final conn = await onConnToSqliteDb();
+                                        var results = await conn.rawQuery(
+                                            'SELECT pat_ID, firstname, lastname, phone FROM patients WHERE firstname LIKE ? OR firstname || " " || lastname LIKE ?',
+                                            ['%$search%', '%$search%']);
+                                            
+                                        // Convert the results into a list of Patient objects
+                                        var suggestions = results
+                                            .map((row) => PatientDataModel(
+                                                  patientId: row["pat_ID"] as int,
+                                                  patientFName:
+                                                      row["firstname"].toString(),
+                                                  patentLName:
+                                                      row["lastname"] == null
+                                                          ? ''
+                                                          : row["lastname"]
+                                                              .toString(),
+                                                  patientPhone:
+                                                      row["phone"].toString(),
+                                                ))
+                                            .toList();
+                                        return suggestions;
+                                      } catch (e) {
+                                        print(
+                                            'Something wrong with patient searchable dropdown in edit dialog (General Calendar): $e');
+                                        return [];
+                                      }
+                                    },
+                                    builder: (context, controller, focusNode) {
+                                      editPSearchableCntr = controller;
+                                      return TextFormField(
+                                        controller: controller,
+                                        focusNode: focusNode,
+                                        autofocus: true,
+                                        decoration: InputDecoration(
+                                          border: const OutlineInputBorder(),
+                                          labelText:
+                                              translations[selectedLanguage]
+                                                      ?['SelectPatient'] ??
+                                                  '',
+                                          labelStyle:
+                                              const TextStyle(color: Colors.grey),
+                                          enabledBorder: const OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(50.0)),
+                                              borderSide:
+                                                  BorderSide(color: Colors.grey)),
+                                          focusedBorder: const OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(50.0)),
+                                              borderSide:
+                                                  BorderSide(color: Colors.blue)),
+                                          errorBorder: const OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(50.0)),
+                                              borderSide:
+                                                  BorderSide(color: Colors.red)),
+                                          focusedErrorBorder:
+                                              const OutlineInputBorder(
+                                                  borderRadius: BorderRadius.all(
+                                                      Radius.circular(50.0)),
+                                                  borderSide: BorderSide(
+                                                      color: Colors.red,
+                                                      width: 1.5)),
+                                        ),
+                                      );
+                                    },
+                                    itemBuilder: (context, patient) {
+                                      return Directionality(
+                                        textDirection: TextDirection.rtl,
+                                        child: ListTile(
+                                          title: Text(
+                                              '${patient.patientFName} ${patient.patentLName}'),
+                                          subtitle: Text(patient.patientPhone),
+                                        ),
+                                      );
+                                    },
+                                    onSelected: (patient) {
+                                      setState(
+                                        () {
+                                          editPSearchableCntr.text =
+                                              '${patient.patientFName} ${patient.patentLName}';
+                                          currentPatID = patient.patientId;
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 10.0, vertical: 10.0),
+                              child: InputDecorator(
+                                decoration: InputDecoration(
+                                  border: const OutlineInputBorder(),
+                                  labelText: translations[selectedLanguage]
+                                          ?['SelectDentist'] ??
+                                      '',
+                                  labelStyle:
+                                      const TextStyle(color: Colors.blueAccent),
+                                  enabledBorder: const OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(50.0)),
+                                      borderSide:
+                                          BorderSide(color: Colors.blueAccent)),
+                                  focusedBorder: const OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(15.0)),
+                                      borderSide: BorderSide(color: Colors.blue)),
+                                  errorBorder: const OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(15.0)),
+                                      borderSide: BorderSide(color: Colors.red)),
+                                  focusedErrorBorder: const OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(15.0)),
+                                      borderSide: BorderSide(
+                                          color: Colors.red, width: 1.5)),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: Container(
+                                    height: 26.0,
+                                    padding: EdgeInsets.zero,
+                                    child: DropdownButton<String>(
+                                      isExpanded: true,
+                                      icon: const Icon(Icons.arrow_drop_down),
+                                      value: selectedStaffId.toString(),
+                                      style: const TextStyle(color: Colors.black),
+                                      items: staffList.map((staff) {
+                                        return DropdownMenuItem<String>(
+                                          value: staff['staff_ID'],
+                                          alignment: Alignment.centerRight,
+                                          child: Text(staff['firstname'] +
+                                              ' ' +
+                                              staff['lastname']),
+                                        );
+                                      }).toList(),
+                                      onChanged: (String? newValue) {
+                                        setState(() {
+                                          selectedStaffId = int.parse(newValue!);
+                                        });
                                       },
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 10.0, vertical: 10.0),
-                            child: InputDecorator(
-                              decoration: InputDecoration(
-                                border: const OutlineInputBorder(),
-                                labelText: translations[selectedLanguage]
-                                        ?['SelectDentist'] ??
-                                    '',
-                                labelStyle:
-                                    const TextStyle(color: Colors.blueAccent),
-                                enabledBorder: const OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(50.0)),
-                                    borderSide:
-                                        BorderSide(color: Colors.blueAccent)),
-                                focusedBorder: const OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(15.0)),
-                                    borderSide: BorderSide(color: Colors.blue)),
-                                errorBorder: const OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(15.0)),
-                                    borderSide: BorderSide(color: Colors.red)),
-                                focusedErrorBorder: const OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(15.0)),
-                                    borderSide: BorderSide(
-                                        color: Colors.red, width: 1.5)),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: Container(
-                                  height: 26.0,
-                                  padding: EdgeInsets.zero,
-                                  child: DropdownButton<String>(
-                                    isExpanded: true,
-                                    icon: const Icon(Icons.arrow_drop_down),
-                                    value: selectedStaffId.toString(),
-                                    style: const TextStyle(color: Colors.black),
-                                    items: staffList.map((staff) {
-                                      return DropdownMenuItem<String>(
-                                        value: staff['staff_ID'],
-                                        alignment: Alignment.centerRight,
-                                        child: Text(staff['firstname'] +
-                                            ' ' +
-                                            staff['lastname']),
-                                      );
-                                    }).toList(),
-                                    onChanged: (String? newValue) {
-                                      setState(() {
-                                        selectedStaffId = int.parse(newValue!);
-                                      });
-                                    },
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 10.0, vertical: 10.0),
-                            child: InputDecorator(
-                              decoration: InputDecoration(
-                                border: const OutlineInputBorder(),
-                                labelText: translations[selectedLanguage]
-                                        ?['َDentalService'] ??
-                                    '',
-                                enabledBorder: const OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(50.0)),
-                                    borderSide: BorderSide(color: Colors.grey)),
-                                focusedBorder: const OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(50.0)),
-                                    borderSide: BorderSide(color: Colors.blue)),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: SizedBox(
-                                  height: 26.0,
-                                  child: DropdownButton<String>(
-                                    isExpanded: true,
-                                    icon: const Icon(Icons.arrow_drop_down),
-                                    value: selectedServiceId.toString(),
-                                    items: services.map((service) {
-                                      return DropdownMenuItem<String>(
-                                        value: service['ser_ID'],
-                                        alignment: Alignment.centerRight,
-                                        child: Text(service['ser_name']),
-                                      );
-                                    }).toList(),
-                                    onChanged: (String? newValue) {
-                                      setState(() {
-                                        // Assign the selected service id into the static one.
-                                        selectedServiceId =
-                                            int.parse(newValue!);
-                                      });
-                                    },
+                            Container(
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 10.0, vertical: 10.0),
+                              child: InputDecorator(
+                                decoration: InputDecoration(
+                                  border: const OutlineInputBorder(),
+                                  labelText: translations[selectedLanguage]
+                                          ?['َDentalService'] ??
+                                      '',
+                                  enabledBorder: const OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(50.0)),
+                                      borderSide: BorderSide(color: Colors.grey)),
+                                  focusedBorder: const OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(50.0)),
+                                      borderSide: BorderSide(color: Colors.blue)),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: SizedBox(
+                                    height: 26.0,
+                                    child: DropdownButton<String>(
+                                      isExpanded: true,
+                                      icon: const Icon(Icons.arrow_drop_down),
+                                      value: selectedServiceId.toString(),
+                                      items: services.map((service) {
+                                        return DropdownMenuItem<String>(
+                                          value: service['ser_ID'],
+                                          alignment: Alignment.centerRight,
+                                          child: Text(service['ser_name']),
+                                        );
+                                      }).toList(),
+                                      onChanged: (String? newValue) {
+                                        setState(() {
+                                          // Assign the selected service id into the static one.
+                                          selectedServiceId =
+                                              int.parse(newValue!);
+                                        });
+                                      },
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 10.0, vertical: 10.0),
-                            child: TextFormField(
-                              controller: editApptTimeController,
-                              validator: (value) {
-                                if (value!.isEmpty) {
-                                  return translations[selectedLanguage]
-                                          ?['ApptDTRequired'] ??
-                                      '';
-                                }
-                                return null;
-                              },
-                              readOnly: true,
-                              decoration: InputDecoration(
-                                border: const OutlineInputBorder(),
-                                labelText: translations[selectedLanguage]
-                                        ?['ApptDateTime'] ??
-                                    '',
-                                suffixIcon: const Icon(Icons.access_time),
-                                enabledBorder: const OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(50.0)),
-                                    borderSide: BorderSide(color: Colors.grey)),
-                                focusedBorder: const OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(50.0)),
-                                    borderSide: BorderSide(color: Colors.blue)),
-                                errorBorder: const OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(50.0)),
-                                    borderSide: BorderSide(color: Colors.red)),
-                                focusedErrorBorder: const OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(50.0)),
-                                    borderSide: BorderSide(
-                                        color: Colors.red, width: 1.5)),
-                              ),
-                              onTap: () async {
-                                final DateTime? pickedDate =
-                                    await showDatePicker(
-                                  context: context,
-                                  initialDate: DateTime.parse(selectedDate),
-                                  firstDate: DateTime(2000),
-                                  lastDate: DateTime(2100),
-                                );
-                                if (pickedDate != null) {
-                                  // ignore: use_build_context_synchronously
-                                  final TimeOfDay? pickedTime =
-                                      // ignore: use_build_context_synchronously
-                                      await showTimePicker(
-                                    context: context,
-                                    initialTime: TimeOfDay.now(),
-                                  );
-                                  if (pickedTime != null) {
-                                    selectedDateTime = DateTime(
-                                      pickedDate.year,
-                                      pickedDate.month,
-                                      pickedDate.day,
-                                      pickedTime.hour,
-                                      pickedTime.minute,
-                                    );
-
-                                    intl2.DateFormat formatter =
-                                        intl2.DateFormat('yyyy-MM-dd HH:mm');
-                                    String formattedDateTime =
-                                        formatter.format(selectedDateTime);
-                                    editApptTimeController.text =
-                                        formattedDateTime;
-                                  }
-                                }
-                              },
-                            ),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 10.0, vertical: 10.0),
-                            child: TextFormField(
-                              controller: editCommentController,
-                              validator: (value) {
-                                if (value!.isNotEmpty) {
-                                  if (value.length < 5 || value.length > 40) {
+                            Container(
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 10.0, vertical: 10.0),
+                              child: TextFormField(
+                                controller: editApptTimeController,
+                                validator: (value) {
+                                  if (value!.isEmpty) {
                                     return translations[selectedLanguage]
-                                            ?['OtherDDLLength'] ??
+                                            ?['ApptDTRequired'] ??
                                         '';
                                   }
                                   return null;
-                                }
-                                return null;
-                              },
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                    RegExp(GlobalUsage.allowedEPChar))
-                              ],
-                              decoration: InputDecoration(
-                                border: const OutlineInputBorder(),
-                                labelText: translations[selectedLanguage]
-                                        ?['RetDetails'] ??
-                                    '',
-                                suffixIcon:
-                                    const Icon(Icons.description_outlined),
-                                enabledBorder: const OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(50.0)),
-                                    borderSide: BorderSide(color: Colors.grey)),
-                                focusedBorder: const OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(50.0)),
-                                    borderSide: BorderSide(color: Colors.blue)),
-                                errorBorder: const OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(50.0)),
-                                    borderSide: BorderSide(color: Colors.red)),
-                                focusedErrorBorder: const OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(50.0)),
-                                  borderSide:
-                                      BorderSide(color: Colors.red, width: 1.5),
+                                },
+                                readOnly: true,
+                                decoration: InputDecoration(
+                                  border: const OutlineInputBorder(),
+                                  labelText: translations[selectedLanguage]
+                                          ?['ApptDateTime'] ??
+                                      '',
+                                  suffixIcon: const Icon(Icons.access_time),
+                                  enabledBorder: const OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(50.0)),
+                                      borderSide: BorderSide(color: Colors.grey)),
+                                  focusedBorder: const OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(50.0)),
+                                      borderSide: BorderSide(color: Colors.blue)),
+                                  errorBorder: const OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(50.0)),
+                                      borderSide: BorderSide(color: Colors.red)),
+                                  focusedErrorBorder: const OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(50.0)),
+                                      borderSide: BorderSide(
+                                          color: Colors.red, width: 1.5)),
                                 ),
+                                onTap: () async {
+                                  final DateTime? pickedDate =
+                                      await showDatePicker(
+                                    context: context,
+                                    initialDate: DateTime.parse(selectedDate),
+                                    firstDate: DateTime(2000),
+                                    lastDate: DateTime(2100),
+                                  );
+                                  if (pickedDate != null) {
+                                    // ignore: use_build_context_synchronously
+                                    final TimeOfDay? pickedTime =
+                                        // ignore: use_build_context_synchronously
+                                        await showTimePicker(
+                                      context: context,
+                                      initialTime: TimeOfDay.now(),
+                                    );
+                                    if (pickedTime != null) {
+                                      selectedDateTime = DateTime(
+                                        pickedDate.year,
+                                        pickedDate.month,
+                                        pickedDate.day,
+                                        pickedTime.hour,
+                                        pickedTime.minute,
+                                      );
+                                            
+                                      intl2.DateFormat formatter =
+                                          intl2.DateFormat('yyyy-MM-dd HH:mm');
+                                      String formattedDateTime =
+                                          formatter.format(selectedDateTime);
+                                      editApptTimeController.text =
+                                          formattedDateTime;
+                                    }
+                                  }
+                                },
                               ),
                             ),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 10.0, vertical: 10.0),
-                            child: InputDecorator(
-                              decoration: const InputDecoration(
-                                suffixIcon:
-                                    Icon(Icons.notifications_active_outlined),
-                                border: OutlineInputBorder(),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(50.0)),
-                                  borderSide: BorderSide(color: Colors.grey),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(50.0)),
-                                  borderSide: BorderSide(color: Colors.blue),
-                                ),
-                                errorBorder: OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(50.0)),
-                                  borderSide: BorderSide(color: Colors.red),
-                                ),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: SizedBox(
-                                  height: 26.0,
-                                  child: DropdownButton(
-                                    // isExpanded: true,
-                                    icon: const Icon(Icons.arrow_drop_down),
-                                    value: notifFreq,
-                                    items: <String>[
-                                      '30 Minutes',
-                                      '1 Hour',
-                                      '2 Hours',
-                                      '6 Hours',
-                                      '12 Hours',
-                                      '1 Day',
-                                    ].map<DropdownMenuItem<String>>(
-                                        (String value) {
-                                      return DropdownMenuItem<String>(
-                                        value: value,
-                                        child: Text(value),
-                                      );
-                                    }).toList(),
-                                    onChanged: (String? newValue) {
-                                      setState(() {
-                                        notifFreq = newValue!;
-                                      });
-                                    },
+                            Container(
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 10.0, vertical: 10.0),
+                              child: TextFormField(
+                                controller: editCommentController,
+                                validator: (value) {
+                                  if (value!.isNotEmpty) {
+                                    if (value.length < 5 || value.length > 40) {
+                                      return translations[selectedLanguage]
+                                              ?['OtherDDLLength'] ??
+                                          '';
+                                    }
+                                    return null;
+                                  }
+                                  return null;
+                                },
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                      RegExp(GlobalUsage.allowedEPChar))
+                                ],
+                                decoration: InputDecoration(
+                                  border: const OutlineInputBorder(),
+                                  labelText: translations[selectedLanguage]
+                                          ?['RetDetails'] ??
+                                      '',
+                                  suffixIcon:
+                                      const Icon(Icons.description_outlined),
+                                  enabledBorder: const OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(50.0)),
+                                      borderSide: BorderSide(color: Colors.grey)),
+                                  focusedBorder: const OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(50.0)),
+                                      borderSide: BorderSide(color: Colors.blue)),
+                                  errorBorder: const OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(50.0)),
+                                      borderSide: BorderSide(color: Colors.red)),
+                                  focusedErrorBorder: const OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide:
+                                        BorderSide(color: Colors.red, width: 1.5),
                                   ),
                                 ),
                               ),
                             ),
-                          )
-                        ],
+                            Container(
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 10.0, vertical: 10.0),
+                              child: InputDecorator(
+                                decoration: const InputDecoration(
+                                  suffixIcon:
+                                      Icon(Icons.notifications_active_outlined),
+                                  border: OutlineInputBorder(),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(color: Colors.grey),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(color: Colors.blue),
+                                  ),
+                                  errorBorder: OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(color: Colors.red),
+                                  ),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: SizedBox(
+                                    height: 26.0,
+                                    child: DropdownButton(
+                                      // isExpanded: true,
+                                      icon: const Icon(Icons.arrow_drop_down),
+                                      value: notifFreq,
+                                      items: <String>[
+                                        '30 Minutes',
+                                        '1 Hour',
+                                        '2 Hours',
+                                        '6 Hours',
+                                        '12 Hours',
+                                        '1 Day',
+                                      ].map<DropdownMenuItem<String>>(
+                                          (String value) {
+                                        return DropdownMenuItem<String>(
+                                          value: value,
+                                          child: Text(value),
+                                        );
+                                      }).toList(),
+                                      onChanged: (String? newValue) {
+                                        setState(() {
+                                          notifFreq = newValue!;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -1471,7 +1504,11 @@ class _CalendarPageState extends State<CalendarPage> {
             title: Directionality(
               textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
               child: Text(
-                  translations[selectedLanguage]?['DeleteSchHeading'] ?? ''),
+                  translations[selectedLanguage]?['DeleteSchHeading'] ?? '',
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineSmall!
+                      .copyWith(color: Colors.blue)),
             ),
             content: Directionality(
               textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
@@ -1530,7 +1567,7 @@ class _CalendarPageState extends State<CalendarPage> {
     try {
       final conn = await onConnToSqliteDb();
       final results = await conn.rawQuery(
-          '''SELECT st.firstname AS fname, st.lastname AS lname, s.ser_name AS sname, a.details AS details, a.meet_date AS meet_date, a.apt_ID AS apt_ID, a.notification AS notif, a.service_ID AS service_id, a.staff_ID AS staff_id, p.pat_ID AS pat_id, p.firstname AS pfname, p.lastname AS plname FROM staff st 
+          '''SELECT st.firstname AS fname, st.lastname AS lname, s.ser_name AS sname, a.details AS details, a.meet_date AS meet_date, a.apt_ID AS apt_ID, a.notification AS notif, a.service_ID AS service_id, a.staff_ID AS staff_id, p.pat_ID AS pat_id, p.firstname AS pfname, p.lastname AS plname, p.phone AS pPhone FROM staff st 
              INNER JOIN appointments a ON st.staff_ID = a.staff_ID 
              INNER JOIN patients p ON p.pat_ID = a.pat_ID
              INNER JOIN services s ON a.service_ID = s.ser_ID WHERE a.status = ? AND (LOWER(fname) LIKE ? OR LOWER(pfname) LIKE ? OR ? = '')''',
@@ -1556,6 +1593,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 patientFName: row["pfname"].toString(),
                 patientLName:
                     row["plname"] == null ? '' : row["plname"].toString(),
+                patientPhone: row["pPhone"].toString(),
               ))
           .toList();
     } catch (e) {
@@ -1975,14 +2013,16 @@ class _CalendarPageState extends State<CalendarPage> {
                                       return translations[selectedLanguage]
                                               ?['PhoneRequired'] ??
                                           '';
-                                    } else if (value.startsWith('07') || value.startsWith('۰۷')) {
+                                    } else if (value.startsWith('07') ||
+                                        value.startsWith('۰۷')) {
                                       if (value.length < 10 ||
                                           value.length > 10) {
                                         return translations[selectedLanguage]
                                                 ?['Phone10'] ??
                                             '';
                                       }
-                                    } else if (value.startsWith('+93') || value.startsWith('+۹۳')) {
+                                    } else if (value.startsWith('+93') ||
+                                        value.startsWith('+۹۳')) {
                                       if (value.length < 12 ||
                                           value.length > 12) {
                                         return translations[selectedLanguage]
@@ -2352,6 +2392,7 @@ class PatientAppointment {
   final String serviceName;
   final String patientFName;
   final String patientLName;
+  final String patientPhone;
   final String comments;
   final DateTime visitTime;
   final String notifFreq;
@@ -2366,6 +2407,7 @@ class PatientAppointment {
       required this.serviceName,
       required this.patientFName,
       required this.patientLName,
+      required this.patientPhone,
       required this.comments,
       required this.visitTime,
       required this.notifFreq});
