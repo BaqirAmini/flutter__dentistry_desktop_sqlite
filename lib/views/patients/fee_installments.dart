@@ -681,7 +681,9 @@ class _FeeContentState extends State<FeeContent> {
                                             shape: BoxShape.circle,
                                             border: Border.all(
                                                 color: (_payDateController
-                                                        .text.isEmpty)
+                                                            .text.isEmpty ||
+                                                        _recievableController
+                                                            .text.isEmpty)
                                                     ? Colors.grey
                                                     : Colors.green,
                                                 width: 1.5),
@@ -689,10 +691,13 @@ class _FeeContentState extends State<FeeContent> {
                                           child: IconButton(
                                             tooltip: 'Create Bill',
                                             splashRadius: 25.0,
-                                            onPressed: (_payDateController
-                                                    .text.isEmpty)
+                                            onPressed: (_recievableController
+                                                        .text.isEmpty ||
+                                                    _payDateController
+                                                        .text.isEmpty)
                                                 ? null
                                                 : () => globalUsage.onCreateReceipt(
+                                                    1,
                                                     firstClinicName!,
                                                     firstClinicAddr!,
                                                     firstClinicPhone1!,
@@ -718,7 +723,9 @@ class _FeeContentState extends State<FeeContent> {
                                             icon: Icon(
                                                 Icons.receipt_long_rounded,
                                                 color: (_payDateController
-                                                        .text.isEmpty)
+                                                            .text.isEmpty ||
+                                                        _recievableController
+                                                            .text.isEmpty)
                                                     ? Colors.grey
                                                     : Colors.green,
                                                 size: MediaQuery.of(context)
