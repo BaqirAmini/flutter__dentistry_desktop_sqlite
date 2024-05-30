@@ -386,6 +386,12 @@ class _CalendarPageState extends State<CalendarPage> {
                                                 translations[selectedLanguage]
                                                         ?['SelectPatient'] ??
                                                     '',
+                                            hintText:
+                                                translations[selectedLanguage]
+                                                        ?['SearchCalDDL'] ??
+                                                    '',
+                                            hintStyle:
+                                                const TextStyle(fontSize: 14.0),
                                             labelStyle: const TextStyle(
                                                 color: Colors.grey),
                                             enabledBorder:
@@ -1090,6 +1096,12 @@ class _CalendarPageState extends State<CalendarPage> {
                                         autofocus: true,
                                         decoration: InputDecoration(
                                           border: const OutlineInputBorder(),
+                                          hintText:
+                                              translations[selectedLanguage]
+                                                      ?['SearchCalDDL'] ??
+                                                  '',
+                                          hintStyle:
+                                              const TextStyle(fontSize: 14.0),
                                           labelText:
                                               translations[selectedLanguage]
                                                       ?['SelectPatient'] ??

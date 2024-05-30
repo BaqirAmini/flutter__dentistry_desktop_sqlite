@@ -515,7 +515,8 @@ class _FeeFormState extends State<FeeForm> {
                           width: 1.5),
                     ),
                     child: IconButton(
-                      tooltip: 'Create Bill',
+                      tooltip:
+                          translations[selectedLanguage]?['CreateBill'] ?? '',
                       splashRadius: 25.0,
                       onPressed: (_noDiscountSet)
                           ? (_feeController.text.isEmpty)

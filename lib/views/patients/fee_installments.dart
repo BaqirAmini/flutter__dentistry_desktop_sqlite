@@ -689,7 +689,10 @@ class _FeeContentState extends State<FeeContent> {
                                                 width: 1.5),
                                           ),
                                           child: IconButton(
-                                            tooltip: 'Create Bill',
+                                            tooltip:
+                                                translations[selectedLanguage]
+                                                        ?['CreateBill'] ??
+                                                    '',
                                             splashRadius: 25.0,
                                             onPressed: (_recievableController
                                                         .text.isEmpty ||
