@@ -131,6 +131,27 @@ class _DeveloperOptionsState extends State<DeveloperOptions> {
                                   ),
                                   child: RadioListTile<int>(
                                       title: const Text(
+                                        '7 Days',
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                      value: 7,
+                                      groupValue: _validDurationGroupValue,
+                                      onChanged: (int? value) {
+                                        setState(() {
+                                          _validDurationGroupValue = value!;
+                                        });
+                                      }),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: Theme(
+                                  data: Theme.of(context).copyWith(
+                                    listTileTheme: const ListTileThemeData(
+                                        horizontalTitleGap: 1.0),
+                                  ),
+                                  child: RadioListTile<int>(
+                                      title: const Text(
                                         '14 Days',
                                         style: TextStyle(fontSize: 12),
                                       ),
