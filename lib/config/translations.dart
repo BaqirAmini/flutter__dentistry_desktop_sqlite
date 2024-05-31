@@ -275,6 +275,8 @@ final Map<String, Map<String, String>> translations = {
     'SerNameLength': 'Service name must be 5 to 30 characters.',
     'SerName': 'Service Name',
     'SerFee': 'Service Fee',
+    'SearchCalDDL': 'Search by Patient\'s First Name, Last Name or Phone...',
+    'CreateBill' : 'Create Bill',
     /*-----/. PATIENTS -----*/
     /*-------- STAFF ------- */
     'AllStaff': 'All Staff',
@@ -751,6 +753,8 @@ final Map<String, Map<String, String>> translations = {
     'SerNameLength': 'نام سرویس باید 5 الی 30 حرف باشد.',
     'SerName': 'نام سرویس (خدمات)',
     'SerFee': 'فیس سرویس',
+    'SearchCalDDL': 'جستجو به اساس نام، تخلص و نمبر تماس مریض...',
+    'CreateBill' : 'ایجاد بل',
     /*-----/. PATIENTS -----*/
     /*-------- STAFF ------- */
     'AllStaff': 'همه کارمندان',
@@ -1234,6 +1238,8 @@ final Map<String, Map<String, String>> translations = {
     'SerNameLength': 'د سرویس نوم باید له 5 څخه تر 30 حروف پورې وي.',
     'SerName': 'د سرویس نوم (خدمتونه)',
     'SerFee': 'د سرویس فیس',
+    'SearchCalDDL': 'د ناروغ د نوم، تخلص او د اړیکې شمیرې په واسطه لټون وکړئ ...',
+    'CreateBill' : 'بل جوړ کړئ',
     /*-----/. PATIENTS -----*/
     /*-------- STAFF ------- */
     'AllStaff': 'ټول کارکوونکي',
