@@ -85,7 +85,7 @@ class _LiscenseVerificationState extends State<LiscenseVerification> {
                                 height:
                                     MediaQuery.of(context).size.height * 0.01),
                             Text(
-                              'Liscense Key Verification',
+                              'License Key Verification',
                               style: Theme.of(context)
                                   .textTheme
                                   .headlineLarge!

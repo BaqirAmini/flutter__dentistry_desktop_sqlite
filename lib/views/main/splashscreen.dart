@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dentistry/config/developer_options.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
-import 'package:flutter_dentistry/config/liscense_verification.dart';
+import 'package:flutter_dentistry/config/license_verification.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/main/login.dart';
 import 'package:provider/provider.dart';
