@@ -62,7 +62,7 @@ class _SplashScreenState extends State<SplashScreen> {
           ? Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                  builder: (context) => const LiscenseVerification()))
+                  builder: (context) => const LicenseVerification()))
           // ignore: use_build_context_synchronously
           : Navigator.pushReplacement(
               context, MaterialPageRoute(builder: (context) => const Login()));
@@ -220,6 +220,7 @@ class _SplashScreenState extends State<SplashScreen> {
       print('Error occured with creating service requirements: $e');
     }
   }
+
   // Add a default clinic name
   Future<void> _onAddDefaultClinic() async {
     try {

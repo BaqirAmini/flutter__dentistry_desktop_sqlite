@@ -8,7 +8,7 @@ import 'package:flutter_dentistry/config/private/private.dart';
 import 'package:flutter_dentistry/views/main/login.dart';
 import 'package:win32/win32.dart';
 
-void main() => runApp(const LiscenseVerification());
+void main() => runApp(const LicenseVerification());
 
 // Create the global key at the top level of your Dart file
 final GlobalKey<ScaffoldMessengerState> _globalKeyLiscenseVerify =
@@ -28,14 +28,14 @@ void _onShowSnack(Color backColor, String msg) {
   );
 }
 
-class LiscenseVerification extends StatefulWidget {
-  const LiscenseVerification({Key? key}) : super(key: key);
+class LicenseVerification extends StatefulWidget {
+  const LicenseVerification({Key? key}) : super(key: key);
 
   @override
-  State<LiscenseVerification> createState() => _LiscenseVerificationState();
+  State<LicenseVerification> createState() => _LiscenseVerificationState();
 }
 
-class _LiscenseVerificationState extends State<LiscenseVerification> {
+class _LiscenseVerificationState extends State<LicenseVerification> {
   // form controllers
   final TextEditingController _machineCodeController = TextEditingController();
   final TextEditingController _liscenseController = TextEditingController();
