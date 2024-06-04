@@ -804,6 +804,7 @@ class _AppointmentContentState extends State<_AppointmentContent> {
     );
   }
 
+// This function opens a dialog box which contains the teeth selection chart.
   _onDisplayTeethChart(List<String> selectedTeethList) {
     return showDialog(
       context: context,
