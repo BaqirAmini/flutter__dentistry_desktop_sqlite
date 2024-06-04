@@ -8,6 +8,8 @@ import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/main/dashboard.dart';
+import 'package:flutter_dentistry/views/patients/adult_cs_selected_teeth.dart';
+import 'package:flutter_dentistry/views/patients/child_cs_selected_teeth.dart';
 import 'package:flutter_dentistry/views/patients/new_appointment.dart';
 import 'package:flutter_dentistry/views/patients/patient_info.dart';
 import 'package:flutter_dentistry/views/patients/patients.dart';
@@ -802,6 +804,45 @@ class _AppointmentContentState extends State<_AppointmentContent> {
     );
   }
 
+  _onDisplayTeethChart(List<String> selectedTeethList) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Teeth Selected for Procedure',
+              style: Theme.of(context)
+                  .textTheme
+                  .headlineMedium!
+                  .copyWith(color: Colors.blue)),
+          content: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.4,
+            width: (PatientInfo.age! > 13)
+                ? MediaQuery.of(context).size.width * 0.45
+                : MediaQuery.of(context).size.width * 0.3,
+            child: Center(
+              child: (PatientInfo.age! > 13)
+                  ? AdultQuadrantGrid4SelectedTeeth(
+                      selectedTeethFromDB: selectedTeethList)
+                  : ChildQuadrantGrid4SelectedTeeth(
+                      selectedTeethFromDB: selectedTeethList),
+            ),
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0, bottom: 8.0),
+              child: IconButton(
+                tooltip: 'Close',
+                splashRadius: 25.0,
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close, color: Colors.blue),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 // This function edits an appointment
   /* onEditAppointment(BuildContext context, int id, String date, double paidAmount, double dueAmount) {
 // The global for the form
@@ -1098,7 +1139,8 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                                                   return Center(
                                                       child: Padding(
                                                     padding:
-                                                        EdgeInsets.all(8.0),
+                                                        const EdgeInsets.all(
+                                                            8.0),
                                                     child: Text(translations[
                                                                 selectedLanguage]
                                                             ?['NoRecFound'] ??
@@ -1156,6 +1198,9 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                                                                   const EdgeInsets
                                                                       .all(8.0),
                                                               child: Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .spaceBetween,
                                                                 children: [
                                                                   Text(
                                                                     req.reqName ==
@@ -1181,29 +1226,47 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                                                                         fontWeight:
                                                                             FontWeight.bold),
                                                                   ),
-                                                                  Expanded(
-                                                                    child: Text(
-                                                                      req.reqName ==
-                                                                              'Teeth Selection'
-                                                                          ? convertMultiQuadrant(req
-                                                                              .reqValue)
-                                                                          : req
-                                                                              .reqValue,
-                                                                      textAlign:
-                                                                          TextAlign
-                                                                              .end,
-                                                                      style:
-                                                                          const TextStyle(
-                                                                        color: Color.fromARGB(
-                                                                            255,
-                                                                            112,
-                                                                            112,
-                                                                            112),
-                                                                        fontSize:
-                                                                            12.0,
-                                                                      ),
-                                                                    ),
-                                                                  )
+                                                                  req.reqName ==
+                                                                          'Teeth Selection'
+                                                                      ? MouseRegion(
+                                                                          cursor:
+                                                                              SystemMouseCursors.click,
+                                                                          child:
+                                                                              GestureDetector(
+                                                                            onTap:
+                                                                                () {
+                                                                              List<String> teethList = req.reqValue.split(',');
+                                                                              _onDisplayTeethChart(teethList);
+                                                                            },
+                                                                            child:
+                                                                                Tooltip(
+                                                                              message: 'Click to display Teeth Chart',
+                                                                              child: Text(
+                                                                                convertMultiQuadrant(req.reqValue),
+                                                                                textAlign: TextAlign.end,
+                                                                                style: const TextStyle(
+                                                                                  color: Color.fromARGB(255, 112, 112, 112),
+                                                                                  fontSize: 12.0,
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                        )
+                                                                      : Text(
+                                                                          req.reqValue,
+                                                                          textAlign:
+                                                                              TextAlign.end,
+                                                                          style:
+                                                                              const TextStyle(
+                                                                            color: Color.fromARGB(
+                                                                                255,
+                                                                                112,
+                                                                                112,
+                                                                                112),
+                                                                            fontSize:
+                                                                                12.0,
+                                                                          ),
+                                                                        ),
                                                                 ],
                                                               ),
                                                             ),
