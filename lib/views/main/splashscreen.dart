@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dentistry/config/developer_options.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
-import 'package:flutter_dentistry/config/liscense_verification.dart';
+import 'package:flutter_dentistry/config/license_verification.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/main/login.dart';
 import 'package:provider/provider.dart';
@@ -62,7 +62,7 @@ class _SplashScreenState extends State<SplashScreen> {
           ? Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                  builder: (context) => const LiscenseVerification()))
+                  builder: (context) => const LicenseVerification()))
           // ignore: use_build_context_synchronously
           : Navigator.pushReplacement(
               context, MaterialPageRoute(builder: (context) => const Login()));
@@ -220,6 +220,7 @@ class _SplashScreenState extends State<SplashScreen> {
       print('Error occured with creating service requirements: $e');
     }
   }
+
   // Add a default clinic name
   Future<void> _onAddDefaultClinic() async {
     try {

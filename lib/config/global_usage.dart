@@ -306,9 +306,9 @@ class GlobalUsage {
                                                 'Age: ${PatientInfo.age} Yrs'),
                                         (PatientInfo.newPatientCreated)
                                             ? pw.Text(
-                                                'Phone: ${PatientInfo.newPatientPhone}')
+                                                'Phone: ${PatientInfo.newPatientPhone}', style: pw.TextStyle(font: ttf))
                                             : pw.Text(
-                                                'Phone: ${PatientInfo.phone}'),
+                                                'Phone: ${PatientInfo.phone}', style: pw.TextStyle(font: ttf)),
                                       ]),
                                   pw.Column(
                                       crossAxisAlignment:
