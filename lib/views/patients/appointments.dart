@@ -810,34 +810,48 @@ class _AppointmentContentState extends State<_AppointmentContent> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Teeth Selected for Procedure',
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineMedium!
-                  .copyWith(color: Colors.blue)),
-          content: SizedBox(
-            height: MediaQuery.of(context).size.height * 0.4,
-            width: (PatientInfo.age! > 13)
-                ? MediaQuery.of(context).size.width * 0.45
-                : MediaQuery.of(context).size.width * 0.3,
-            child: Center(
-              child: (PatientInfo.age! > 13)
-                  ? AdultQuadrantGrid4SelectedTeeth(
-                      selectedTeethFromDB: selectedTeethList)
-                  : ChildQuadrantGrid4SelectedTeeth(
-                      selectedTeethFromDB: selectedTeethList),
+          title: Directionality(
+            textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
+            child: Text(translations[selectedLanguage]?['Teeth'] ?? '',
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineSmall!
+                    .copyWith(color: Colors.blue)),
+          ),
+          content: Directionality(
+            textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.4,
+              width: (PatientInfo.age! > 13)
+                  ? MediaQuery.of(context).size.width * 0.55
+                  : MediaQuery.of(context).size.width * 0.35,
+              child: Center(
+                child: (PatientInfo.age! > 13)
+                    ? AdultQuadrantGrid4SelectedTeeth(
+                        selectedTeethFromDB: selectedTeethList)
+                    : ChildQuadrantGrid4SelectedTeeth(
+                        selectedTeethFromDB: selectedTeethList),
+              ),
             ),
           ),
           actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0, bottom: 8.0),
-              child: IconButton(
-                tooltip: 'Close',
-                splashRadius: 25.0,
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close, color: Colors.blue),
+            Directionality(
+              textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0, bottom: 8.0),
+                    child: IconButton(
+                      tooltip: 'Close',
+                      splashRadius: 25.0,
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close, color: Colors.redAccent),
+                    ),
+                  ),
+                ],
               ),
-            ),
+            )
           ],
         );
       },
