@@ -30,8 +30,13 @@ class _DeveloperOptionsState extends State<DeveloperOptions> {
   final TextEditingController _machineCodeController = TextEditingController();
   final TextEditingController _liscenseController = TextEditingController();
   final _liscenseFormKey = GlobalKey<FormState>();
-  int _validDurationGroupValue = 14;
+  int _validDurationGroupValue = 7;
   bool _isLiscenseCopied = false;
+  final _customDurationController = TextEditingController();
+  // Set a dropdown for durations
+  String _selectedDurationFreq = 'Days';
+  final _durationFreqItems = ['Days', 'Months', 'Years'];
+  bool _customDurationSet = false;
 
   // Create instance to access its methods
   final GlobalUsage _globalUsage = GlobalUsage();
@@ -102,156 +107,338 @@ class _DeveloperOptionsState extends State<DeveloperOptions> {
                           );
                         }),
                       ),
-                      Container(
-                        width: MediaQuery.of(context).size.width * 0.6,
-                        margin: const EdgeInsets.all(10.0),
-                        child: InputDecorator(
-                          decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                                vertical: 10.0, horizontal: 15.0),
-                            border: OutlineInputBorder(),
-                            labelText: 'Valid Duration',
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.grey),
+                      Column(
+                        children: [
+                          if (!_customDurationSet)
+                            Container(
+                              width: MediaQuery.of(context).size.width * 0.6,
+                              margin: const EdgeInsets.all(10.0),
+                              child: InputDecorator(
+                                decoration: const InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(
+                                      vertical: 10.0, horizontal: 15.0),
+                                  border: OutlineInputBorder(),
+                                  labelText: 'License Key Duration',
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.grey),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.blue),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      flex: 1,
+                                      child: Theme(
+                                        data: Theme.of(context).copyWith(
+                                          listTileTheme:
+                                              const ListTileThemeData(
+                                                  horizontalTitleGap: 1.0),
+                                        ),
+                                        child: RadioListTile<int>(
+                                            title: const Text(
+                                              '7 Days',
+                                              style: TextStyle(fontSize: 12),
+                                            ),
+                                            value: 7,
+                                            groupValue:
+                                                _validDurationGroupValue,
+                                            onChanged: (int? value) {
+                                              setState(() {
+                                                _validDurationGroupValue =
+                                                    value!;
+                                              });
+                                            }),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 1,
+                                      child: Theme(
+                                        data: Theme.of(context).copyWith(
+                                          listTileTheme:
+                                              const ListTileThemeData(
+                                                  horizontalTitleGap: 1.0),
+                                        ),
+                                        child: RadioListTile<int>(
+                                            title: const Text(
+                                              '14 Days',
+                                              style: TextStyle(fontSize: 12),
+                                            ),
+                                            value: 14,
+                                            groupValue:
+                                                _validDurationGroupValue,
+                                            onChanged: (int? value) {
+                                              setState(() {
+                                                _validDurationGroupValue =
+                                                    value!;
+                                              });
+                                            }),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 1,
+                                      child: Theme(
+                                        data: Theme.of(context).copyWith(
+                                          listTileTheme:
+                                              const ListTileThemeData(
+                                                  horizontalTitleGap: 1.0),
+                                        ),
+                                        child: RadioListTile<int>(
+                                            title: const Text(
+                                              '1 Month',
+                                              style: TextStyle(fontSize: 12),
+                                            ),
+                                            value: 30,
+                                            groupValue:
+                                                _validDurationGroupValue,
+                                            onChanged: (int? value) {
+                                              setState(() {
+                                                _validDurationGroupValue =
+                                                    value!;
+                                              });
+                                            }),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 1,
+                                      child: Theme(
+                                        data: Theme.of(context).copyWith(
+                                          listTileTheme:
+                                              const ListTileThemeData(
+                                                  horizontalTitleGap: 1.0),
+                                        ),
+                                        child: RadioListTile<int>(
+                                            title: const Text(
+                                              '6 Month',
+                                              style: TextStyle(fontSize: 12),
+                                            ),
+                                            value: 180,
+                                            groupValue:
+                                                _validDurationGroupValue,
+                                            onChanged: (int? value) {
+                                              setState(() {
+                                                _validDurationGroupValue =
+                                                    value!;
+                                              });
+                                            }),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 1,
+                                      child: Theme(
+                                        data: Theme.of(context).copyWith(
+                                          listTileTheme:
+                                              const ListTileThemeData(
+                                                  horizontalTitleGap: 1.0),
+                                        ),
+                                        child: RadioListTile<int>(
+                                            title: const Text(
+                                              '1 Year',
+                                              style: TextStyle(fontSize: 12),
+                                            ),
+                                            value: 365,
+                                            groupValue:
+                                                _validDurationGroupValue,
+                                            onChanged: (int? value) {
+                                              setState(() {
+                                                _validDurationGroupValue =
+                                                    value!;
+                                              });
+                                            }),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 1,
+                                      child: Theme(
+                                        data: Theme.of(context).copyWith(
+                                          listTileTheme:
+                                              const ListTileThemeData(
+                                                  horizontalTitleGap: 1.0),
+                                        ),
+                                        child: RadioListTile<int>(
+                                            title: const Text(
+                                              'Forever',
+                                              style: TextStyle(fontSize: 12),
+                                            ),
+                                            value: -1,
+                                            groupValue:
+                                                _validDurationGroupValue,
+                                            onChanged: (int? value) {
+                                              setState(() {
+                                                _validDurationGroupValue =
+                                                    value!;
+                                              });
+                                            }),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.blue),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                          Row(
                             children: [
-                              Expanded(
-                                flex: 1,
-                                child: Theme(
-                                  data: Theme.of(context).copyWith(
-                                    listTileTheme: const ListTileThemeData(
-                                        horizontalTitleGap: 1.0),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: MouseRegion(
+                                  cursor: SystemMouseCursors.click,
+                                  child: Checkbox(
+                                    value: _customDurationSet,
+                                    onChanged: (bool? value) {
+                                      setState(() {
+                                        _customDurationSet = value!;
+                                      });
+                                    },
                                   ),
-                                  child: RadioListTile<int>(
-                                      title: const Text(
-                                        '7 Days',
-                                        style: TextStyle(fontSize: 12),
-                                      ),
-                                      value: 7,
-                                      groupValue: _validDurationGroupValue,
-                                      onChanged: (int? value) {
-                                        setState(() {
-                                          _validDurationGroupValue = value!;
-                                        });
-                                      }),
                                 ),
                               ),
-                              Expanded(
-                                flex: 1,
-                                child: Theme(
-                                  data: Theme.of(context).copyWith(
-                                    listTileTheme: const ListTileThemeData(
-                                        horizontalTitleGap: 1.0),
-                                  ),
-                                  child: RadioListTile<int>(
-                                      title: const Text(
-                                        '14 Days',
-                                        style: TextStyle(fontSize: 12),
-                                      ),
-                                      value: 14,
-                                      groupValue: _validDurationGroupValue,
-                                      onChanged: (int? value) {
-                                        setState(() {
-                                          _validDurationGroupValue = value!;
-                                        });
-                                      }),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 1,
-                                child: Theme(
-                                  data: Theme.of(context).copyWith(
-                                    listTileTheme: const ListTileThemeData(
-                                        horizontalTitleGap: 1.0),
-                                  ),
-                                  child: RadioListTile<int>(
-                                      title: const Text(
-                                        '1 Month',
-                                        style: TextStyle(fontSize: 12),
-                                      ),
-                                      value: 30,
-                                      groupValue: _validDurationGroupValue,
-                                      onChanged: (int? value) {
-                                        setState(() {
-                                          _validDurationGroupValue = value!;
-                                        });
-                                      }),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 1,
-                                child: Theme(
-                                  data: Theme.of(context).copyWith(
-                                    listTileTheme: const ListTileThemeData(
-                                        horizontalTitleGap: 1.0),
-                                  ),
-                                  child: RadioListTile<int>(
-                                      title: const Text(
-                                        '6 Month',
-                                        style: TextStyle(fontSize: 12),
-                                      ),
-                                      value: 180,
-                                      groupValue: _validDurationGroupValue,
-                                      onChanged: (int? value) {
-                                        setState(() {
-                                          _validDurationGroupValue = value!;
-                                        });
-                                      }),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 1,
-                                child: Theme(
-                                  data: Theme.of(context).copyWith(
-                                    listTileTheme: const ListTileThemeData(
-                                        horizontalTitleGap: 1.0),
-                                  ),
-                                  child: RadioListTile<int>(
-                                      title: const Text(
-                                        '1 Year',
-                                        style: TextStyle(fontSize: 12),
-                                      ),
-                                      value: 365,
-                                      groupValue: _validDurationGroupValue,
-                                      onChanged: (int? value) {
-                                        setState(() {
-                                          _validDurationGroupValue = value!;
-                                        });
-                                      }),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 1,
-                                child: Theme(
-                                  data: Theme.of(context).copyWith(
-                                    listTileTheme: const ListTileThemeData(
-                                        horizontalTitleGap: 1.0),
-                                  ),
-                                  child: RadioListTile<int>(
-                                      title: const Text(
-                                        'Forever',
-                                        style: TextStyle(fontSize: 12),
-                                      ),
-                                      value: -1,
-                                      groupValue: _validDurationGroupValue,
-                                      onChanged: (int? value) {
-                                        setState(() {
-                                          _validDurationGroupValue = value!;
-                                        });
-                                      }),
-                                ),
-                              ),
+                              const Text('Custom'),
                             ],
                           ),
-                        ),
+                          if (_customDurationSet)
+                            Column(
+                              children: [
+                                const SizedBox(height: 5.0),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: Container(
+                                        margin: const EdgeInsets.all(10),
+                                        child: TextFormField(
+                                          controller: _customDurationController,
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.allow(
+                                                RegExp(r'[0-9]'))
+                                          ],
+                                          validator: (value) {
+                                            if (value!.isEmpty) {
+                                              return 'Custom field cannot be blank.';
+                                            } else {
+                                              if (_selectedDurationFreq ==
+                                                  'Days') {
+                                                if (int.parse(
+                                                            _customDurationController
+                                                                .text) <=
+                                                        1 ||
+                                                    int.parse(
+                                                            _customDurationController
+                                                                .text) >=
+                                                        30) {
+                                                  return 'Days must be between 1 and 30 days or select Months.';
+                                                }
+                                              } else if (_selectedDurationFreq ==
+                                                  'Months') {
+                                                if (int.parse(
+                                                            _customDurationController
+                                                                .text) <
+                                                        1 ||
+                                                    int.parse(
+                                                            _customDurationController
+                                                                .text) ==
+                                                        12) {
+                                                  return 'Months cannot be lower 1. Select Years instead of 12 months.';
+                                                }
+                                              } else {
+                                                if (int.parse(
+                                                        _customDurationController
+                                                            .text) <
+                                                    1) {
+                                                  return 'Years cannot be lower than 1 or select Months.';
+                                                }
+                                              }
+                                              return null;
+                                            }
+                                          },
+                                          decoration: InputDecoration(
+                                            border: const OutlineInputBorder(),
+                                            labelText:
+                                                'Custom License Key $_selectedDurationFreq',
+                                            suffixIcon: const Icon(
+                                                Icons.access_time_rounded),
+                                            enabledBorder:
+                                                const OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                        color: Colors.grey)),
+                                            focusedBorder:
+                                                const OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                        color: Colors.blue)),
+                                            errorBorder:
+                                                const OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                        color: Colors.red)),
+                                            focusedErrorBorder:
+                                                const OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                        color: Colors.red,
+                                                        width: 1.5)),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 1,
+                                      child: Container(
+                                        margin: const EdgeInsets.all(10.0),
+                                        child: InputDecorator(
+                                          decoration: const InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'Frequency',
+                                            enabledBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    color: Colors.grey)),
+                                            focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    color: Colors.blue)),
+                                            errorBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    color: Colors.red)),
+                                            focusedErrorBorder:
+                                                OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                        color: Colors.red,
+                                                        width: 1.5)),
+                                          ),
+                                          child: DropdownButtonHideUnderline(
+                                            child: SizedBox(
+                                              height: 26.0,
+                                              child: DropdownButton(
+                                                isExpanded: true,
+                                                icon: const Icon(
+                                                    Icons.arrow_drop_down),
+                                                value: _selectedDurationFreq,
+                                                items: _durationFreqItems.map(
+                                                    (String positionItems) {
+                                                  return DropdownMenuItem(
+                                                    value: positionItems,
+                                                    alignment:
+                                                        Alignment.centerLeft,
+                                                    child: Text(positionItems),
+                                                  );
+                                                }).toList(),
+                                                onChanged: (String? newValue) {
+                                                  setState(() {
+                                                    _selectedDurationFreq =
+                                                        newValue!;
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            )
+                        ],
                       ),
+                      if (!_customDurationSet) SizedBox(height: 8.0),
                       Container(
                         margin: const EdgeInsets.all(10.0),
                         width: MediaQuery.of(context).size.width * 0.6,
@@ -325,13 +512,35 @@ class _DeveloperOptionsState extends State<DeveloperOptions> {
                                 DateTime expireAt;
                                 if (_liscenseFormKey.currentState!.validate()) {
                                   try {
-                                    /*   final expireAt = DateTime.now()
-                                        .add(const Duration(minutes: 5)); */
-                                    if (_validDurationGroupValue == -1) {
-                                      expireAt = DateTime(9999);
+                                    // Textfield values are used here
+                                    if (_customDurationSet) {
+                                      if (_selectedDurationFreq == 'Days') {
+                                        expireAt = DateTime.now().add(Duration(
+                                            days: int.parse(
+                                                _customDurationController
+                                                    .text)));
+                                      } else if (_selectedDurationFreq ==
+                                          'Months') {
+                                        expireAt = DateTime.now().add(Duration(
+                                            days: int.parse(
+                                                    _customDurationController
+                                                        .text) *
+                                                30));
+                                      } else {
+                                        expireAt = DateTime.now().add(Duration(
+                                            days: int.parse(
+                                                    _customDurationController
+                                                        .text) *
+                                                365));
+                                      }
+                                      // Radio Button values start here
                                     } else {
-                                      expireAt = DateTime.now().add(Duration(
-                                          days: _validDurationGroupValue));
+                                      if (_validDurationGroupValue == -1) {
+                                        expireAt = DateTime(9999);
+                                      } else {
+                                        expireAt = DateTime.now().add(Duration(
+                                            days: _validDurationGroupValue));
+                                      }
                                     }
                                     // Generate liscense key and assign it to a variable
                                     _liscenseKey =
@@ -433,7 +642,8 @@ class Features {
   static Future<bool> userLimitReached() async {
     try {
       final conn = await onConnToSqliteDb();
-      var result = await conn.rawQuery('SELECT COUNT(*) AS num_of_user FROM staff_auth');
+      var result =
+          await conn.rawQuery('SELECT COUNT(*) AS num_of_user FROM staff_auth');
       int numOfUsers = result.first["num_of_user"] as int;
       if (numOfUsers >= allowedUsersLimit && allowedUsersLimit != 0) {
         return true;
@@ -450,7 +660,8 @@ class Features {
   static Future<bool> patientLimitReached() async {
     try {
       final conn = await onConnToSqliteDb();
-      var result = await conn.query('SELECT COUNT(*) AS num_of_patients FROM patients');
+      var result =
+          await conn.query('SELECT COUNT(*) AS num_of_patients FROM patients');
       int numOfPatients = result.first["num_of_patients"] as int;
       if (numOfPatients >= allowedPatientsLimit && allowedPatientsLimit != -1) {
         return true;
@@ -467,7 +678,8 @@ class Features {
   static Future<bool> staffLimitReached() async {
     try {
       final conn = await onConnToSqliteDb();
-      var result = await conn.rawQuery('SELECT COUNT(*) AS num_of_staff FROM staff');
+      var result =
+          await conn.rawQuery('SELECT COUNT(*) AS num_of_staff FROM staff');
       int numOfStaff = result.first["num_of_staff"] as int;
       if (numOfStaff >= allowedStaffLimit && allowedStaffLimit != 0) {
         return true;
@@ -484,9 +696,11 @@ class Features {
   static Future<bool> expenseLimitReached() async {
     try {
       final conn = await onConnToSqliteDb();
-      var result = await conn.rawQuery('SELECT COUNT(*) AS num_of_exp_detail FROM expense_detail');
+      var result = await conn
+          .rawQuery('SELECT COUNT(*) AS num_of_exp_detail FROM expense_detail');
       int numOfExpenseDetail = result.first["num_of_exp_detail"] as int;
-      if (numOfExpenseDetail >= allowedExpenseLimit && allowedExpenseLimit != -1) {
+      if (numOfExpenseDetail >= allowedExpenseLimit &&
+          allowedExpenseLimit != -1) {
         return true;
       } else {
         return false;
