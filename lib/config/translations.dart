@@ -277,6 +277,8 @@ final Map<String, Map<String, String>> translations = {
     'SerFee': 'Service Fee',
     'SearchCalDDL': 'Search by Patient\'s First Name, Last Name or Phone...',
     'CreateBill' : 'Create Bill',
+    'DisplayToothChart' : 'Click to display teeth chart',
+    'CloseBtn' : 'Close',
     /*-----/. PATIENTS -----*/
     /*-------- STAFF ------- */
     'AllStaff': 'All Staff',
@@ -755,6 +757,8 @@ final Map<String, Map<String, String>> translations = {
     'SerFee': 'فیس سرویس',
     'SearchCalDDL': 'جستجو به اساس نام، تخلص و نمبر تماس مریض...',
     'CreateBill' : 'ایجاد بل',
+    'DisplayToothChart' : 'کلیک کنید تا چارت دندانها نمایش داده شود',
+    'CloseBtn' : 'بستن',
     /*-----/. PATIENTS -----*/
     /*-------- STAFF ------- */
     'AllStaff': 'همه کارمندان',
@@ -1240,6 +1244,8 @@ final Map<String, Map<String, String>> translations = {
     'SerFee': 'د سرویس فیس',
     'SearchCalDDL': 'د ناروغ د نوم، تخلص او د اړیکې شمیرې په واسطه لټون وکړئ ...',
     'CreateBill' : 'بل جوړ کړئ',
+    'DisplayToothChart' : 'د غاښونو چارټ ښودلو لپاره کلیک وکړئ',
+    'CloseBtn' : 'تړل',
     /*-----/. PATIENTS -----*/
     /*-------- STAFF ------- */
     'AllStaff': 'ټول کارکوونکي',

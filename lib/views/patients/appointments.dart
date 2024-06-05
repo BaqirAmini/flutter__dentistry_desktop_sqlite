@@ -808,19 +808,18 @@ class _AppointmentContentState extends State<_AppointmentContent> {
   _onDisplayTeethChart(List<String> selectedTeethList) {
     return showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Directionality(
-            textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
-            child: Text(translations[selectedLanguage]?['Teeth'] ?? '',
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineSmall!
-                    .copyWith(color: Colors.blue)),
-          ),
-          content: Directionality(
-            textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
-            child: SizedBox(
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: Directionality(
+              textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
+              child: Text(translations[selectedLanguage]?['Teeth'] ?? '',
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineSmall!
+                      .copyWith(color: Colors.blue)),
+            ),
+            content: SizedBox(
               height: MediaQuery.of(context).size.height * 0.4,
               width: (PatientInfo.age! > 13)
                   ? MediaQuery.of(context).size.width * 0.55
@@ -828,33 +827,41 @@ class _AppointmentContentState extends State<_AppointmentContent> {
               child: Center(
                 child: (PatientInfo.age! > 13)
                     ? AdultQuadrantGrid4SelectedTeeth(
-                        selectedTeethFromDB: selectedTeethList)
+                        selectedTeethFromDB: selectedTeethList,
+                        chartLabel: translations[selectedLanguage]
+                                ?['AdultTeethSelection'] ??
+                            '')
                     : ChildQuadrantGrid4SelectedTeeth(
-                        selectedTeethFromDB: selectedTeethList),
+                        selectedTeethFromDB: selectedTeethList,
+                        chartLabel: translations[selectedLanguage]
+                                ?['ChildTeethSelection'] ??
+                            ''),
               ),
             ),
-          ),
-          actions: [
-            Directionality(
-              textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8.0, bottom: 8.0),
-                    child: IconButton(
-                      tooltip: 'Close',
-                      splashRadius: 25.0,
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close, color: Colors.redAccent),
+            actions: [
+              Directionality(
+                textDirection:
+                    isEnglish ? TextDirection.ltr : TextDirection.rtl,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0, bottom: 8.0),
+                      child: IconButton(
+                        tooltip:
+                            translations[selectedLanguage]?['CloseBtn'] ?? '',
+                        splashRadius: 25.0,
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close, color: Colors.redAccent),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            )
-          ],
-        );
-      },
+                  ],
+                ),
+              )
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -1255,7 +1262,7 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                                                                             },
                                                                             child:
                                                                                 Tooltip(
-                                                                              message: 'Click to display Teeth Chart',
+                                                                              message: translations[selectedLanguage]?['Teeth'] ?? '',
                                                                               child: Text(
                                                                                 convertMultiQuadrant(req.reqValue),
                                                                                 textAlign: TextAlign.end,
