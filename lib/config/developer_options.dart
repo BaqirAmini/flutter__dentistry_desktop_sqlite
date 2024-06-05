@@ -316,7 +316,7 @@ class _DeveloperOptionsState extends State<DeveloperOptions> {
                                           ],
                                           validator: (value) {
                                             if (value!.isEmpty) {
-                                              return 'Custom field cannot be blank.';
+                                              return 'Number of $_selectedDurationFreq Required.';
                                             } else {
                                               if (_selectedDurationFreq ==
                                                   'Days') {
@@ -356,7 +356,7 @@ class _DeveloperOptionsState extends State<DeveloperOptions> {
                                           decoration: InputDecoration(
                                             border: const OutlineInputBorder(),
                                             labelText:
-                                                'Custom License Key $_selectedDurationFreq',
+                                                'Number of $_selectedDurationFreq',
                                             suffixIcon: const Icon(
                                                 Icons.access_time_rounded),
                                             enabledBorder:
