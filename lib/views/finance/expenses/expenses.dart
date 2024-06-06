@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/developer_options.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/models/expense_data_model.dart';
@@ -37,6 +38,8 @@ void main() => runApp(const ExpenseList());
 var selectedLanguage;
 // ignore: prefer_typing_uninitialized_variables
 var isEnglish;
+var selectedCalType;
+var isGregorian;
 
 class ExpenseList extends StatefulWidget {
   const ExpenseList({Key? key}) : super(key: key);
@@ -52,6 +55,12 @@ class _ExpenseListState extends State<ExpenseList> {
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
+
+    // Choose calendar type from its provider
+    var calTypeProvider = Provider.of<SettingsProvider>(context);
+    selectedCalType = calTypeProvider.selectedDateType;
+    isGregorian = selectedCalType == 'میلادی';
+
     return ScaffoldMessenger(
       key: _globalKey1,
       child: Directionality(
@@ -414,7 +423,7 @@ class _ExpenseListState extends State<ExpenseList> {
                                   ),
                                 ),
                                 IconButton(
-                                  splashRadius: 25.0,
+                                    splashRadius: 25.0,
                                     tooltip: translations[selectedLanguage]
                                             ?['AddExpType'] ??
                                         '',
@@ -737,30 +746,35 @@ class _ExpenseListState extends State<ExpenseList> {
                               onTap: () async {
                                 FocusScope.of(context)
                                     .requestFocus(new FocusNode());
-                                final DateTime? dateTime = await showDatePicker(
-                                    context: context,
-                                    initialDate: DateTime.now(),
-                                    firstDate: DateTime(1900),
-                                    lastDate: DateTime(2100));
-                                if (dateTime != null) {
-                                  final intl.DateFormat formatter =
-                                      intl.DateFormat('yyyy-MM-dd');
-                                  final String formattedDate =
-                                      formatter.format(dateTime);
-                                  purchaseDateController.text = formattedDate;
+                                if (isGregorian) {
+                                  final DateTime? gregDate =
+                                      await showDatePicker(
+                                          context: context,
+                                          initialDate: DateTime.now(),
+                                          firstDate: DateTime(1900),
+                                          lastDate: DateTime(2100));
+                                  if (gregDate != null) {
+                                    final intl.DateFormat formatter =
+                                        intl.DateFormat('yyyy-MM-dd');
+                                    final String formattedDate =
+                                        formatter.format(gregDate);
+                                    purchaseDateController.text = formattedDate;
+                                  }
+                                } else {
+                                  // Set Hijry/Jalali calendar
+                                  // ignore: use_build_context_synchronously
+                                  Jalali? hijriDate =
+                                      await showPersianDatePicker(
+                                          context: context,
+                                          initialDate: Jalali.now(),
+                                          firstDate: Jalali(1395, 8),
+                                          lastDate: Jalali(1450, 9));
+                                  if (hijriDate != null) {
+                                    final String formattedDate =
+                                        hijriDate.formatFullDate();
+                                    purchaseDateController.text = formattedDate;
+                                  }
                                 }
-
-                                // Set Hijry/Jalali calendar
-                                // ignore: use_build_context_synchronously
-                                /*     Jalali? picked = await showPersianDatePicker(
-                                    context: context,
-                                    initialDate: Jalali.now(),
-                                    firstDate: Jalali(1395, 8),
-                                    lastDate: Jalali(1450, 9));
-                                if (picked != null) {
-                                  print(
-                                      'Jalali Date: ${picked.formatFullDate()}');
-                                } */
                               },
                               inputFormatters: [
                                 FilteringTextInputFormatter.allow(

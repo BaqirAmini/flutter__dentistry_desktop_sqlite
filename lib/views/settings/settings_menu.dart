@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_dentistry/config/developer_options.dart';
+import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'dart:io';
 import 'package:flutter_dentistry/views/staff/staff_info.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
@@ -27,6 +28,9 @@ File? pickedFile;
 var selectedLanguage;
 // ignore: prefer_typing_uninitialized_variables
 var isEnglish;
+
+var selectedDateType;
+var isGregorian;
 
 bool _isLoadingPhoto = false;
 // Create the global key at the top level of your Dart file
@@ -71,6 +75,12 @@ class _SettingsMenuState extends State<SettingsMenu> {
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
+
+    // Fetching date type (Hijri or Gregorian) from provider
+    var datetypeProvider =
+        Provider.of<SettingsProvider>(context, listen: false);
+    selectedDateType = datetypeProvider.selectedDateType;
+    isGregorian = selectedDateType == 'میلادی';
 
     return ScaffoldMessenger(
       key: _globalKeyForProfile,
@@ -187,6 +197,15 @@ class _SettingsMenuState extends State<SettingsMenu> {
                               color: Color.fromARGB(255, 119, 118, 118),
                               fontSize: 14),
                         ),
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.calendar_today_outlined),
+                        title: const Text('تبدیل تاریخ'),
+                        onTap: () {
+                          setState(() {
+                            _selectedIndex = 7;
+                          });
+                        },
                       ),
                       ListTile(
                         leading: const Icon(Icons.color_lens_outlined),
@@ -308,6 +327,8 @@ onShowSettingsItem(BuildContext context, int index,
     return onRestoreData();
   } else if (index == 6) {
     return onChangeLang();
+  } else if (index == 7) {
+    return _onChangeDateType();
   } else {
     return const SizedBox.shrink();
   }
@@ -1167,6 +1188,12 @@ Future<String> getSelectedLanguage() async {
   return prefs.getString('selectedLanguage') ?? 'دری';
 }
 
+// Fetch the selected date type from shared preference.
+Future<String> getSelectedDateType() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('selectedDateType') ?? 'میلادی';
+}
+
 // This function is to change system languages
 Widget onChangeLang() {
   // Set the language into a
@@ -1341,6 +1368,162 @@ Widget onChangeLang() {
                                 ),
                               ),
 
+                              // Add more languages here
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        }
+      }
+    },
+  );
+}
+
+// This function is to switch between Hijri and Gregorian Date
+Widget _onChangeDateType() {
+  return FutureBuilder(
+    future: getSelectedDateType(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const CircularProgressIndicator();
+      } else {
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else {
+          String? selectedDateType = snapshot.data;
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return StatefulBuilder(
+                builder: (context, setState) {
+                  return Card(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'تبدیل تاریخ',
+                            style:
+                                TextStyle(fontSize: 20.0, color: Colors.black),
+                          ),
+                          const SizedBox(
+                            height: 50.0,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              InkWell(
+                                onTap: () {
+                                  Provider.of<SettingsProvider>(context,
+                                          listen: false)
+                                      .selectedDateType = 'هجری شمسی';
+                                  setState(() {
+                                    selectedDateType = 'هجری شمسی';
+                                  });
+                                },
+                                child: Card(
+                                  elevation: 1.0,
+                                  color: selectedDateType == 'هجری شمسی'
+                                      ? Colors.grey[300]
+                                      : Colors
+                                          .white, // change color when selected
+                                  child: SizedBox(
+                                    height: MediaQuery.of(context).size.height *
+                                        0.07, // adjust as needed
+                                    width: MediaQuery.of(context).size.width *
+                                        0.08, // adjust as needed
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: <Widget>[
+                                        SizedBox(
+                                          width: 110.0, // adjust as needed
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceEvenly,
+                                            children: <Widget>[
+                                              Image.asset(
+                                                'assets/flags/Dari.png',
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    0.015, // adjust as needed
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.015, // adjust as needed
+                                              ),
+                                              const Text('هجری شمسی'),
+                                            ],
+                                          ),
+                                        ),
+                                        if (selectedDateType == 'هجری شمسی')
+                                          const Icon(Icons.check_circle,
+                                              color: Colors.blue),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              InkWell(
+                                onTap: () {
+                                  Provider.of<SettingsProvider>(context,
+                                          listen: false)
+                                      .selectedDateType = 'میلادی';
+                                  setState(() {
+                                    selectedDateType = 'میلادی';
+                                  });
+                                },
+                                child: Card(
+                                  elevation: 1.0,
+                                  color: selectedDateType == 'میلادی'
+                                      ? Colors.grey[300]
+                                      : Colors
+                                          .white, // change color when selected
+                                  child: SizedBox(
+                                    height: MediaQuery.of(context).size.height *
+                                        0.07, // adjust as needed
+                                    width: MediaQuery.of(context).size.width *
+                                        0.08, // adjust as needed
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: <Widget>[
+                                        SizedBox(
+                                          width: 80.0, // adjust as needed
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceEvenly,
+                                            children: <Widget>[
+                                              Image.asset(
+                                                'assets/flags/English.png',
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    0.015, // adjust as needed
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.015, // adjust as needed
+                                              ),
+                                              const Text('میلادی'),
+                                            ],
+                                          ),
+                                        ),
+                                        if (selectedDateType == 'میلادی')
+                                          const Icon(Icons.check_circle,
+                                              color: Colors.blue),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
                               // Add more languages here
                             ],
                           ),
