@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dentistry/config/private/private.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -40,7 +41,7 @@ class _DashboardState extends State<Dashboard> {
     _fetchFinance();
     _retrieveClinics();
 
-   /*  setState(() {
+    /*  setState(() {
       _alertNotification(); // Call the function immediately for the first alert
       _timer = Timer.periodic(
           const Duration(minutes: 5), (Timer t) => _alertNotification());
@@ -410,7 +411,45 @@ class _DashboardState extends State<Dashboard> {
                       IconButton(
                         tooltip: 'تغییر معلومات کلینیک شما',
                         splashRadius: 22.0,
-                        onPressed: () => _onAddClinicInfo().then(
+                        onPressed: () => _onAddClinicInfo(
+                                isEnglish,
+                                translations[languageProvider.selectedLanguage]
+                                        ?["EditClinicInfo"] ??
+                                    '',
+                                translations[languageProvider.selectedLanguage]
+                                        ?["ChooseCLogo"] ??
+                                    '',
+                                translations[languageProvider.selectedLanguage]
+                                        ?["LogoSize"] ??
+                                    '',
+                                translations[languageProvider.selectedLanguage]
+                                        ?["ClinicName"] ??
+                                    '',
+                                translations[languageProvider.selectedLanguage]
+                                        ?["CNameRequired"] ??
+                                    '',
+                                translations[languageProvider.selectedLanguage]
+                                        ?["CliNameLength"] ??
+                                    '',
+                                translations[languageProvider.selectedLanguage]
+                                        ?["ClinicAddr"] ??
+                                    '',
+                                translations[languageProvider.selectedLanguage]
+                                        ?["CAddrRequired"] ??
+                                    '',
+                                translations[languageProvider.selectedLanguage]?["CliAddrLength"] ?? '',
+                                translations[languageProvider.selectedLanguage]?["CliPhone1"] ?? '',
+                                translations[languageProvider.selectedLanguage]?["CliPhone1Required"] ?? '',
+                                translations[languageProvider.selectedLanguage]?["Phone10"] ?? '',
+                                translations[languageProvider.selectedLanguage]?["Phone12"] ?? '',
+                                translations[languageProvider.selectedLanguage]?["CliPhone2"] ?? '',
+                                translations[languageProvider.selectedLanguage]?["ValidPhone"] ?? '',
+                                translations[languageProvider.selectedLanguage]?["CliPhoneDiffer"] ?? '',
+                                translations[languageProvider.selectedLanguage]?["ClinicEmail"] ?? '',
+                                translations[languageProvider.selectedLanguage]?["InValidEmail"] ?? '',
+                                translations[languageProvider.selectedLanguage]?["Edit"] ?? '',
+                                translations[languageProvider.selectedLanguage]?["CancelBtn"] ?? '')
+                            .then(
                           (_) => _retrieveClinics(),
                         ),
                         icon: const Icon(Icons.mode_edit_outlined, size: 14.0),
@@ -1084,7 +1123,28 @@ class _DashboardState extends State<Dashboard> {
         });
   }
 
-  Future<void> _onAddClinicInfo() async {
+  Future<void> _onAddClinicInfo(
+      bool isEng,
+      String title,
+      String logoMsg,
+      String logoSize,
+      String cliName,
+      String cliNameRequired,
+      String cliNameLength,
+      String cliAddr,
+      String cliAddrRequired,
+      String cliAddrLength,
+      String cliPhone1,
+      String cliPhone1Required,
+      String cliPhone1Length,
+      String cliPhone12,
+      String cliPhone2,
+      String invalidPhone,
+      String phonesDiffer,
+      String cliEmail,
+      String cliEmailInvalid,
+      String editBtn,
+      String cancelBtn) async {
     TextEditingController clinicNameController = TextEditingController();
     TextEditingController clinicAddrController = TextEditingController();
     TextEditingController clinicPhoneController1 = TextEditingController();
@@ -1106,15 +1166,16 @@ class _DashboardState extends State<Dashboard> {
                 return AlertDialog(
                   title: Directionality(
                     textDirection:
-                        isEnglish ? TextDirection.ltr : TextDirection.rtl,
-                    child: const Text('تغییر معلومات مربوط کلینیک شما',
-                        style: TextStyle(color: Colors.blue)),
+                        isEng ? TextDirection.ltr : TextDirection.rtl,
+                    child:
+                        Text(title, style: const TextStyle(color: Colors.blue)),
                   ),
                   content: SizedBox(
                     width: MediaQuery.of(context).size.width * 0.39,
                     height: MediaQuery.of(context).size.height * 0.51,
                     child: Directionality(
-                      textDirection: TextDirection.rtl,
+                      textDirection:
+                          isEng ? TextDirection.ltr : TextDirection.rtl,
                       child: Center(
                         child: SingleChildScrollView(
                           child: Form(
@@ -1193,11 +1254,12 @@ class _DashboardState extends State<Dashboard> {
                                       ),
                                     ),
                                     if (_selectedLogo == null)
-                                      const Padding(
-                                        padding: EdgeInsets.only(right: 8.0),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 8.0),
                                         child: Text(
-                                          'لوگو را انتخاب کنید (اختیاری)',
-                                          style: TextStyle(
+                                          logoMsg,
+                                          style: const TextStyle(
                                               fontSize: 12.0,
                                               color: Colors.blue),
                                         ),
@@ -1250,10 +1312,10 @@ class _DashboardState extends State<Dashboard> {
                                         controller: clinicNameController,
                                         validator: (value) {
                                           if (value!.isEmpty) {
-                                            return 'نام کلینیک الزامی میباشد.';
+                                            return cliNameRequired;
                                           } else if (value.length < 10 ||
                                               value.length > 35) {
-                                            return 'نام کلینیک باید بیشتر از 10 حرف و کمتر از 35 حرف باشد.';
+                                            return cliNameLength;
                                           }
                                           return null;
                                         },
@@ -1261,27 +1323,34 @@ class _DashboardState extends State<Dashboard> {
                                           FilteringTextInputFormatter.allow(
                                               RegExp(GlobalUsage.allowedEPChar))
                                         ],
-                                        decoration: const InputDecoration(
-                                          border: OutlineInputBorder(),
-                                          labelText: 'نام کلینیک',
-                                          suffixIcon: Icon(Icons.info_outline),
-                                          enabledBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(50.0)),
-                                              borderSide: BorderSide(
-                                                  color: Colors.grey)),
-                                          focusedBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(50.0)),
-                                              borderSide: BorderSide(
-                                                  color: Colors.blue)),
-                                          errorBorder: OutlineInputBorder(
+                                        decoration: InputDecoration(
+                                          border: const OutlineInputBorder(),
+                                          labelText: cliName,
+                                          suffixIcon:
+                                              const Icon(Icons.info_outline),
+                                          enabledBorder:
+                                              const OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(
+                                                              50.0)),
+                                                  borderSide: BorderSide(
+                                                      color: Colors.grey)),
+                                          focusedBorder:
+                                              const OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(
+                                                              50.0)),
+                                                  borderSide: BorderSide(
+                                                      color: Colors.blue)),
+                                          errorBorder: const OutlineInputBorder(
                                               borderRadius: BorderRadius.all(
                                                   Radius.circular(50.0)),
                                               borderSide: BorderSide(
                                                   color: Colors.red)),
                                           focusedErrorBorder:
-                                              OutlineInputBorder(
+                                              const OutlineInputBorder(
                                                   borderRadius:
                                                       BorderRadius.all(
                                                           Radius.circular(
@@ -1314,10 +1383,10 @@ class _DashboardState extends State<Dashboard> {
                                         controller: clinicAddrController,
                                         validator: (value) {
                                           if (value!.isEmpty) {
-                                            return 'آدرس کلینیک الزامی میباشد.';
+                                            return cliAddrRequired;
                                           } else if (value.length < 10 ||
                                               value.length > 40) {
-                                            return 'آدرس کلینیک باید بیشتر از 10 حرف و کمتر از 40 حرف باشد.';
+                                            return cliAddrLength;
                                           }
                                           return null;
                                         },
@@ -1328,28 +1397,34 @@ class _DashboardState extends State<Dashboard> {
                                         ],
                                         minLines: 1,
                                         maxLines: 2,
-                                        decoration: const InputDecoration(
-                                          border: OutlineInputBorder(),
-                                          labelText: 'آدرس کلینیک',
-                                          suffixIcon: Icon(
+                                        decoration: InputDecoration(
+                                          border: const OutlineInputBorder(),
+                                          labelText: cliAddr,
+                                          suffixIcon: const Icon(
                                               Icons.edit_location_outlined),
-                                          enabledBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(50.0)),
-                                              borderSide: BorderSide(
-                                                  color: Colors.grey)),
-                                          focusedBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(50.0)),
-                                              borderSide: BorderSide(
-                                                  color: Colors.blue)),
-                                          errorBorder: OutlineInputBorder(
+                                          enabledBorder:
+                                              const OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(
+                                                              50.0)),
+                                                  borderSide: BorderSide(
+                                                      color: Colors.grey)),
+                                          focusedBorder:
+                                              const OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(
+                                                              50.0)),
+                                                  borderSide: BorderSide(
+                                                      color: Colors.blue)),
+                                          errorBorder: const OutlineInputBorder(
                                               borderRadius: BorderRadius.all(
                                                   Radius.circular(50.0)),
                                               borderSide: BorderSide(
                                                   color: Colors.red)),
                                           focusedErrorBorder:
-                                              OutlineInputBorder(
+                                              const OutlineInputBorder(
                                                   borderRadius:
                                                       BorderRadius.all(
                                                           Radius.circular(
@@ -1373,21 +1448,21 @@ class _DashboardState extends State<Dashboard> {
                                     controller: clinicPhoneController1,
                                     validator: (value) {
                                       if (value!.isEmpty) {
-                                        return 'این نمبر الزامی میباشد.';
+                                        return cliPhone1Required;
                                       } else if (value.startsWith('07') ||
                                           value.startsWith('۰۷')) {
                                         if (value.length < 10 ||
                                             value.length > 10) {
-                                          return 'نمبر تماس باید 10 رقم باشد.';
+                                          return cliPhone1Length;
                                         }
                                       } else if (value.startsWith('+93') ||
                                           value.startsWith('+۹۳')) {
                                         if (value.length < 12 ||
                                             value.length > 12) {
-                                          return 'نمبر تماس همراه با کود کشور باید 12 رقم باشد.';
+                                          return cliPhone12;
                                         }
                                       } else {
-                                        return 'نمبر تماس نا معتبر است.';
+                                        return invalidPhone;
                                       }
                                       return null;
                                     },
@@ -1397,31 +1472,33 @@ class _DashboardState extends State<Dashboard> {
                                       ),
                                     ],
                                     minLines: 1,
-                                    decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      labelText: 'نمبر تماس 1',
-                                      suffixIcon:
-                                          Icon(Icons.phone_enabled_outlined),
-                                      enabledBorder: OutlineInputBorder(
+                                    decoration: InputDecoration(
+                                      border: const OutlineInputBorder(),
+                                      labelText: cliPhone1,
+                                      suffixIcon: const Icon(
+                                          Icons.phone_enabled_outlined),
+                                      enabledBorder: const OutlineInputBorder(
                                           borderRadius: BorderRadius.all(
                                               Radius.circular(50.0)),
                                           borderSide:
                                               BorderSide(color: Colors.grey)),
-                                      focusedBorder: OutlineInputBorder(
+                                      focusedBorder: const OutlineInputBorder(
                                           borderRadius: BorderRadius.all(
                                               Radius.circular(50.0)),
                                           borderSide:
                                               BorderSide(color: Colors.blue)),
-                                      errorBorder: OutlineInputBorder(
+                                      errorBorder: const OutlineInputBorder(
                                           borderRadius: BorderRadius.all(
                                               Radius.circular(50.0)),
                                           borderSide:
                                               BorderSide(color: Colors.red)),
-                                      focusedErrorBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(50.0)),
-                                          borderSide: BorderSide(
-                                              color: Colors.red, width: 1.5)),
+                                      focusedErrorBorder:
+                                          const OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(50.0)),
+                                              borderSide: BorderSide(
+                                                  color: Colors.red,
+                                                  width: 1.5)),
                                     ),
                                   ),
                                 ),
@@ -1440,19 +1517,19 @@ class _DashboardState extends State<Dashboard> {
                                             value.startsWith('۰۷')) {
                                           if (value.length < 10 ||
                                               value.length > 10) {
-                                            return 'نمبر تماس باید 10 رقم باشد.';
+                                            return cliPhone1Length;
                                           }
                                         } else if (value.startsWith('+93') ||
                                             value.startsWith('+۹۳')) {
                                           if (value.length < 12 ||
                                               value.length > 12) {
-                                            return 'نمبر تماس همراه با کود کشور باید 12 رقم باشد.';
+                                            return cliPhone12;
                                           }
                                         } else if (value ==
                                             clinicPhoneController1.text) {
-                                          return 'نمبر تماس های کلینیک باید متفاوت باشد.';
+                                          return phonesDiffer;
                                         } else {
-                                          return 'نمبر تماس نا معتبر است.';
+                                          return invalidPhone;
                                         }
                                       }
                                       return null;
@@ -1463,31 +1540,33 @@ class _DashboardState extends State<Dashboard> {
                                       ),
                                     ],
                                     minLines: 1,
-                                    decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      labelText: 'نمبر تماس 2',
-                                      suffixIcon:
-                                          Icon(Icons.phone_enabled_outlined),
-                                      enabledBorder: OutlineInputBorder(
+                                    decoration: InputDecoration(
+                                      border: const OutlineInputBorder(),
+                                      labelText: cliPhone2,
+                                      suffixIcon: const Icon(
+                                          Icons.phone_enabled_outlined),
+                                      enabledBorder: const OutlineInputBorder(
                                           borderRadius: BorderRadius.all(
                                               Radius.circular(50.0)),
                                           borderSide:
                                               BorderSide(color: Colors.grey)),
-                                      focusedBorder: OutlineInputBorder(
+                                      focusedBorder: const OutlineInputBorder(
                                           borderRadius: BorderRadius.all(
                                               Radius.circular(50.0)),
                                           borderSide:
                                               BorderSide(color: Colors.blue)),
-                                      errorBorder: OutlineInputBorder(
+                                      errorBorder: const OutlineInputBorder(
                                           borderRadius: BorderRadius.all(
                                               Radius.circular(50.0)),
                                           borderSide:
                                               BorderSide(color: Colors.red)),
-                                      focusedErrorBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(50.0)),
-                                          borderSide: BorderSide(
-                                              color: Colors.red, width: 1.5)),
+                                      focusedErrorBorder:
+                                          const OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(50.0)),
+                                              borderSide: BorderSide(
+                                                  color: Colors.red,
+                                                  width: 1.5)),
                                     ),
                                   ),
                                 ),
@@ -1506,36 +1585,39 @@ class _DashboardState extends State<Dashboard> {
                                             r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$';
                                         final regex = RegExp(pattern);
                                         return !regex.hasMatch(value)
-                                            ? 'ایمیل آدرس نا معتبر است.'
+                                            ? cliEmailInvalid
                                             : null;
                                       }
                                       return null;
                                     },
                                     minLines: 1,
-                                    decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      labelText: 'ایمیل آدرس',
-                                      suffixIcon: Icon(Icons.email_outlined),
-                                      enabledBorder: OutlineInputBorder(
+                                    decoration: InputDecoration(
+                                      border: const OutlineInputBorder(),
+                                      labelText: cliEmail,
+                                      suffixIcon:
+                                          const Icon(Icons.email_outlined),
+                                      enabledBorder: const OutlineInputBorder(
                                           borderRadius: BorderRadius.all(
                                               Radius.circular(50.0)),
                                           borderSide:
                                               BorderSide(color: Colors.grey)),
-                                      focusedBorder: OutlineInputBorder(
+                                      focusedBorder: const OutlineInputBorder(
                                           borderRadius: BorderRadius.all(
                                               Radius.circular(50.0)),
                                           borderSide:
                                               BorderSide(color: Colors.blue)),
-                                      errorBorder: OutlineInputBorder(
+                                      errorBorder: const OutlineInputBorder(
                                           borderRadius: BorderRadius.all(
                                               Radius.circular(50.0)),
                                           borderSide:
                                               BorderSide(color: Colors.red)),
-                                      focusedErrorBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(50.0)),
-                                          borderSide: BorderSide(
-                                              color: Colors.red, width: 1.5)),
+                                      focusedErrorBorder:
+                                          const OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(50.0)),
+                                              borderSide: BorderSide(
+                                                  color: Colors.red,
+                                                  width: 1.5)),
                                     ),
                                   ),
                                 ),
@@ -1548,7 +1630,7 @@ class _DashboardState extends State<Dashboard> {
                   ),
                   actions: [
                     Row(
-                      mainAxisAlignment: isEnglish
+                      mainAxisAlignment: isEng
                           ? MainAxisAlignment.end
                           : MainAxisAlignment.start,
                       children: [
@@ -1556,7 +1638,7 @@ class _DashboardState extends State<Dashboard> {
                             onPressed: () =>
                                 Navigator.of(context, rootNavigator: true)
                                     .pop(),
-                            child: const Text('لغو')),
+                            child: Text(cancelBtn)),
                         ElevatedButton(
                           onPressed: () async {
                             try {
@@ -1567,8 +1649,7 @@ class _DashboardState extends State<Dashboard> {
                                   var logoSizeBytes =
                                       await _selectedLogo!.readAsBytes();
                                   if (logoSizeBytes.length > 1024 * 1024) {
-                                    clinicLogoMessage.value =
-                                        'The logo size should not be more 1MB.';
+                                    clinicLogoMessage.value = logoSize;
                                   } else {
                                     var editResults = await conn.rawUpdate(
                                         'UPDATE clinics SET clinic_name = ?, clinic_address = ?, clinic_phone1 = ?, clinic_phone2 = ?, clinic_email = ?, clinic_logo = ? WHERE clinic_ID = ?',
@@ -1629,7 +1710,7 @@ class _DashboardState extends State<Dashboard> {
                               print('Editing clinic info failed: $e');
                             }
                           },
-                          child: const Text('تغییر'),
+                          child: Text(editBtn),
                         ),
                       ],
                     ),
