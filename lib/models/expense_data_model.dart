@@ -5,12 +5,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
+import 'package:flutter_dentistry/views/finance/expenses/expenses.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart' as intl2;
+import 'package:shamsi_date/shamsi_date.dart';
 import '/views/finance/expenses/expense_info.dart';
 import 'db_conn.dart';
 import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xls;
@@ -711,6 +713,41 @@ class MyDataSource extends DataTableSource {
 
   @override
   DataRow getRow(int index) {
+    // Assuming you have a Gregorian date string
+    String dateStr = data[index].purchasedDate;
+
+// Parse the string into a DateTime object
+    DateTime gregorian = DateTime.parse(dateStr);
+
+// Convert the DateTime object to a Jalali date
+    Jalali jalali = Jalali.fromDateTime(gregorian);
+
+// Convert the Jalali date to a string
+    String monthName = (jalali.month == 1)
+        ? 'حمل'
+        : (jalali.month == 2)
+            ? 'ثور'
+            : (jalali.month == 3)
+                ? 'جوزا'
+                : (jalali.month == 4)
+                    ? 'سرطان'
+                    : (jalali.month == 5)
+                        ? 'اسد'
+                        : (jalali.month == 6)
+                            ? 'سنبله'
+                            : (jalali.month == 7)
+                                ? 'میزان'
+                                : (jalali.month == 8)
+                                    ? 'عقرب'
+                                    : (jalali.month == 9)
+                                        ? 'قوس'
+                                        : (jalali.month == 10)
+                                            ? 'جدی'
+                                            : (jalali.month == 11)
+                                                ? 'دلو'
+                                                : 'حوت';
+    String jalaliStr = '${jalali.day} $monthName ,${jalali.year}';
+
     return DataRow(cells: [
       DataCell(Text(data[index].expenseType)),
       DataCell(Text(data[index].expenseItem)),
@@ -720,7 +757,12 @@ class MyDataSource extends DataTableSource {
       DataCell(Text(
           '${data[index].totalPrice} ${translations[selectedLanguage]?['Afn'] ?? ''}')),
       // DataCell(Text(data[index].purchasedBy)),
-      DataCell(Text(data[index].purchasedDate)),
+      DataCell((isGregorian)
+          ? Text(data[index].purchasedDate)
+          : Text(
+              jalaliStr,
+              textDirection: TextDirection.rtl,
+            )),
       // DataCell(Text(data[index].description)),
       DataCell(
         Builder(builder: (BuildContext context) {

@@ -299,6 +299,8 @@ class _ExpenseListState extends State<ExpenseList> {
   final purchaseDateController = TextEditingController();
   final totalPriceController = TextEditingController();
   final descriptionController = TextEditingController();
+// This is just a sample date avoid potential exeception
+  String hijriSelectedDate = '1400-1-2';
 
   double? totalPrice;
 // Sets the total price into its related field
@@ -773,6 +775,8 @@ class _ExpenseListState extends State<ExpenseList> {
                                     final String formattedDate =
                                         hijriDate.formatFullDate();
                                     purchaseDateController.text = formattedDate;
+                                    hijriSelectedDate =
+                                        '${hijriDate.year}-${hijriDate.month}-${hijriDate.day}';
                                   }
                                 }
                               },
@@ -887,9 +891,31 @@ class _ExpenseListState extends State<ExpenseList> {
                                   double.parse(quantityController.text);
                               double unitPrice =
                                   double.parse(unitPriceController.text);
-                              String datePurchased =
-                                  purchaseDateController.text;
                               String notes = descriptionController.text;
+                              // Since hijri has - separator like '1403-3-18', it should separated into parts using the dash
+                              List<String>? dateParts =
+                                  hijriSelectedDate.split('-');
+                              // Now any part is passed to into this function to be converted to gregorian calendar
+                              Jalali jalali = Jalali(
+                                  int.parse(dateParts[0]),
+                                  int.parse(dateParts[1]),
+                                  int.parse(dateParts[2]));
+
+                              // Convert Hijri to Gregorian calendar
+                              Date gregorianDate = jalali.toGregorian();
+                              // Since .toGregorian() returns Gregorian(year, month, day), i want to format like this: yyyy-MM-dd
+                              intl.DateFormat formatter =
+                                  intl.DateFormat('yyyy-MM-dd');
+                              DateTime dateTimeGreg = DateTime(
+                                  gregorianDate.year,
+                                  gregorianDate.month,
+                                  gregorianDate.day);
+                              // It has this format '2024-06-06'
+                              String formattedGreg =
+                                  formatter.format(dateTimeGreg);
+                              String datePurchased = isGregorian
+                                  ? purchaseDateController.text
+                                  : formattedGreg;
                               // Do connection with the database
                               var conn = await onConnToSqliteDb();
                               // Insert the item into expense_detail table
