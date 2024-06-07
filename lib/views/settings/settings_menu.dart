@@ -12,6 +12,7 @@ import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'dart:io';
 import 'package:flutter_dentistry/views/staff/staff_info.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart' as INTL;
 import 'package:flutter_dentistry/config/translations.dart';
@@ -1434,37 +1435,37 @@ Widget _onChangeDateType() {
                                           .white, // change color when selected
                                   child: SizedBox(
                                     height: MediaQuery.of(context).size.height *
-                                        0.07, // adjust as needed
-                                    width: MediaQuery.of(context).size.width *
                                         0.08, // adjust as needed
+                                    width: MediaQuery.of(context).size.width *
+                                        0.11, // adjust as needed
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceEvenly,
                                       children: <Widget>[
                                         SizedBox(
-                                          width: 110.0, // adjust as needed
-                                          child: Row(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.08, // adjust as needed
+                                          child: const Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceEvenly,
                                             children: <Widget>[
-                                              Image.asset(
-                                                'assets/flags/Dari.png',
-                                                height: MediaQuery.of(context)
-                                                        .size
-                                                        .height *
-                                                    0.015, // adjust as needed
-                                                width: MediaQuery.of(context)
-                                                        .size
-                                                        .width *
-                                                    0.015, // adjust as needed
+                                              Icon(
+                                                Icons.calendar_month_outlined,
+                                                color: Colors.blue,
                                               ),
-                                              const Text('هجری شمسی'),
+                                              Text('هجری شمسی'),
                                             ],
                                           ),
                                         ),
                                         if (selectedDateType == 'هجری شمسی')
-                                          const Icon(Icons.check_circle,
-                                              color: Colors.blue),
+                                          Icon(Icons.check_circle,
+                                              color: Colors.green,
+                                              size: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  0.015),
                                       ],
                                     ),
                                   ),
@@ -1488,37 +1489,37 @@ Widget _onChangeDateType() {
                                           .white, // change color when selected
                                   child: SizedBox(
                                     height: MediaQuery.of(context).size.height *
-                                        0.07, // adjust as needed
-                                    width: MediaQuery.of(context).size.width *
                                         0.08, // adjust as needed
+                                    width: MediaQuery.of(context).size.width *
+                                        0.11, 
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceEvenly,
                                       children: <Widget>[
                                         SizedBox(
-                                          width: 80.0, // adjust as needed
-                                          child: Row(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.07, // adjust as needed
+                                          child: const Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceEvenly,
                                             children: <Widget>[
-                                              Image.asset(
-                                                'assets/flags/English.png',
-                                                height: MediaQuery.of(context)
-                                                        .size
-                                                        .height *
-                                                    0.015, // adjust as needed
-                                                width: MediaQuery.of(context)
-                                                        .size
-                                                        .width *
-                                                    0.015, // adjust as needed
+                                              Icon(
+                                                Icons.calendar_month_outlined,
+                                                color: Colors.blue,
                                               ),
-                                              const Text('میلادی'),
+                                              Text('میلادی'),
                                             ],
                                           ),
                                         ),
                                         if (selectedDateType == 'میلادی')
-                                          const Icon(Icons.check_circle,
-                                              color: Colors.blue),
+                                          Icon(Icons.check_circle,
+                                              color: Colors.green,
+                                              size: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  0.015),
                                       ],
                                     ),
                                   ),
