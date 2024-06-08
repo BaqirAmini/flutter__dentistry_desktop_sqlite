@@ -9,6 +9,7 @@ import 'package:flutter_dentistry/views/patients/patient_info.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
+import 'package:shamsi_date/shamsi_date.dart';
 import 'package:win32/win32.dart';
 import 'package:windows_notification/notification_message.dart';
 import 'package:windows_notification/windows_notification.dart';
@@ -306,9 +307,11 @@ class GlobalUsage {
                                                 'Age: ${PatientInfo.age} Yrs'),
                                         (PatientInfo.newPatientCreated)
                                             ? pw.Text(
-                                                'Phone: ${PatientInfo.newPatientPhone}', style: pw.TextStyle(font: ttf))
+                                                'Phone: ${PatientInfo.newPatientPhone}',
+                                                style: pw.TextStyle(font: ttf))
                                             : pw.Text(
-                                                'Phone: ${PatientInfo.phone}', style: pw.TextStyle(font: ttf)),
+                                                'Phone: ${PatientInfo.phone}',
+                                                style: pw.TextStyle(font: ttf)),
                                       ]),
                                   pw.Column(
                                       crossAxisAlignment:
@@ -644,4 +647,41 @@ class GlobalUsage {
   }
 
 /*-----------------/. For Users ----------*/
+
+// Convert Gregorian date to Hijri
+
+  String onConvertGreg2Hijri(String gregDate) {
+// Parse the string into a DateTime object
+    DateTime gregorian = DateTime.parse(gregDate);
+
+// Convert the DateTime object to a Jalali date
+    Jalali jalali = Jalali.fromDateTime(gregorian);
+
+// Convert the Jalali date to a string
+    String monthName = (jalali.month == 1)
+        ? 'حمل'
+        : (jalali.month == 2)
+            ? 'ثور'
+            : (jalali.month == 3)
+                ? 'جوزا'
+                : (jalali.month == 4)
+                    ? 'سرطان'
+                    : (jalali.month == 5)
+                        ? 'اسد'
+                        : (jalali.month == 6)
+                            ? 'سنبله'
+                            : (jalali.month == 7)
+                                ? 'میزان'
+                                : (jalali.month == 8)
+                                    ? 'عقرب'
+                                    : (jalali.month == 9)
+                                        ? 'قوس'
+                                        : (jalali.month == 10)
+                                            ? 'جدی'
+                                            : (jalali.month == 11)
+                                                ? 'دلو'
+                                                : 'حوت';
+    String jalaliStr = '${jalali.day} $monthName ,${jalali.year}';
+    return jalaliStr;
+  }
 }

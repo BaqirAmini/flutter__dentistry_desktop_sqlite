@@ -713,40 +713,8 @@ class MyDataSource extends DataTableSource {
 
   @override
   DataRow getRow(int index) {
-    // Assuming you have a Gregorian date string
-    String dateStr = data[index].purchasedDate;
-
-// Parse the string into a DateTime object
-    DateTime gregorian = DateTime.parse(dateStr);
-
-// Convert the DateTime object to a Jalali date
-    Jalali jalali = Jalali.fromDateTime(gregorian);
-
-// Convert the Jalali date to a string
-    String monthName = (jalali.month == 1)
-        ? 'حمل'
-        : (jalali.month == 2)
-            ? 'ثور'
-            : (jalali.month == 3)
-                ? 'جوزا'
-                : (jalali.month == 4)
-                    ? 'سرطان'
-                    : (jalali.month == 5)
-                        ? 'اسد'
-                        : (jalali.month == 6)
-                            ? 'سنبله'
-                            : (jalali.month == 7)
-                                ? 'میزان'
-                                : (jalali.month == 8)
-                                    ? 'عقرب'
-                                    : (jalali.month == 9)
-                                        ? 'قوس'
-                                        : (jalali.month == 10)
-                                            ? 'جدی'
-                                            : (jalali.month == 11)
-                                                ? 'دلو'
-                                                : 'حوت';
-    String jalaliStr = '${jalali.day} $monthName ,${jalali.year}';
+    // Create instance of GlobalUsage
+    GlobalUsage globalUsage = GlobalUsage();
 
     return DataRow(cells: [
       DataCell(Text(data[index].expenseType)),
@@ -760,7 +728,7 @@ class MyDataSource extends DataTableSource {
       DataCell((isGregorian)
           ? Text(data[index].purchasedDate)
           : Text(
-              jalaliStr,
+              '${globalUsage.onConvertGreg2Hijri(data[index].purchasedDate)}ه.ش',
               textDirection: TextDirection.rtl,
             )),
       // DataCell(Text(data[index].description)),
