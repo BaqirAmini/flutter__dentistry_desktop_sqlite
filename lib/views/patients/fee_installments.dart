@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/finance/fee/fee_related_fields.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_dentistry/views/main/dashboard.dart';
 import 'package:flutter_dentistry/views/patients/patient_info.dart';
 import 'package:flutter_dentistry/views/patients/patients.dart';
 import 'package:flutter_dentistry/views/staff/staff_info.dart';
+import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart' as intl2;
@@ -18,6 +20,8 @@ void main() => runApp(const FeeRecord());
 // Set global variables which are needed later.
 var selectedLanguage;
 var isEnglish;
+var selectedCalType;
+var isGregorian;
 
 // Declare these two display total fee paid & total fee due.
 double totalFeeToBePaid = 0;
@@ -34,6 +38,10 @@ class FeeRecord extends StatelessWidget {
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
+    // Choose calendar type from its provider
+    var calTypeProvider = Provider.of<SettingsProvider>(context);
+    selectedCalType = calTypeProvider.selectedDateType;
+    isGregorian = selectedCalType == 'میلادی';
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Directionality(
@@ -248,33 +256,75 @@ class _FeeContentState extends State<FeeContent> {
                                             onTap: () async {
                                               FocusScope.of(context)
                                                   .requestFocus(FocusNode());
-                                              final DateTime? pickedDate =
-                                                  await showDatePicker(
-                                                context: context,
-                                                initialDate: DateTime.now(),
-                                                firstDate: DateTime(2000),
-                                                lastDate: DateTime(2100),
-                                              );
-                                              if (pickedDate != null) {
-                                                // ignore: use_build_context_synchronously
-                                                final TimeOfDay? pickedTime =
-                                                    // ignore: use_build_context_synchronously
-                                                    await showTimePicker(
+
+                                              if (isGregorian) {
+                                                final DateTime? pickedDate =
+                                                    await showDatePicker(
                                                   context: context,
-                                                  initialTime: TimeOfDay.now(),
+                                                  initialDate: DateTime.now(),
+                                                  firstDate: DateTime(2000),
+                                                  lastDate: DateTime(2100),
                                                 );
-                                                if (pickedTime != null) {
-                                                  selectedDateTime = DateTime(
-                                                    pickedDate.year,
-                                                    pickedDate.month,
-                                                    pickedDate.day,
-                                                    pickedTime.hour,
-                                                    pickedTime.minute,
+                                                if (pickedDate != null) {
+                                                  // ignore: use_build_context_synchronously
+                                                  final TimeOfDay? pickedTime =
+                                                      // ignore: use_build_context_synchronously
+                                                      await showTimePicker(
+                                                    context: context,
+                                                    initialTime:
+                                                        TimeOfDay.now(),
                                                   );
-                                                  _payDateController
-                                                      .text = intl2.DateFormat(
-                                                          'yyyy-MM-dd HH:mm')
-                                                      .format(selectedDateTime);
+                                                  if (pickedTime != null) {
+                                                    selectedDateTime = DateTime(
+                                                      pickedDate.year,
+                                                      pickedDate.month,
+                                                      pickedDate.day,
+                                                      pickedTime.hour,
+                                                      pickedTime.minute,
+                                                    );
+                                                    _payDateController
+                                                        .text = intl2.DateFormat(
+                                                            'yyyy-MM-dd HH:mm')
+                                                        .format(
+                                                            selectedDateTime);
+                                                  }
+                                                }
+                                              } else {
+                                                // Set Hijry/Jalali calendar
+                                                // ignore: use_build_context_synchronously
+                                                Jalali? hijriDate =
+                                                    await showPersianDatePicker(
+                                                        context: context,
+                                                        initialDate:
+                                                            Jalali.now(),
+                                                        firstDate:
+                                                            Jalali(1395, 8),
+                                                        lastDate:
+                                                            Jalali(1450, 9));
+                                                if (hijriDate != null) {
+                                                  final TimeOfDay? pickedTime =
+                                                      // ignore: use_build_context_synchronously
+                                                      await showTimePicker(
+                                                    context: context,
+                                                    initialTime:
+                                                        TimeOfDay.now(),
+                                                  );
+                                                  if (pickedTime != null) {
+                                                    selectedDateTime = DateTime(
+                                                      hijriDate.year,
+                                                      hijriDate.month,
+                                                      hijriDate.day,
+                                                      pickedTime.hour,
+                                                      pickedTime.minute,
+                                                    );
+                                                    // Fortmat to display a more user-friendly manner in the field like: 2024-05-04 07:00
+
+                                                    _payDateController
+                                                        .text = intl2.DateFormat(
+                                                            'yyyy-MM-dd HH:mm')
+                                                        .format(
+                                                            selectedDateTime);
+                                                  }
                                                 }
                                               }
                                             },
@@ -770,12 +820,36 @@ class _FeeContentState extends State<FeeContent> {
                                 errorMessage = null;
 
                                 try {
+                                  String payDateTime;
+                                  if (isGregorian) {
+                                    payDateTime = _payDateController.text;
+                                  } else {
+                                    List<String> shamsiParts =
+                                        _payDateController.text.split(' ');
+                                    String shamsiDate = shamsiParts[0];
+                                    String shamsiTime = shamsiParts[1];
+                                    List<String> dateParts =
+                                        shamsiDate.split('-');
+                                    Jalali jalali = Jalali(
+                                        int.parse(dateParts[0]),
+                                        int.parse(dateParts[1]),
+                                        int.parse(dateParts[2]));
+                                    Date gregDate = jalali.toGregorian();
+                                    DateTime gregDateTime = DateTime(
+                                        gregDate.year,
+                                        gregDate.month,
+                                        gregDate.day);
+                                    intl2.DateFormat formatter =
+                                        intl2.DateFormat('yyyy-MM-dd');
+                                    payDateTime =
+                                        '${formatter.format(gregDateTime)} $shamsiTime';
+                                  }
                                   await conn.rawInsert(
                                       '''INSERT INTO fee_payments (installment_counter, payment_date, paid_amount, due_amount, whole_fee_paid, staff_ID, apt_ID)
                                     VALUES (?, ?, ?, ?, ?, ?, ?)''',
                                       [
                                         instCounter,
-                                        _payDateController.text,
+                                        payDateTime,
                                         (instCounter == totalInstallment)
                                             ? dueAmount
                                             : receivable,
@@ -858,7 +932,23 @@ class _FeeContentState extends State<FeeContent> {
 
   Future<bool> _fetchPaidDate(String date, int aptID) async {
     try {
-      final conn = await onConnToSqliteDb();
+      String payDateTime;
+      if (isGregorian) {
+        payDateTime = date;
+      } else {
+        List<String> shamsiParts = date.split(' ');
+        String shamsiDate = shamsiParts[0];
+        String shamsiTime = shamsiParts[1];
+        List<String> dateParts = shamsiDate.split('-');
+        Jalali jalali = Jalali(int.parse(dateParts[0]), int.parse(dateParts[1]),
+            int.parse(dateParts[2]));
+        Date gregDate = jalali.toGregorian();
+        DateTime gregDateTime =
+            DateTime(gregDate.year, gregDate.month, gregDate.day);
+        intl2.DateFormat formatter = intl2.DateFormat('yyyy-MM-dd');
+        payDateTime = '${formatter.format(gregDateTime)} $shamsiTime';
+      }
+      /* final conn = await onConnToSqliteDb();
       final results = await conn.rawQuery(
           'SELECT payment_date FROM fee_payments WHERE apt_ID = ? AND payment_date <= ?',
           [aptID, date]);
@@ -866,7 +956,8 @@ class _FeeContentState extends State<FeeContent> {
         return true;
       } else {
         return false;
-      }
+      } */
+      return true;
     } catch (e) {
       print('Date error: $e');
       return false;
