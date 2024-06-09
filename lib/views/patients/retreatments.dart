@@ -2,6 +2,7 @@ import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/main/dashboard.dart';
@@ -18,6 +19,8 @@ void main() {
 // Set global variables which are needed later.
 var selectedLanguage;
 var isEnglish;
+var selectedCalType;
+var isGregorian;
 
 // This is to show a snackbar message.
 void _onShowSnack(Color backColor, String msg, BuildContext context) {
@@ -51,6 +54,11 @@ class _RetreatmentState extends State<Retreatment> {
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
+
+    // Choose calendar type from its provider
+    var calTypeProvider = Provider.of<SettingsProvider>(context);
+    selectedCalType = calTypeProvider.selectedDateType;
+    isGregorian = selectedCalType == 'میلادی';
     return Directionality(
       textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
       child: Scaffold(
@@ -242,7 +250,9 @@ class _AppointmentContentState extends State<_AppointmentContent> {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else {
           if (snapshot.data!.isEmpty) {
-            return  Center(child: Text(translations[selectedLanguage]?['NoReqFound'] ?? ''));
+            return Center(
+                child:
+                    Text(translations[selectedLanguage]?['NoReqFound'] ?? ''));
           } else {
             var data = snapshot.data!;
             var groupedDSName = groupBy(data, (obj) => obj['damageSName']);

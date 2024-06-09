@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/main/dashboard.dart';
@@ -13,6 +14,7 @@ import 'package:flutter_dentistry/views/patients/child_cs_selected_teeth.dart';
 import 'package:flutter_dentistry/views/patients/new_appointment.dart';
 import 'package:flutter_dentistry/views/patients/patient_info.dart';
 import 'package:flutter_dentistry/views/patients/patients.dart';
+import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
 import 'package:intl/intl.dart' as intl2;
@@ -24,6 +26,8 @@ void main() {
 // Set global variables which are needed later.
 var selectedLanguage;
 var isEnglish;
+var selectedCalType;
+var isGregorian;
 
 // This is to show a snackbar message.
 void _onShowSnack(Color backColor, String msg, BuildContext context) {
@@ -57,6 +61,11 @@ class _AppointmentState extends State<Appointment> {
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
+    // Choose calendar type from its provider
+    var calTypeProvider = Provider.of<SettingsProvider>(context);
+    selectedCalType = calTypeProvider.selectedDateType;
+    isGregorian = selectedCalType == 'میلادی';
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Directionality(
@@ -266,15 +275,24 @@ class _AppointmentContentState extends State<_AppointmentContent> {
 // This function creates a retreatment for any appointment
   _onAddRetreatment(
       BuildContext context, int apptId, int damageSerId, String serviceName) {
-    DateTime selectedDateTime = DateTime.now();
     TextEditingController retreatDateTimeController = TextEditingController();
+    DateTime selectedDateTime;
+    if (isGregorian) {
+      selectedDateTime = DateTime.now();
+      retreatDateTimeController.text = intl2.DateFormat('yyyy-MM-dd hh:mm a')
+          .format(DateTime.parse(selectedDateTime.toString()));
+    } else {
+      Jalali jalali = Jalali.now();
+      selectedDateTime = jalali.toDateTime();
+      retreatDateTimeController.text =
+          '${jalali.year}-${jalali.month}-${jalali.day} ${intl2.DateFormat('hh:mm a').format(selectedDateTime)}';
+    }
+
     TextEditingController retreatReasonController = TextEditingController();
     TextEditingController retreatFeeController = TextEditingController();
     TextEditingController retreatOutcomeController = TextEditingController();
     String retreateOutCome = 'Successful';
     String dateTimeNotFormatted = selectedDateTime.toString();
-    retreatDateTimeController.text = intl2.DateFormat('yyyy-MM-dd hh:mm a')
-        .format(DateTime.parse(selectedDateTime.toString()));
 
     return showDialog(
       useRootNavigator: true,
@@ -442,35 +460,73 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                                         color: Colors.red, width: 1.5)),
                               ),
                               onTap: () async {
-                                final DateTime? pickedDate =
-                                    await showDatePicker(
-                                  context: context,
-                                  initialDate: selectedDateTime,
-                                  firstDate: DateTime(2000),
-                                  lastDate: DateTime(2100),
-                                );
-                                if (pickedDate != null) {
-                                  // ignore: use_build_context_synchronously
-                                  final TimeOfDay? pickedTime =
-                                      // ignore: use_build_context_synchronously
-                                      await showTimePicker(
+                                if (isGregorian) {
+                                  final DateTime? pickedDate =
+                                      await showDatePicker(
                                     context: context,
-                                    initialTime: TimeOfDay.now(),
+                                    initialDate: selectedDateTime,
+                                    firstDate: DateTime(2000),
+                                    lastDate: DateTime(2100),
                                   );
-                                  if (pickedTime != null) {
-                                    selectedDateTime = DateTime(
-                                      pickedDate.year,
-                                      pickedDate.month,
-                                      pickedDate.day,
-                                      pickedTime.hour,
-                                      pickedTime.minute,
+                                  if (pickedDate != null) {
+                                    // ignore: use_build_context_synchronously
+                                    final TimeOfDay? pickedTime =
+                                        // ignore: use_build_context_synchronously
+                                        await showTimePicker(
+                                      context: context,
+                                      initialTime: TimeOfDay.now(),
                                     );
-                                    retreatDateTimeController.text =
-                                        intl2.DateFormat('yyyy-MM-dd hh:mm a')
-                                            .format(DateTime.parse(
-                                                selectedDateTime.toString()));
-                                    dateTimeNotFormatted =
-                                        selectedDateTime.toString();
+                                    if (pickedTime != null) {
+                                      selectedDateTime = DateTime(
+                                        pickedDate.year,
+                                        pickedDate.month,
+                                        pickedDate.day,
+                                        pickedTime.hour,
+                                        pickedTime.minute,
+                                      );
+                                      retreatDateTimeController.text =
+                                          intl2.DateFormat('yyyy-MM-dd hh:mm a')
+                                              .format(DateTime.parse(
+                                                  selectedDateTime.toString()));
+                                      dateTimeNotFormatted =
+                                          selectedDateTime.toString();
+                                    }
+                                  }
+                                } else {
+                                  // Set Hijry/Jalali calendar
+                                  // ignore: use_build_context_synchronously
+                                  Jalali? hijriDate =
+                                      await showPersianDatePicker(
+                                          context: context,
+                                          initialDate: Jalali.now(),
+                                          firstDate: Jalali(1395, 8),
+                                          lastDate: Jalali(1450, 9));
+                                  if (hijriDate != null) {
+                                    final TimeOfDay? pickedTime =
+                                        // ignore: use_build_context_synchronously
+                                        await showTimePicker(
+                                      context: context,
+                                      initialTime: TimeOfDay.now(),
+                                    );
+                                    if (pickedTime != null) {
+                                      selectedDateTime = DateTime(
+                                        hijriDate.year,
+                                        hijriDate.month,
+                                        hijriDate.day,
+                                        pickedTime.hour,
+                                        pickedTime.minute,
+                                      );
+                                      // Fortmat to display a more user-friendly manner in the field like: 2024-05-04 07:00
+                                      final intl2.DateFormat formatter =
+                                          intl2.DateFormat(
+                                              'yyyy-MM-dd hh:mm a');
+                                      String formattedDateTime =
+                                          formatter.format(selectedDateTime);
+                                      retreatDateTimeController.text =
+                                          formattedDateTime;
+                                      dateTimeNotFormatted =
+                                          selectedDateTime.toString();
+                                    }
                                   }
                                 }
                               },
@@ -743,6 +799,35 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                       onPressed: () async {
                         if (_retreatFormKey.currentState!.validate()) {
                           try {
+                            String retreatDateTime;
+                            if (isGregorian) {
+                              retreatDateTime = dateTimeNotFormatted;
+                            } else {
+                              // First we separate date and time
+                              List<String> shamsiParts =
+                                  dateTimeNotFormatted.split(' ');
+                              String shamsiDate = shamsiParts[0];
+                              String shamsiTime = shamsiParts[1];
+                              // Now we separate year, month, day in shamsi date
+                              List<String> dateParts = shamsiDate.split('-');
+                              // Convert shamsi to gregorian
+                              Jalali jalali = Jalali(
+                                  int.parse(dateParts[0]),
+                                  int.parse(dateParts[1]),
+                                  int.parse(dateParts[2]));
+
+                              // Fetch it into Date type
+                              Date gregDate = jalali.toGregorian();
+                              // We need datetime type to format it
+                              DateTime gregDateTime = DateTime(
+                                  gregDate.year, gregDate.month, gregDate.day);
+
+                              // Format it to be in yyyy-mm-dd
+                              intl2.DateFormat formatter =
+                                  intl2.DateFormat('yyyy-MM-dd');
+                              retreatDateTime =
+                                  '${formatter.format(gregDateTime)} $shamsiTime';
+                            }
                             double retreatCost = _feeNotRequired
                                 ? 0
                                 : double.parse(retreatFeeController.text);
@@ -757,7 +842,7 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                                   serviceId,
                                   damageSerId,
                                   staffId,
-                                  dateTimeNotFormatted,
+                                  retreatDateTime,
                                   retreatCost,
                                   retreatReasonController.text,
                                   retreateOutCome,
