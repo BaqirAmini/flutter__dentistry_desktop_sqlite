@@ -3,19 +3,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/finance/fee/fee_related_fields.dart';
 import 'package:flutter_dentistry/views/patients/patient_info.dart';
 import 'package:flutter_dentistry/views/patients/tooth_selection_info.dart';
 import 'package:flutter_dentistry/views/services/service_related_fields.dart';
+import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart' as intl;
 
 // Declare this to assign round.
 int _round = 0;
 // Set global variables which are needed later.
 var selectedLanguage;
 var isEnglish;
+var selectedCalType;
+var isGregorian;
 
 class NewAppointment extends StatefulWidget {
   const NewAppointment({Key? key}) : super(key: key);
@@ -72,6 +77,10 @@ class _NewAppointmentState extends State<NewAppointment> {
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
+    // Choose calendar type from its provider
+    var calTypeProvider = Provider.of<SettingsProvider>(context);
+    selectedCalType = calTypeProvider.selectedDateType;
+    isGregorian = selectedCalType == 'میلادی';
     return Directionality(
       textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
       child: Scaffold(
@@ -280,13 +289,29 @@ class _NewAppointmentState extends State<NewAppointment> {
                       ServiceInfo.selectedServiceID!,
                       ServiceInfo.meetingDate!,
                       ServiceInfo.selectedDentistID!)) {
+                    String meetDateTime;
+                    if (isGregorian) {
+                      meetDateTime = ServiceInfo.meetingDate!;
+                    } else {
+                      List<String> shamsiParts =
+                          ServiceInfo.meetingDate!.split(' ');
+                      List<String> dateParts = shamsiParts[0].split('-');
+                      Jalali jalali = Jalali(int.parse(dateParts[0]),
+                          int.parse(dateParts[1]), int.parse(dateParts[2]));
+                      Date gregDate = jalali.toGregorian();
+                      DateTime gregDateTime =
+                          DateTime(gregDate.year, gregDate.month, gregDate.day);
+                      intl.DateFormat formatter = intl.DateFormat('yyyy-MM-dd');
+                      meetDateTime =
+                          '${formatter.format(gregDateTime)} ${shamsiParts[1]}';
+                    }
                     // Here i fetch apt_ID (appointment ID) which needs to be passed.
                     final conn = await onConnToSqliteDb();
                     int appointmentID;
                     final aptIdResult = await conn.rawQuery(
                         'SELECT apt_ID FROM appointments WHERE meet_date = ? AND service_ID = ? AND round = ? AND pat_ID = ?',
                         [
-                          ServiceInfo.meetingDate,
+                          meetDateTime,
                           ServiceInfo.selectedServiceID,
                           _round,
                           PatientInfo.patID
@@ -615,6 +640,26 @@ class AppointmentFunction {
   static Future<bool> onAddAppointment(
       int patient, int service, String meetDate, int staff) async {
     try {
+      String meetDatetime;
+      if (isGregorian) {
+        meetDatetime = meetDate;
+      } else {
+        // Firstly splite date from time which is in hijri
+        List<String> shamsiParts = meetDate.split(' ');
+        String shamsiDate = shamsiParts[0];
+        String shamsiTime = shamsiParts[1];
+
+        List<String> dateParts = shamsiDate.split(('-'));
+        // Now any part is passed into this function to be converted to gregorian calendar
+        Jalali jalali = Jalali(int.parse(dateParts[0]), int.parse(dateParts[1]),
+            int.parse(dateParts[2]));
+        Date gregDate = jalali.toGregorian();
+        DateTime gregDateTime =
+            DateTime(gregDate.year, gregDate.month, gregDate.day);
+        intl.DateFormat formatter = intl.DateFormat('yyyy-MM-dd');
+        meetDatetime = '${formatter.format(gregDateTime)} $shamsiTime';
+      }
+
       final conn = await onConnToSqliteDb();
       // Now create appointments
       await conn.rawInsert(
@@ -626,9 +671,10 @@ class AppointmentFunction {
             GlobalUsage.newPatientCreated ? 1 : _round,
             FeeInfo.discountRate,
             FeeInfo.fee,
-            meetDate,
+            meetDatetime,
             staff
           ]);
+
       return true;
     } catch (e) {
       print('The data failed to insert into appointments since: $e');
@@ -640,12 +686,29 @@ class AppointmentFunction {
   static Future<bool> onAddFeePayment(
       String payDate, int staff, int appointment) async {
     try {
+      String payDateTime;
+      if (isGregorian) {
+        payDateTime = payDate;
+      } else {
+        List<String> shamsiParts = payDate.split(' ');
+        // Now fetch shamsi year, month, day
+        List<String> dateParts = shamsiParts[0].split('-');
+        Jalali jalali = Jalali(int.parse(dateParts[0]), int.parse(dateParts[1]),
+            int.parse(dateParts[2]));
+        Date gregDate = jalali.toGregorian();
+        // We need gregorian datetime to format to yyyy-mm-dd hh:mm
+        DateTime gregDateTime =
+            DateTime(gregDate.year, gregDate.month, gregDate.day);
+        intl.DateFormat formatter = intl.DateFormat('yyyy-MM-dd');
+        payDateTime = '${formatter.format(gregDateTime)} ${shamsiParts[1]}';
+      }
       final conn = await onConnToSqliteDb();
+
       await conn.rawInsert(
           '''INSERT INTO fee_payments (payment_date, paid_amount, due_amount, staff_ID, apt_ID)
     VALUES (?, ?, ?, ?, ?)''',
           [
-            payDate,
+            payDateTime,
             FeeInfo.receivedAmount,
             FeeInfo.dueAmount,
             staff,

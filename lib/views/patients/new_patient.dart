@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/finance/fee/fee_related_fields.dart';
@@ -10,6 +11,7 @@ import 'package:flutter_dentistry/views/patients/patient_info.dart';
 import 'package:flutter_dentistry/views/patients/tooth_selection_info.dart';
 import 'package:flutter_dentistry/views/services/service_related_fields.dart';
 import 'package:intl/intl.dart' as intl2;
+import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -24,6 +26,8 @@ int? staffID;
 // Set global variables which are needed later.
 var selectedLanguage;
 var isEnglish;
+var selectedCalType;
+var isGregorian;
 
 class NewPatient extends StatefulWidget {
   const NewPatient({Key? key}) : super(key: key);
@@ -1016,7 +1020,21 @@ class _NewPatientState extends State<NewPatient> {
             ]);
 // Choose a specific patient to fetch his/here ID
         if (insertPatQuery > 0) {
-          String? meetDate = ServiceInfo.meetingDate;
+          String meetDateTime;
+          if (isGregorian) {
+            meetDateTime = ServiceInfo.meetingDate!;
+          } else {
+            List<String> shamsiParts = ServiceInfo.meetingDate!.split(' ');
+            List<String> dateParts = shamsiParts[0].split('-');
+            Jalali jalali = Jalali(int.parse(dateParts[0]),
+                int.parse(dateParts[1]), int.parse(dateParts[2]));
+            Date gregDate = jalali.toGregorian();
+            DateTime gregDateTime =
+                DateTime(gregDate.year, gregDate.month, gregDate.day);
+            intl2.DateFormat formatter = intl2.DateFormat('yyyy-MM-dd');
+            meetDateTime =
+                '${formatter.format(gregDateTime)} ${shamsiParts[1]}';
+          }
           String? note = ServiceInfo.serviceNote;
           var fetchPatQuery = await conn.rawQuery(
               'SELECT * FROM patients WHERE firstname = ? AND sex = ? AND age = ? AND phone = ?',
@@ -1027,13 +1045,13 @@ class _NewPatientState extends State<NewPatient> {
 // Now insert patient health histories into condition_details
           if (await _onAddPatientHistory(patId)) {
             // Now create appointments
-            if (await AppointmentFunction.onAddAppointment(
-                patId, serviceID!, meetDate!, ServiceInfo.selectedDentistID!)) {
+            if (await AppointmentFunction.onAddAppointment(patId, serviceID!,
+                ServiceInfo.meetingDate!, ServiceInfo.selectedDentistID!)) {
               // Here i fetch apt_ID (appointment ID) which needs to be passed.
               int appointmentID;
               final aptIdResult = await conn.rawQuery(
                   'SELECT apt_ID FROM appointments WHERE meet_date = ? AND service_ID = ? AND round = ? AND pat_ID = ?',
-                  [meetDate, serviceID, 1, patId]);
+                  [meetDateTime, serviceID, 1, patId]);
 
               if (aptIdResult.isNotEmpty) {
                 final row = aptIdResult.first;
@@ -1045,8 +1063,8 @@ class _NewPatientState extends State<NewPatient> {
               if (await AppointmentFunction.onAddServiceReq(
                   patId, ServiceInfo.selectedServiceID!, note, appointmentID)) {
                 // if it is inserted into the final tables which is fee_payments, it navigates to patients page.
-                if (await AppointmentFunction.onAddFeePayment(
-                    meetDate, ServiceInfo.selectedDentistID!, appointmentID)) {
+                if (await AppointmentFunction.onAddFeePayment(meetDateTime,
+                    ServiceInfo.selectedDentistID!, appointmentID)) {
                   // ignore: use_build_context_synchronously
                   Navigator.pop(context);
                 }
@@ -1812,6 +1830,10 @@ class _NewPatientState extends State<NewPatient> {
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
+    // Choose calendar type from its provider
+    var calTypeProvider = Provider.of<SettingsProvider>(context);
+    selectedCalType = calTypeProvider.selectedDateType;
+    isGregorian = selectedCalType == 'میلادی';
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: ScaffoldMessenger(

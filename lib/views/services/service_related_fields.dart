@@ -2,15 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/views/patients/adult_coordinate_system.dart';
 import 'package:flutter_dentistry/views/patients/child_coordinate_system.dart';
+import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart' as intl2;
 
 // Set global variables which are needed later.
 var selectedLanguage;
 var isEnglish;
+var selectedCalType;
+var isGregorian;
 
 class CustomForm extends StatelessWidget {
   const CustomForm({Key? key}) : super(key: key);
@@ -121,6 +125,12 @@ class _ServiceFormState extends State<ServiceForm> {
     ServiceInfo.serviceNote = _noteController.text;
     DateTime selectedDateTime = DateTime.now();
     ServiceInfo.meetingDate = _visitTimeController.text;
+    // Choose calendar type from its provider
+    var calTypeProvider = Provider.of<SettingsProvider>(context);
+    selectedCalType = calTypeProvider.selectedDateType;
+    isGregorian = selectedCalType == 'میلادی';
+    // This is just a sample date avoid potential exeception
+    String hijriSelectedDate = '1400-1-2';
 
     return Container(
       margin: (ServiceInfo.selectedServiceID == 1 ||
@@ -176,37 +186,74 @@ class _ServiceFormState extends State<ServiceForm> {
                               return null;
                             },
                             onTap: () async {
-                              FocusScope.of(context).requestFocus(
-                                FocusNode(),
-                              );
-                              final DateTime? pickedDate = await showDatePicker(
-                                context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime(2100),
-                              );
-                              if (pickedDate != null) {
-                                // ignore: use_build_context_synchronously
-                                final TimeOfDay? pickedTime =
-                                    // ignore: use_build_context_synchronously
-                                    await showTimePicker(
+                              FocusScope.of(context).requestFocus(FocusNode());
+
+                              if (isGregorian) {
+                                final DateTime? pickedDate =
+                                    await showDatePicker(
                                   context: context,
-                                  initialTime: TimeOfDay.now(),
+                                  initialDate: DateTime.now(),
+                                  firstDate: DateTime(2000),
+                                  lastDate: DateTime(2100),
                                 );
-                                if (pickedTime != null) {
-                                  selectedDateTime = DateTime(
-                                    pickedDate.year,
-                                    pickedDate.month,
-                                    pickedDate.day,
-                                    pickedTime.hour,
-                                    pickedTime.minute,
+                                if (pickedDate != null) {
+                                  // ignore: use_build_context_synchronously
+                                  final TimeOfDay? pickedTime =
+                                      // ignore: use_build_context_synchronously
+                                      await showTimePicker(
+                                    context: context,
+                                    initialTime: TimeOfDay.now(),
                                   );
-                                  // Fortmat to display a more user-friendly manner in the field like: 2024-05-04 07:00
-                                  final intl2.DateFormat formatter =
-                                      intl2.DateFormat('yyyy-MM-dd HH:mm');
-                                  String formattedDateTime =
-                                      formatter.format(selectedDateTime);
-                                  _visitTimeController.text = formattedDateTime;
+                                  if (pickedTime != null) {
+                                    selectedDateTime = DateTime(
+                                      pickedDate.year,
+                                      pickedDate.month,
+                                      pickedDate.day,
+                                      pickedTime.hour,
+                                      pickedTime.minute,
+                                    );
+                                    // Fortmat to display a more user-friendly manner in the field like: 2024-05-04 07:00
+                                    final intl2.DateFormat formatter =
+                                        intl2.DateFormat('yyyy-MM-dd HH:mm');
+                                    String formattedDateTime =
+                                        formatter.format(selectedDateTime);
+                                    _visitTimeController.text =
+                                        formattedDateTime;
+                                  }
+                                }
+                              } else {
+                                // Set Hijry/Jalali calendar
+                                // ignore: use_build_context_synchronously
+                                Jalali? hijriDate = await showPersianDatePicker(
+                                    context: context,
+                                    initialDate: Jalali.now(),
+                                    firstDate: Jalali(1395, 8),
+                                    lastDate: Jalali(1450, 9));
+                                if (hijriDate != null) {
+                                  hijriSelectedDate =
+                                      '${hijriDate.year}-${hijriDate.month}-${hijriDate.day}';
+                                  final TimeOfDay? pickedTime =
+                                      // ignore: use_build_context_synchronously
+                                      await showTimePicker(
+                                    context: context,
+                                    initialTime: TimeOfDay.now(),
+                                  );
+                                  if (pickedTime != null) {
+                                    selectedDateTime = DateTime(
+                                      hijriDate.year,
+                                      hijriDate.month,
+                                      hijriDate.day,
+                                      pickedTime.hour,
+                                      pickedTime.minute,
+                                    );
+                                    // Fortmat to display a more user-friendly manner in the field like: 2024-05-04 07:00
+                                    final intl2.DateFormat formatter =
+                                        intl2.DateFormat('yyyy-MM-dd HH:mm');
+                                    String formattedDateTime =
+                                        formatter.format(selectedDateTime);
+                                    _visitTimeController.text =
+                                        formattedDateTime;
+                                  }
                                 }
                               }
                             },
