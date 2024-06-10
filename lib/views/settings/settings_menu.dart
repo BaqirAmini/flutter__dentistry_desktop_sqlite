@@ -201,8 +201,9 @@ class _SettingsMenuState extends State<SettingsMenu> {
                       ),
                       ListTile(
                         leading: const Icon(Icons.calendar_today_outlined),
-                        title: Text(
-                            translations[selectedLanguage]?['ChangeCalendar'] ?? ''),
+                        title: Text(translations[selectedLanguage]
+                                ?['ChangeCalendar'] ??
+                            ''),
                         onTap: () {
                           setState(() {
                             _selectedIndex = 7;
@@ -1223,8 +1224,7 @@ Widget onChangeLang() {
                           Text(
                             translations[selectedLanguage]?['chooseLanguage'] ??
                                 'Choose Language',
-                            style: const TextStyle(
-                                fontSize: 20.0, color: Colors.black),
+                            style: Theme.of(context).textTheme.headlineMedium,
                           ),
                           const SizedBox(
                             height: 50.0,
