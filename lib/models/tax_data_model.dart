@@ -1,16 +1,16 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
+import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import 'package:provider/provider.dart';
-import '../views/finance/taxes/tax_details.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/finance/taxes/tax_info.dart';
@@ -24,6 +24,8 @@ final GlobalKey<ScaffoldMessengerState> _globalKeyForTaxes =
 var selectedLanguage;
 // ignore: prefer_typing_uninitialized_variables
 var isEnglish;
+var selectedCalType;
+var isGregorian;
 const regExOnlydigits = "[0-9]";
 const regExpDecimal = r'^\d+\.?\d{0,2}';
 const regExOnlyAbc = "[a-zA-Z,، \u0600-\u06FFF]";
@@ -218,13 +220,11 @@ class TaxDataTableState extends State<TaxDataTable> {
 // The text editing controllers for the TextFormFields
 // ignore: non_constant_identifier_names
     final TINController = TextEditingController();
-    final taxOfYearController = TextEditingController();
     final taxRateController = TextEditingController();
     final taxTotalController = TextEditingController();
     final annualIncomeController = TextEditingController();
     final taxPaidController = TextEditingController();
     final taxDueController = TextEditingController();
-    final delByController = TextEditingController();
     final delDateCotnroller = TextEditingController();
     final noteController = TextEditingController();
     // Create a dropdown for financial years.
@@ -711,18 +711,40 @@ class TaxDataTableState extends State<TaxDataTable> {
                                 onTap: () async {
                                   FocusScope.of(context)
                                       .requestFocus(FocusNode());
-                                  final DateTime? dateTime =
-                                      await showDatePicker(
-                                          context: context,
-                                          initialDate: DateTime.now(),
-                                          firstDate: DateTime(1900),
-                                          lastDate: DateTime(2100));
-                                  if (dateTime != null) {
-                                    final intl.DateFormat formatter =
-                                        intl.DateFormat('yyyy-MM-dd');
-                                    final String formattedDate =
-                                        formatter.format(dateTime);
-                                    delDateCotnroller.text = formattedDate;
+                                  DateTime? dateTime;
+                                  if (isGregorian) {
+                                    dateTime = await showDatePicker(
+                                        context: context,
+                                        initialDate: DateTime.now(),
+                                        firstDate: DateTime(1900),
+                                        lastDate: DateTime(2100));
+                                    if (dateTime != null) {
+                                      final intl.DateFormat formatter =
+                                          intl.DateFormat('yyyy-MM-dd');
+                                      final String formattedDate =
+                                          formatter.format(dateTime);
+                                      delDateCotnroller.text = formattedDate;
+                                    }
+                                  } else {
+                                    // Set Hijry/Jalali calendar
+                                    // ignore: use_build_context_synchronously
+                                    Jalali? hijriDate =
+                                        await showPersianDatePicker(
+                                            context: context,
+                                            initialDate: Jalali.now(),
+                                            firstDate: Jalali(1395, 8),
+                                            lastDate: Jalali(1450, 9));
+                                    if (hijriDate != null) {
+                                      dateTime = DateTime(
+                                        hijriDate.year,
+                                        hijriDate.month,
+                                        hijriDate.day,
+                                      );
+                                      // Fortmat to display a more user-friendly manner in the field like: 2024-05-04 07:00
+                                      delDateCotnroller.text =
+                                          intl.DateFormat('yyyy-MM-dd ')
+                                              .format(dateTime);
+                                    }
                                   }
                                 },
                                 inputFormatters: [
@@ -904,7 +926,25 @@ class TaxDataTableState extends State<TaxDataTable> {
                               double paidAmount =
                                   double.parse(taxPaidController.text);
                               double dueAmount = dueTaxes!;
-                              String paidDate = delDateCotnroller.text;
+
+                              String paidDate;
+                              if (isGregorian) {
+                                paidDate = delDateCotnroller.text;
+                              } else {
+                                List<String> dateParts =
+                                    delDateCotnroller.text.split('-');
+                                Jalali jalali = Jalali(
+                                    int.parse(dateParts[0]),
+                                    int.parse(dateParts[1]),
+                                    int.parse(dateParts[2]));
+                                Date gregDate = jalali.toGregorian();
+                                DateTime gregDateTime = DateTime(gregDate.year,
+                                    gregDate.month, gregDate.day);
+                                intl.DateFormat formatter =
+                                    intl.DateFormat('yyyy-MM-dd');
+                                paidDate = formatter.format(gregDateTime);
+                              }
+
                               int taxYear = selectedYear;
                               int staffID = int.parse(selectedStaffId!);
                               String note = noteController.text;
@@ -1044,6 +1084,11 @@ class TaxDataTableState extends State<TaxDataTable> {
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
+
+    // Choose calendar type from its provider
+    var calTypeProvider = Provider.of<SettingsProvider>(context);
+    selectedCalType = calTypeProvider.selectedDateType;
+    isGregorian = selectedCalType == 'میلادی';
     TaxInfo.onAddTax = _fetchData;
     TaxInfo.onUpdateDueTax = _fetchData;
     // Assign fetchStaff to static function and immediatly call it here since when onEditTax() is called the staff dropdown is initially blank.
@@ -1548,13 +1593,11 @@ onEditTax(BuildContext context, Function onUpdate) {
   // The text editing controllers for the TextFormFields
 // ignore: non_constant_identifier_names
   final TINController = TextEditingController();
-  final taxOfYearController = TextEditingController();
   final taxRateController = TextEditingController();
   final taxTotalController = TextEditingController();
   final annualIncomeController = TextEditingController();
   final taxPaidController = TextEditingController();
   final taxDueController = TextEditingController();
-  final delByController = TextEditingController();
   final delDateCotnroller = TextEditingController();
   final noteController = TextEditingController();
   // Create a dropdown for financial years.
@@ -1602,7 +1645,19 @@ onEditTax(BuildContext context, Function onUpdate) {
   taxTotalController.text = TaxInfo.annTotTaxes.toString();
   taxPaidController.text = TaxInfo.paidTaxes.toString();
   taxDueController.text = TaxInfo.dueTaxes.toString();
-  delDateCotnroller.text = TaxInfo.paidDate!;
+
+  if (isGregorian) {
+    delDateCotnroller.text = TaxInfo.paidDate!;
+  } else {
+    // Parse the string into a DateTime object
+    DateTime gregorian = DateTime.parse(TaxInfo.paidDate.toString());
+// Convert the DateTime object to a Jalali date
+    Jalali jalali = Jalali.fromDateTime(gregorian);
+    DateTime hijriDT = DateTime(jalali.year, jalali.month, jalali.day);
+    final intl.DateFormat formatter = intl.DateFormat('yyyy-MM-dd');
+    delDateCotnroller.text = formatter.format(hijriDT);
+  }
+
   noteController.text = TaxInfo.taxNotes!;
 
   return showDialog(
@@ -2005,17 +2060,39 @@ onEditTax(BuildContext context, Function onUpdate) {
                             },
                             onTap: () async {
                               FocusScope.of(context).requestFocus(FocusNode());
-                              final DateTime? dateTime = await showDatePicker(
-                                  context: context,
-                                  initialDate: DateTime.now(),
-                                  firstDate: DateTime(1900),
-                                  lastDate: DateTime(2100));
-                              if (dateTime != null) {
-                                final intl.DateFormat formatter =
-                                    intl.DateFormat('yyyy-MM-dd');
-                                final String formattedDate =
-                                    formatter.format(dateTime);
-                                delDateCotnroller.text = formattedDate;
+                              DateTime? dateTime;
+                              if (isGregorian) {
+                                dateTime = await showDatePicker(
+                                    context: context,
+                                    initialDate: DateTime.now(),
+                                    firstDate: DateTime(1900),
+                                    lastDate: DateTime(2100));
+                                if (dateTime != null) {
+                                  final intl.DateFormat formatter =
+                                      intl.DateFormat('yyyy-MM-dd');
+                                  final String formattedDate =
+                                      formatter.format(dateTime);
+                                  delDateCotnroller.text = formattedDate;
+                                }
+                              } else {
+                                // Set Hijry/Jalali calendar
+                                // ignore: use_build_context_synchronously
+                                Jalali? hijriDate = await showPersianDatePicker(
+                                    context: context,
+                                    initialDate: Jalali.now(),
+                                    firstDate: Jalali(1395, 8),
+                                    lastDate: Jalali(1450, 9));
+                                if (hijriDate != null) {
+                                  dateTime = DateTime(
+                                    hijriDate.year,
+                                    hijriDate.month,
+                                    hijriDate.day,
+                                  );
+                                  // Fortmat to display a more user-friendly manner in the field like: 2024-05-04 07:00
+                                  delDateCotnroller.text =
+                                      intl.DateFormat('yyyy-MM-dd ')
+                                          .format(dateTime);
+                                }
                               }
                             },
                             inputFormatters: [
@@ -2178,7 +2255,24 @@ onEditTax(BuildContext context, Function onUpdate) {
                             double editTotAnnTax = totalTaxesofYear!;
                             String editTIN = TINController.text;
                             int editTaxYear = selectedYear;
-                            String editPaidDate = delDateCotnroller.text;
+                            String editPaidDate;
+
+                            if (isGregorian) {
+                              editPaidDate = delDateCotnroller.text;
+                            } else {
+                              List<String> dateParts =
+                                  delDateCotnroller.text.split('-');
+                              Jalali jalali = Jalali(
+                                  int.parse(dateParts[0]),
+                                  int.parse(dateParts[1]),
+                                  int.parse(dateParts[2]));
+                              Date gregDate = jalali.toGregorian();
+                              DateTime gregDateTime = DateTime(
+                                  gregDate.year, gregDate.month, gregDate.day);
+                              intl.DateFormat formatter =
+                                  intl.DateFormat('yyyy-MM-dd');
+                              editPaidDate = formatter.format(gregDateTime);
+                            }
                             int editStaffId = selectedStaff;
                             double editPaidAmount = paidTaxes;
                             double editDueAmount = dueTaxes;
@@ -2588,6 +2682,15 @@ onPayDueTaxes(BuildContext context) {
 
 // This is to display an alert dialog to expenses details
 onShowTaxDetails(BuildContext context) {
+  String regDate;
+  if (isGregorian) {
+    regDate = TaxInfo.paidDate.toString();
+  } else {
+    // Convert gregorian date to hijri
+    GlobalUsage globalUsage = GlobalUsage();
+    regDate = globalUsage.onConvertGreg2Hijri(TaxInfo.paidDate.toString());
+  }
+
   return showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
@@ -2623,174 +2726,168 @@ onShowTaxDetails(BuildContext context) {
           ],
         ),
       ),
-      content: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.6,
-        child: Directionality(
-          textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
-          child: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.4,
-            height: MediaQuery.of(context).size.height * 0.5,
-            child: Directionality(
-              textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10.0),
-                      color: const Color.fromARGB(255, 240, 239, 239),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            translations[selectedLanguage]?['TIN'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 14.0,
-                              color: Color.fromARGB(255, 118, 116, 116),
-                            ),
-                          ),
-                          Text('${TaxInfo.TIN}'),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 15.0,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      content: Directionality(
+        textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.4,
+          child: Directionality(
+            textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10.0),
+                    color: const Color.fromARGB(255, 240, 239, 239),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          width: MediaQuery.of(context).size.width * 0.19,
-                          padding: const EdgeInsets.all(10.0),
-                          color: const Color.fromARGB(255, 240, 239, 239),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                translations[selectedLanguage]?['TaxOfYear'] ??
-                                    '',
-                                style: const TextStyle(
-                                  fontSize: 14.0,
-                                  color: Color.fromARGB(255, 118, 116, 116),
-                                ),
-                              ),
-                              Text('${TaxInfo.taxOfYear} ه.ش'),
-                            ],
+                        Text(
+                          translations[selectedLanguage]?['TIN'] ?? '',
+                          style: const TextStyle(
+                            fontSize: 14.0,
+                            color: Color.fromARGB(255, 118, 116, 116),
                           ),
                         ),
-                        Container(
-                          width: MediaQuery.of(context).size.width * 0.19,
-                          padding: const EdgeInsets.all(10.0),
-                          color: const Color.fromARGB(255, 240, 239, 239),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                translations[selectedLanguage]?['TaxRate'] ??
-                                    '',
-                                style: const TextStyle(
-                                  fontSize: 14.0,
-                                  color: Color.fromARGB(255, 118, 116, 116),
-                                ),
-                              ),
-                              Text('${TaxInfo.taxRate} %'),
-                            ],
-                          ),
-                        ),
+                        Text('${TaxInfo.TIN}'),
                       ],
                     ),
-                    const SizedBox(
-                      height: 15.0,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  ),
+                  const SizedBox(
+                    height: 15.0,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        width: MediaQuery.of(context).size.width * 0.19,
+                        padding: const EdgeInsets.all(10.0),
+                        color: const Color.fromARGB(255, 240, 239, 239),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              translations[selectedLanguage]?['TaxOfYear'] ??
+                                  '',
+                              style: const TextStyle(
+                                fontSize: 14.0,
+                                color: Color.fromARGB(255, 118, 116, 116),
+                              ),
+                            ),
+                            Text('${TaxInfo.taxOfYear} ه.ش'),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        width: MediaQuery.of(context).size.width * 0.19,
+                        padding: const EdgeInsets.all(10.0),
+                        color: const Color.fromARGB(255, 240, 239, 239),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              translations[selectedLanguage]?['TaxRate'] ?? '',
+                              style: const TextStyle(
+                                fontSize: 14.0,
+                                color: Color.fromARGB(255, 118, 116, 116),
+                              ),
+                            ),
+                            Text('${TaxInfo.taxRate} %'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 15.0,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        width: MediaQuery.of(context).size.width * 0.19,
+                        padding: const EdgeInsets.all(10.0),
+                        color: const Color.fromARGB(255, 240, 239, 239),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              translations[selectedLanguage]?['TaxPaidDate'] ??
+                                  '',
+                              style: const TextStyle(
+                                fontSize: 14.0,
+                                color: Color.fromARGB(255, 118, 116, 116),
+                              ),
+                            ),
+                            Text(regDate),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        width: MediaQuery.of(context).size.width * 0.19,
+                        padding: const EdgeInsets.all(10.0),
+                        color: const Color.fromARGB(255, 240, 239, 239),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              translations[selectedLanguage]?['AnnTotTax'] ??
+                                  '',
+                              style: const TextStyle(
+                                fontSize: 1.0,
+                                color: Color.fromARGB(255, 118, 116, 116),
+                              ),
+                            ),
+                            Text(
+                                '${TaxInfo.annTotTaxes.toString()} ${translations[selectedLanguage]?['Afn'] ?? ''}'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 15.0,
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(10.0),
+                    color: const Color.fromARGB(255, 240, 239, 239),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Container(
-                          width: MediaQuery.of(context).size.width * 0.19,
-                          padding: const EdgeInsets.all(10.0),
-                          color: const Color.fromARGB(255, 240, 239, 239),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                translations[selectedLanguage]
-                                        ?['TaxPaidDate'] ??
-                                    '',
-                                style: const TextStyle(
-                                  fontSize: 14.0,
-                                  color: Color.fromARGB(255, 118, 116, 116),
-                                ),
-                              ),
-                              Text('${TaxInfo.paidDate}'),
-                            ],
+                        Text(
+                          translations[selectedLanguage]?['TaxDue'] ?? '',
+                          style: const TextStyle(
+                            fontSize: 14.0,
+                            color: Color.fromARGB(255, 118, 116, 116),
                           ),
                         ),
-                        Container(
-                          width: MediaQuery.of(context).size.width * 0.19,
-                          padding: const EdgeInsets.all(10.0),
-                          color: const Color.fromARGB(255, 240, 239, 239),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                translations[selectedLanguage]?['AnnTotTax'] ??
-                                    '',
-                                style: const TextStyle(
-                                  fontSize: 1.0,
-                                  color: Color.fromARGB(255, 118, 116, 116),
-                                ),
-                              ),
-                              Text(
-                                  '${TaxInfo.annTotTaxes.toString()} ${translations[selectedLanguage]?['Afn'] ?? ''}'),
-                            ],
-                          ),
-                        ),
+                        Text(
+                            '${TaxInfo.dueTaxes} ${translations[selectedLanguage]?['Afn'] ?? ''}'),
                       ],
                     ),
-                    const SizedBox(
-                      height: 15.0,
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(10.0),
-                      color: const Color.fromARGB(255, 240, 239, 239),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            translations[selectedLanguage]?['TaxDue'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 14.0,
-                              color: Color.fromARGB(255, 118, 116, 116),
-                            ),
+                  ),
+                  const SizedBox(
+                    height: 15.0,
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(10.0),
+                    color: const Color.fromARGB(255, 240, 239, 239),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          translations[selectedLanguage]?['TaxPaidBy'] ?? '',
+                          style: const TextStyle(
+                            fontSize: 14.0,
+                            color: Color.fromARGB(255, 118, 116, 116),
                           ),
-                          Text(
-                              '${TaxInfo.dueTaxes} ${translations[selectedLanguage]?['Afn'] ?? ''}'),
-                        ],
-                      ),
+                        ),
+                        Text('${TaxInfo.firstName} ${TaxInfo.lastName}'),
+                      ],
                     ),
-                    const SizedBox(
-                      height: 15.0,
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(10.0),
-                      color: const Color.fromARGB(255, 240, 239, 239),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            translations[selectedLanguage]?['TaxPaidBy'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 14.0,
-                              color: Color.fromARGB(255, 118, 116, 116),
-                            ),
-                          ),
-                          Text('${TaxInfo.firstName} ${TaxInfo.lastName}'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

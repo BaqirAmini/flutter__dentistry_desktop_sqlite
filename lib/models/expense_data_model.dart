@@ -1,22 +1,21 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
-import 'package:flutter_dentistry/views/finance/expenses/expenses.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart' as intl2;
-import 'package:shamsi_date/shamsi_date.dart';
 import '/views/finance/expenses/expense_info.dart';
 import 'db_conn.dart';
 import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xls;
 import 'package:pdf/widgets.dart' as pw;
+import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 
 // Create the global key at the top level of your Dart file
 final GlobalKey<ScaffoldMessengerState> _globalKeyExpDM =
@@ -25,6 +24,8 @@ final GlobalKey<ScaffoldMessengerState> _globalKeyExpDM =
 var selectedLanguage;
 // ignore: prefer_typing_uninitialized_variables
 var isEnglish;
+var selectedCalType;
+var isGregorian;
 
 // It increments by 1 by any occurance of outputs (excel or pdf)
 int outputCounter = 1;
@@ -286,6 +287,11 @@ class ExpenseDataTableState extends State<ExpenseDataTable> {
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
+    // Choose calendar type from its provider
+    var calTypeProvider = Provider.of<SettingsProvider>(context);
+    selectedCalType = calTypeProvider.selectedDateType;
+    isGregorian = selectedCalType == 'میلادی';
+
     final dataSource =
         MyDataSource(_filteredData, _fetchData, _fetchData, _fetchData);
     // This is to refresh the data table after an expense added.
@@ -890,7 +896,19 @@ onEditExpense(BuildContext context, int expTypeId, Function onUpdate,
   qtyController.text = ExpenseInfo.qty.toString();
   unitPriceController.text = ExpenseInfo.unitPrice.toString();
   totalPriceController.text = ExpenseInfo.totalPrice.toString();
-  purDateController.text = ExpenseInfo.purchaseDate!;
+
+  if (isGregorian) {
+    purDateController.text = ExpenseInfo.purchaseDate!;
+  } else {
+    // Parse the string into a DateTime object
+    DateTime gregorian = DateTime.parse(ExpenseInfo.purchaseDate.toString());
+// Convert the DateTime object to a Jalali date
+    Jalali jalali = Jalali.fromDateTime(gregorian);
+    DateTime hijriDT = DateTime(jalali.year, jalali.month, jalali.day);
+    final intl2.DateFormat formatter = intl2.DateFormat('yyyy-MM-dd');
+    purDateController.text = formatter.format(hijriDT);
+  }
+
   descController.text = ExpenseInfo.description!;
 
   double? totalPrice = ExpenseInfo.totalPrice;
@@ -1549,29 +1567,64 @@ onEditExpense(BuildContext context, int expTypeId, Function onUpdate,
                                                       FocusScope.of(context)
                                                           .requestFocus(
                                                               FocusNode());
-                                                      final DateTime? dateTime =
-                                                          await showDatePicker(
-                                                              context: context,
-                                                              initialDate:
-                                                                  DateTime
-                                                                      .now(),
-                                                              firstDate:
-                                                                  DateTime(
-                                                                      1900),
-                                                              lastDate:
-                                                                  DateTime(
-                                                                      2100));
-                                                      if (dateTime != null) {
-                                                        final intl2.DateFormat
-                                                            formatter =
-                                                            intl2.DateFormat(
-                                                                'yyyy-MM-dd');
-                                                        final String
-                                                            formattedDate =
-                                                            formatter.format(
-                                                                dateTime);
-                                                        purDateController.text =
-                                                            formattedDate;
+                                                      DateTime? dateTime;
+                                                      if (isGregorian) {
+                                                        dateTime =
+                                                            await showDatePicker(
+                                                                context:
+                                                                    context,
+                                                                initialDate:
+                                                                    DateTime
+                                                                        .now(),
+                                                                firstDate:
+                                                                    DateTime(
+                                                                        1900),
+                                                                lastDate:
+                                                                    DateTime(
+                                                                        2100));
+                                                        if (dateTime != null) {
+                                                          final intl2.DateFormat
+                                                              formatter =
+                                                              intl2.DateFormat(
+                                                                  'yyyy-MM-dd');
+                                                          final String
+                                                              formattedDate =
+                                                              formatter.format(
+                                                                  dateTime);
+                                                          purDateController
+                                                                  .text =
+                                                              formattedDate;
+                                                        }
+                                                      } else {
+                                                        // Set Hijry/Jalali calendar
+                                                        // ignore: use_build_context_synchronously
+                                                        Jalali? hijriDate =
+                                                            await showPersianDatePicker(
+                                                                context:
+                                                                    context,
+                                                                initialDate:
+                                                                    Jalali
+                                                                        .now(),
+                                                                firstDate:
+                                                                    Jalali(1395,
+                                                                        8),
+                                                                lastDate:
+                                                                    Jalali(1450,
+                                                                        9));
+                                                        if (hijriDate != null) {
+                                                          dateTime = DateTime(
+                                                            hijriDate.year,
+                                                            hijriDate.month,
+                                                            hijriDate.day,
+                                                          );
+                                                          // Fortmat to display a more user-friendly manner in the field like: 2024-05-04 07:00
+                                                          purDateController
+                                                                  .text =
+                                                              intl2.DateFormat(
+                                                                      'yyyy-MM-dd ')
+                                                                  .format(
+                                                                      dateTime);
+                                                        }
                                                       }
                                                     },
                                                     inputFormatters: [
@@ -1746,9 +1799,25 @@ onEditExpense(BuildContext context, int expTypeId, Function onUpdate,
                                                                 double.parse(
                                                                     unitPriceController
                                                                         .text);
-                                                            String purDate =
-                                                                purDateController
-                                                                    .text;
+                                                                        
+                                                            String purDate;
+                                                            if (isGregorian) {
+                                                                purDate = purDateController.text;
+                                                              } else {
+                                                                List<String> dateParts =
+                                                                    purDateController.text.split('-');
+                                                                Jalali jalali = Jalali(
+                                                                    int.parse(dateParts[0]),
+                                                                    int.parse(dateParts[1]),
+                                                                    int.parse(dateParts[2]));
+                                                                Date gregDate = jalali.toGregorian();
+                                                                DateTime gregDateTime = DateTime(
+                                                                    gregDate.year, gregDate.month, gregDate.day);
+                                                                intl2.DateFormat formatter =
+                                                                    intl2.DateFormat('yyyy-MM-dd');
+                                                                purDate = formatter.format(gregDateTime);
+                                                              }
+
                                                             String desc =
                                                                 descController
                                                                     .text;

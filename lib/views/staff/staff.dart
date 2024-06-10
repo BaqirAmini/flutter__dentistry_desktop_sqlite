@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/developer_options.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/staff/new_staff.dart';
@@ -17,12 +18,16 @@ import 'package:galileo_mysql/galileo_mysql.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
+import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xls;
 import 'staff_info.dart';
 import 'package:intl/intl.dart' as intl2;
 import 'package:path/path.dart' as p;
 import 'package:pdf/widgets.dart' as pw;
+
+var selectedCalType;
+var isGregorian;
 
 // Create the global key at the top level of your Dart file
 final GlobalKey<ScaffoldMessengerState> _globalKey3 =
@@ -216,6 +221,12 @@ class Staff extends StatelessWidget {
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
+
+    // Choose calendar type from its provider
+    var calTypeProvider = Provider.of<SettingsProvider>(context);
+    selectedCalType = calTypeProvider.selectedDateType;
+    isGregorian = selectedCalType == 'میلادی';
+
     return ScaffoldMessenger(
       key: _globalKey3,
       child: Directionality(
@@ -963,7 +974,19 @@ onEditStaff(
   StaffInfo.staffDefaultPosistion = position;
   salaryController.text = salary.toString();
   prePaidController.text = prepayment.toString();
-  hireDateController.text = hireDate;
+  if (isGregorian) {
+    hireDateController.text = hireDate;
+  } else {
+    // Parse the string into a DateTime object
+    DateTime gregorian = DateTime.parse(hireDate);
+
+// Convert the DateTime object to a Jalali date
+    Jalali jalali = Jalali.fromDateTime(gregorian);
+    DateTime hijriDT = DateTime(jalali.year, jalali.month, jalali.day);
+    final intl2.DateFormat formatter = intl2.DateFormat('yyyy-MM-dd');
+    hireDateController.text = formatter.format(hijriDT);
+  }
+
   phoneController.text = phoneNum;
   familyPhone1Controller.text = fPhone1Num;
   familyPhone2Controller.text = fPhone2Num;
@@ -1172,17 +1195,40 @@ onEditStaff(
                                 FocusScope.of(context).requestFocus(
                                   FocusNode(),
                                 );
-                                final DateTime? dateTime = await showDatePicker(
-                                    context: context,
-                                    initialDate: DateTime.now(),
-                                    firstDate: DateTime(1900),
-                                    lastDate: DateTime(2100));
-                                if (dateTime != null) {
-                                  final intl2.DateFormat formatter =
-                                      intl2.DateFormat('yyyy-MM-dd');
-                                  final String formattedDate =
-                                      formatter.format(dateTime);
-                                  hireDateController.text = formattedDate;
+                                DateTime? dateTime;
+                                if (isGregorian) {
+                                  dateTime = await showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime(1900),
+                                      lastDate: DateTime(2100));
+                                  if (dateTime != null) {
+                                    final intl2.DateFormat formatter =
+                                        intl2.DateFormat('yyyy-MM-dd');
+                                    final String formattedDate =
+                                        formatter.format(dateTime);
+                                    hireDateController.text = formattedDate;
+                                  }
+                                } else {
+                                  // Set Hijry/Jalali calendar
+                                  // ignore: use_build_context_synchronously
+                                  Jalali? hijriDate =
+                                      await showPersianDatePicker(
+                                          context: context,
+                                          initialDate: Jalali.now(),
+                                          firstDate: Jalali(1395, 8),
+                                          lastDate: Jalali(1450, 9));
+                                  if (hijriDate != null) {
+                                    dateTime = DateTime(
+                                      hijriDate.year,
+                                      hijriDate.month,
+                                      hijriDate.day,
+                                    );
+                                    // Fortmat to display a more user-friendly manner in the field like: 2024-05-04 07:00
+                                    hireDateController.text =
+                                        intl2.DateFormat('yyyy-MM-dd ')
+                                            .format(dateTime);
+                                  }
                                 }
                               },
                               inputFormatters: [
@@ -1726,7 +1772,26 @@ onEditStaff(
                             String fname = nameController.text;
                             String lname = lastNameController.text;
                             String pos = StaffInfo.staffDefaultPosistion;
-                            String hireDate = hireDateController.text;
+                            String hireDate;
+                            if (isGregorian) {
+                              hireDate = hireDateController.text;
+                            } else {
+                              List<String> dateParts =
+                                  hireDateController.text.split('-');
+                              Jalali jalali = Jalali(
+                                  int.parse(dateParts[0]),
+                                  int.parse(dateParts[1]),
+                                  int.parse(dateParts[2]));
+
+                              Date gregDate = jalali.toGregorian();
+                              DateTime gregDateTime = DateTime(
+                                  gregDate.year, gregDate.month, gregDate.day);
+
+                              intl2.DateFormat formatter =
+                                  intl2.DateFormat('yyyy-MM-dd');
+                              hireDate = formatter.format(gregDateTime);
+                            }
+
                             String phone = phoneController.text;
                             String fPhone1 = familyPhone1Controller.text;
                             String? fPhone2 =
@@ -1782,6 +1847,7 @@ onEditStaff(
                                             '');
                                     Navigator.pop(context);
                                   }
+                                  print('IS NOT INTERN. HIRE DATE: $hireDate');
                                 } else {
                                   final results = await conn.rawUpdate(
                                       'UPDATE staff SET firstname = ?, lastname = ?, position = ?, salary = ?, hire_date = ?, phone = ?,  family_phone1 = ?, family_phone2 = ?, tazkira_ID = ?, address = ? WHERE staff_ID = ?',
@@ -1814,6 +1880,7 @@ onEditStaff(
                                             '');
                                     Navigator.pop(context);
                                   }
+                                  print('IS INTERN. HIRE DATE: $hireDate');
                                 }
                               }
                             } else {

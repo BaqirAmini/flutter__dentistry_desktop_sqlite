@@ -4,9 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/developer_options.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/patients/patient_info.dart';
+import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:intl/intl.dart' as intl2;
@@ -15,6 +17,8 @@ import 'package:intl/intl.dart' as intl2;
 var selectedLanguage;
 // ignore: prefer_typing_uninitialized_variables
 var isEnglish;
+var selectedCalType;
+var isGregorian;
 
 // This is shows snackbar when called
 void _onShowSnack(Color backColor, String msg, BuildContext context) {
@@ -43,6 +47,10 @@ class CalendarAppForSpecificPatient extends StatelessWidget {
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
+    // Choose calendar type from its provider
+    var calTypeProvider = Provider.of<SettingsProvider>(context);
+    selectedCalType = calTypeProvider.selectedDateType;
+    isGregorian = selectedCalType == 'میلادی';
     return Directionality(
       textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
       child: Scaffold(
@@ -161,7 +169,7 @@ class _CalendarPageState extends State<CalendarPage> {
                     dentistFName,
                     dentistLName,
                     serviceName,
-                    scheduleTime.toString(),
+                    scheduleTime,
                     description,
                     notifFreq);
               }
@@ -179,8 +187,21 @@ class _CalendarPageState extends State<CalendarPage> {
     TextEditingController apptdatetimeController = TextEditingController();
     TextEditingController commentController = TextEditingController();
     String notifFrequency = '30 Minutes';
-    apptdatetimeController.text = selectedDate.toString();
     int? patientId = PatientInfo.patID;
+
+    if (isGregorian) {
+      intl2.DateFormat formatter = intl2.DateFormat('yyyy-MM-dd HH:mm');
+      apptdatetimeController.text = formatter.format(selectedDate);
+    } else {
+      // Parse the string into a DateTime object
+      DateTime gregorian = DateTime.parse(selectedDate.toString());
+      // Convert the DateTime object to a Jalali date
+      Jalali jalali = Jalali.fromDateTime(gregorian);
+      DateTime hijriDT = DateTime(jalali.year, jalali.month, jalali.day,
+          gregorian.hour, gregorian.minute);
+      final intl2.DateFormat formatter = intl2.DateFormat('yyyy-MM-dd HH:mm');
+      apptdatetimeController.text = formatter.format(hijriDT);
+    }
 
     showDialog(
       context: context,
@@ -195,9 +216,8 @@ class _CalendarPageState extends State<CalendarPage> {
                     style: Theme.of(context)
                         .textTheme
                         .headlineSmall!
-                        .copyWith(color: Colors.blue, fontSize: 18.0)),
+                        .copyWith(color: Colors.blue)),
                 content: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.6,
                   width: MediaQuery.of(context).size.width * 0.35,
                   child: SingleChildScrollView(
                     child: Form(
@@ -347,35 +367,69 @@ class _CalendarPageState extends State<CalendarPage> {
                                         color: Colors.red, width: 1.5)),
                               ),
                               onTap: () async {
-                                final DateTime? pickedDate =
-                                    await showDatePicker(
-                                  context: context,
-                                  initialDate: selectedDate,
-                                  firstDate: DateTime(2000),
-                                  lastDate: DateTime(2100),
-                                );
-                                if (pickedDate != null) {
-                                  // ignore: use_build_context_synchronously
-                                  final TimeOfDay? pickedTime =
-                                      // ignore: use_build_context_synchronously
-                                      await showTimePicker(
+                                if (isGregorian) {
+                                  final DateTime? pickedDate =
+                                      await showDatePicker(
                                     context: context,
-                                    initialTime: TimeOfDay.now(),
+                                    initialDate: selectedDate,
+                                    firstDate: DateTime(2000),
+                                    lastDate: DateTime(2100),
                                   );
-                                  if (pickedTime != null) {
-                                    selectedDateTime = DateTime(
-                                      pickedDate.year,
-                                      pickedDate.month,
-                                      pickedDate.day,
-                                      pickedTime.hour,
-                                      pickedTime.minute,
+                                  if (pickedDate != null) {
+                                    // ignore: use_build_context_synchronously
+                                    final TimeOfDay? pickedTime =
+                                        // ignore: use_build_context_synchronously
+                                        await showTimePicker(
+                                      context: context,
+                                      initialTime: TimeOfDay.now(),
                                     );
-                                    final intl2.DateFormat formatter =
-                                        intl2.DateFormat('yyyy-MM-dd HH:mm');
-                                    String formattedDateTime =
-                                        formatter.format(selectedDateTime);
-                                    apptdatetimeController.text =
-                                        formattedDateTime;
+                                    if (pickedTime != null) {
+                                      selectedDateTime = DateTime(
+                                        pickedDate.year,
+                                        pickedDate.month,
+                                        pickedDate.day,
+                                        pickedTime.hour,
+                                        pickedTime.minute,
+                                      );
+                                      final intl2.DateFormat formatter =
+                                          intl2.DateFormat("yyyy-MM-dd HH:mm");
+                                      String formattedDateTime =
+                                          formatter.format(selectedDateTime);
+                                      apptdatetimeController.text =
+                                          formattedDateTime;
+                                    }
+                                  }
+                                } else {
+                                  // Set Hijry/Jalali calendar
+                                  Jalali? hijriDate =
+                                      await showPersianDatePicker(
+                                          context: context,
+                                          initialDate: Jalali.now(),
+                                          firstDate: Jalali(1395, 8),
+                                          lastDate: Jalali(1450, 9));
+                                  if (hijriDate != null) {
+                                    final TimeOfDay? pickedTime =
+                                        // ignore: use_build_context_synchronously
+                                        await showTimePicker(
+                                      context: context,
+                                      initialTime: TimeOfDay.now(),
+                                    );
+                                    if (pickedTime != null) {
+                                      selectedDateTime = DateTime(
+                                        hijriDate.year,
+                                        hijriDate.month,
+                                        hijriDate.day,
+                                        pickedTime.hour,
+                                        pickedTime.minute,
+                                      );
+                                      // Fortmat to display a more user-friendly manner in the field like: 2024-05-04 07:00
+                                      final intl2.DateFormat formatter =
+                                          intl2.DateFormat('yyyy-MM-dd HH:mm');
+                                      String formattedDateTime =
+                                          formatter.format(selectedDateTime);
+                                      apptdatetimeController.text =
+                                          formattedDateTime;
+                                    }
                                   }
                                 }
                               },
@@ -508,14 +562,47 @@ class _CalendarPageState extends State<CalendarPage> {
                               onPressed: () async {
                                 if (_calFormKey.currentState!.validate()) {
                                   try {
+                                    String schedApptDT;
+                                    if (isGregorian) {
+                                      schedApptDT = apptdatetimeController.text;
+                                    } else {
+                                      // First we separate date and time
+                                      List<String> shamsiParts =
+                                          apptdatetimeController.text
+                                              .split(' ');
+                                      String shamsiDate = shamsiParts[0];
+                                      String shamsiTime = shamsiParts[1];
+                                      // Now we separate year, month, day in shamsi date
+                                      List<String> dateParts =
+                                          shamsiDate.split('-');
+                                      // Convert shamsi to gregorian
+                                      Jalali jalali = Jalali(
+                                          int.parse(dateParts[0]),
+                                          int.parse(dateParts[1]),
+                                          int.parse(dateParts[2]));
+
+                                      // Fetch it into Date type
+                                      Date gregDate = jalali.toGregorian();
+                                      // We need datetime type to format it
+                                      DateTime gregDateTime = DateTime(
+                                          gregDate.year,
+                                          gregDate.month,
+                                          gregDate.day);
+
+                                      // Format it to be in yyyy-mm-dd
+                                      intl2.DateFormat formatter =
+                                          intl2.DateFormat('yyyy-MM-dd');
+                                      schedApptDT =
+                                          '${formatter.format(gregDateTime)} $shamsiTime';
+                                    }
+
                                     final conn = await onConnToSqliteDb();
                                     final results = await conn.rawInsert(
                                         'INSERT INTO appointments (pat_ID, service_ID, meet_date, staff_ID, status, notification, details) VALUES (?, ?, ?, ?, ?, ?, ?)',
                                         [
                                           patientId,
                                           serviceId,
-                                          apptdatetimeController.text
-                                              .toString(),
+                                          schedApptDT,
                                           staffId,
                                           'Pending',
                                           notifFrequency,
@@ -574,17 +661,32 @@ class _CalendarPageState extends State<CalendarPage> {
       String firstName,
       String lastName,
       String service,
-      String time,
+      DateTime time,
       String description,
       String frequency) async {
-    String formattedTime =
-        intl2.DateFormat('yyyy-MM-dd hh:mm a').format(DateTime.parse(time));
+    String formattedTime;
+
+    if (isGregorian) {
+      intl2.DateFormat formatter = intl2.DateFormat('yyyy-MM-dd HH:mm');
+      formattedTime = formatter.format(time);
+    } else {
+      // Parse the string into a DateTime object
+      DateTime gregorian = DateTime.parse(time.toString());
+      // Convert the DateTime object to a Jalali date
+      Jalali jalali = Jalali.fromDateTime(gregorian);
+      DateTime hijriDT = DateTime(jalali.year, jalali.month, jalali.day,
+          gregorian.hour, gregorian.minute);
+      final intl2.DateFormat formatter = intl2.DateFormat('yyyy-MM-dd HH:mm');
+      formattedTime = formatter.format(hijriDT);
+    }
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment:
+                isEnglish ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
               IconButton(
                   splashRadius: 25.0,
@@ -610,75 +712,84 @@ class _CalendarPageState extends State<CalendarPage> {
                       size: 18.0, color: Colors.blue)),
             ],
           ),
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.3,
-            height: MediaQuery.of(context).size.height * 0.35,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.calendar_month_outlined,
-                          color: Colors.grey),
-                      const SizedBox(width: 15.0),
-                      Text(formattedTime)
-                    ],
+          content: Directionality(
+            textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.3,
+              height: MediaQuery.of(context).size.height * 0.35,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.calendar_month_outlined,
+                            color: Colors.grey),
+                        const SizedBox(width: 15.0),
+                        Text(formattedTime, textDirection: TextDirection.ltr)
+                      ],
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.title_outlined, color: Colors.grey),
-                      const SizedBox(width: 15.0),
-                      Text(service.toString()),
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.title_outlined, color: Colors.grey),
+                        const SizedBox(width: 15.0),
+                        Text(service.toString()),
+                      ],
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.person_3_outlined, color: Colors.grey),
-                      const SizedBox(width: 15.0),
-                      Text('$firstName $lastName'),
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.person_3_outlined, color: Colors.grey),
+                        const SizedBox(width: 15.0),
+                        Text('$firstName $lastName'),
+                      ],
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.notifications_active_outlined,
-                          color: Colors.grey),
-                      const SizedBox(width: 15.0),
-                      Text(frequency),
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.notifications_active_outlined,
+                            color: Colors.grey),
+                        const SizedBox(width: 15.0),
+                        Text(frequency),
+                      ],
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outlined, color: Colors.grey),
-                      const SizedBox(width: 15.0),
-                      SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.2,
-                          child: Text(description))
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info_outlined, color: Colors.grey),
+                        const SizedBox(width: 15.0),
+                        SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.2,
+                            child: Text(description))
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           actions: <Widget>[
-            ElevatedButton(
-              child: Text(translations[selectedLanguage]?['Okay'] ?? ''),
-              onPressed: () => Navigator.pop(context),
-            ),
+            Row(
+              mainAxisAlignment:
+                  isEnglish ? MainAxisAlignment.end : MainAxisAlignment.start,
+              children: [
+                ElevatedButton(
+                  child: Text(translations[selectedLanguage]?['Okay'] ?? ''),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            )
           ],
         );
       },
@@ -691,14 +802,27 @@ class _CalendarPageState extends State<CalendarPage> {
       int dentistID,
       int selectedSerId,
       int apptId,
-      String selectedDate,
+      DateTime selectedDate,
       String notifFreq,
       String description,
       Function refresh) async {
     DateTime selectedDateTime = DateTime.now();
     TextEditingController editApptTimeController = TextEditingController();
     TextEditingController editCommentController = TextEditingController();
-    editApptTimeController.text = selectedDate.toString();
+    if (isGregorian) {
+      intl2.DateFormat formatter = intl2.DateFormat('yyyy-MM-dd HH:mm');
+      editApptTimeController.text = formatter.format(selectedDate);
+    } else {
+      // Parse the string into a DateTime object
+      DateTime gregorian = DateTime.parse(selectedDate.toString());
+      // Convert the DateTime object to a Jalali date
+      Jalali jalali = Jalali.fromDateTime(gregorian);
+      DateTime hijriDT = DateTime(jalali.year, jalali.month, jalali.day,
+          gregorian.hour, gregorian.minute);
+      final intl2.DateFormat formatter = intl2.DateFormat('yyyy-MM-dd HH:mm');
+      editApptTimeController.text = formatter.format(hijriDT);
+    }
+
     int? patientId = PatientInfo.patID;
     editCommentController.text = description;
 
@@ -866,35 +990,68 @@ class _CalendarPageState extends State<CalendarPage> {
                                         color: Colors.red, width: 1.5)),
                               ),
                               onTap: () async {
-                                final DateTime? pickedDate =
-                                    await showDatePicker(
-                                  context: context,
-                                  initialDate: DateTime.parse(selectedDate),
-                                  firstDate: DateTime(2000),
-                                  lastDate: DateTime(2100),
-                                );
-                                if (pickedDate != null) {
-                                  // ignore: use_build_context_synchronously
-                                  final TimeOfDay? pickedTime =
-                                      // ignore: use_build_context_synchronously
-                                      await showTimePicker(
+                                if (isGregorian) {
+                                  final DateTime? pickedDate =
+                                      await showDatePicker(
                                     context: context,
-                                    initialTime: TimeOfDay.now(),
+                                    initialDate:
+                                        DateTime.parse(selectedDate.toString()),
+                                    firstDate: DateTime(2000),
+                                    lastDate: DateTime(2100),
                                   );
-                                  if (pickedTime != null) {
-                                    selectedDateTime = DateTime(
-                                      pickedDate.year,
-                                      pickedDate.month,
-                                      pickedDate.day,
-                                      pickedTime.hour,
-                                      pickedTime.minute,
+                                  if (pickedDate != null) {
+                                    final TimeOfDay? pickedTime =
+                                        await showTimePicker(
+                                      context: context,
+                                      initialTime: TimeOfDay.now(),
                                     );
-                                    final intl2.DateFormat formatter =
-                                        intl2.DateFormat('yyyy-MM-dd HH:mm');
-                                    String formattedDateTime =
-                                        formatter.format(selectedDateTime);
-                                    editApptTimeController.text =
-                                        formattedDateTime;
+                                    if (pickedTime != null) {
+                                      selectedDateTime = DateTime(
+                                        pickedDate.year,
+                                        pickedDate.month,
+                                        pickedDate.day,
+                                        pickedTime.hour,
+                                        pickedTime.minute,
+                                      );
+
+                                      intl2.DateFormat formatter =
+                                          intl2.DateFormat('yyyy-MM-dd HH:mm');
+                                      String formattedDateTime =
+                                          formatter.format(selectedDateTime);
+                                      editApptTimeController.text =
+                                          formattedDateTime;
+                                    }
+                                  }
+                                } else {
+                                  // Set Hijry/Jalali calendar
+                                  Jalali? hijriDate =
+                                      await showPersianDatePicker(
+                                          context: context,
+                                          initialDate: Jalali.now(),
+                                          firstDate: Jalali(1395, 8),
+                                          lastDate: Jalali(1450, 9));
+                                  if (hijriDate != null) {
+                                    final TimeOfDay? pickedTime =
+                                        await showTimePicker(
+                                      context: context,
+                                      initialTime: TimeOfDay.now(),
+                                    );
+                                    if (pickedTime != null) {
+                                      selectedDateTime = DateTime(
+                                        hijriDate.year,
+                                        hijriDate.month,
+                                        hijriDate.day,
+                                        pickedTime.hour,
+                                        pickedTime.minute,
+                                      );
+                                      // Fortmat to display a more user-friendly manner in the field like: 2024-05-04 07:00
+                                      final intl2.DateFormat formatter =
+                                          intl2.DateFormat('yyyy-MM-dd HH:mm');
+                                      String formattedDateTime =
+                                          formatter.format(selectedDateTime);
+                                      editApptTimeController.text =
+                                          formattedDateTime;
+                                    }
                                   }
                                 }
                               },
@@ -1014,13 +1171,42 @@ class _CalendarPageState extends State<CalendarPage> {
                     onPressed: () async {
                       if (_calFormKey.currentState!.validate()) {
                         try {
+                          String schedApptDT;
+                          if (isGregorian) {
+                            schedApptDT = editApptTimeController.text;
+                          } else {
+                            // First we separate date and time
+                            List<String> shamsiParts =
+                                editApptTimeController.text.split(' ');
+                            String shamsiDate = shamsiParts[0];
+                            String shamsiTime = shamsiParts[1];
+                            // Now we separate year, month, day in shamsi date
+                            List<String> dateParts = shamsiDate.split('-');
+                            // Convert shamsi to gregorian
+                            Jalali jalali = Jalali(
+                                int.parse(dateParts[0]),
+                                int.parse(dateParts[1]),
+                                int.parse(dateParts[2]));
+
+                            // Fetch it into Date type
+                            Date gregDate = jalali.toGregorian();
+                            // We need datetime type to format it
+                            DateTime gregDateTime = DateTime(
+                                gregDate.year, gregDate.month, gregDate.day);
+
+                            // Format it to be in yyyy-mm-dd
+                            intl2.DateFormat formatter =
+                                intl2.DateFormat('yyyy-MM-dd');
+                            schedApptDT =
+                                '${formatter.format(gregDateTime)} $shamsiTime';
+                          }
                           final conn = await onConnToSqliteDb();
                           final results = await conn.rawUpdate(
                               'UPDATE appointments SET service_ID = ?, staff_ID = ?, meet_date = ?, notification = ?, details = ? WHERE apt_ID = ?',
                               [
                                 selectedServiceId,
                                 selectedStaffId,
-                                editApptTimeController.text.toString(),
+                                schedApptDT,
                                 notifFreq,
                                 editCommentController.text.isEmpty
                                     ? null

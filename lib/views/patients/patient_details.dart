@@ -6,7 +6,9 @@ import 'package:another_flushbar/flushbar.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/main/dashboard.dart';
@@ -25,6 +27,8 @@ void main() {
   runApp(const PatientDetail());
 }
 
+var selectedCalType;
+var isGregorian;
 // This is shows snackbar when called
 void _onShowSnack(Color backColor, String msg, BuildContext context) {
   Flushbar(
@@ -61,6 +65,11 @@ class _PatientDetailState extends State<PatientDetail> {
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
+
+    // Choose calendar type from its provider
+    var calTypeProvider = Provider.of<SettingsProvider>(context);
+    selectedCalType = calTypeProvider.selectedDateType;
+    isGregorian = selectedCalType == 'میلادی';
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Directionality(
@@ -676,6 +685,15 @@ class _HoverCardState extends State<HoverCard> {
 class _PatientMoreDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    String regDate;
+    if (isGregorian) {
+      regDate = PatientInfo.regDate.toString();
+    } else {
+      // Convert gregorian date to hijri
+      GlobalUsage globalUsage = GlobalUsage();
+      regDate = globalUsage.onConvertGreg2Hijri(PatientInfo.regDate.toString());
+    }
+
     return Container(
       height: MediaQuery.of(context).size.height * 0.3,
       width: MediaQuery.of(context).size.width * 0.52,
@@ -767,7 +785,7 @@ class _PatientMoreDetail extends StatelessWidget {
                       Text(translations[selectedLanguage]?['RegDate'] ?? '',
                           style: const TextStyle(
                               color: Colors.grey, fontSize: 12.0)),
-                      Text('${PatientInfo.regDate}'),
+                      Text(regDate),
                     ],
                   ),
                 ),
