@@ -254,6 +254,7 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                 child:
                     Text(translations[selectedLanguage]?['NoReqFound'] ?? ''));
           } else {
+            GlobalUsage globalUsage = GlobalUsage();
             var data = snapshot.data!;
             var groupedDSName = groupBy(data, (obj) => obj['damageSName']);
             return ListView.builder(
@@ -329,13 +330,23 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                                                           CrossAxisAlignment
                                                               .start,
                                                       children: [
-                                                        Text(
-                                                          e['retreatDate'],
-                                                          style:
-                                                              const TextStyle(
-                                                                  fontSize:
-                                                                      16.0),
-                                                        ),
+                                                        (isGregorian)
+                                                            ? Text(
+                                                                intl2.DateFormat(
+                                                                        'MMM d, y hh:mm a')
+                                                                    .format(DateTime
+                                                                        .parse(e[
+                                                                            'retreatDate'])),
+                                                                style: const TextStyle(
+                                                                    fontSize:
+                                                                        16.0),
+                                                              )
+                                                            : Text(
+                                                                '${globalUsage.onConvertGreg2Hijri(e['retreatDate'])} ${intl2.DateFormat('hh:mm a').format(DateTime.parse(e['retreatDate']))}',
+                                                                style: const TextStyle(
+                                                                    fontSize:
+                                                                        16.0),
+                                                              ),
                                                         Text(
                                                           'داکتر معالج: ${e['staffFirstName']} ${e['staffLastName']}',
                                                           style:
@@ -590,8 +601,7 @@ Future<List<Map>> _getRetreatment() async {
 
     for (var row in results) {
       retreatments.add({
-        'retreatDate': intl2.DateFormat('yyyy-MM-dd hh:mm a')
-            .format(DateTime.parse(row["rdate"].toString())),
+        'retreatDate': row["rdate"],
         'apptID': row["apt_id"],
         'helpSName': row["hsname"].toString(),
         'helpServiceID': row["help_sid"],

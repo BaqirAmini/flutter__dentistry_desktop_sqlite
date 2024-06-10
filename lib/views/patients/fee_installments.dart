@@ -1041,6 +1041,7 @@ class _FeeContentState extends State<FeeContent> {
 
               displayTotalFeeRow = true;
             }
+            GlobalUsage globalUsage = GlobalUsage();
             return ListView(
               children: groupedApptFees.entries.map<Widget>((entry) {
                 // Since it is displaying like: servicename _ ID, on the screen it should not be display so.
@@ -1123,16 +1124,24 @@ class _FeeContentState extends State<FeeContent> {
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
-                                                Text(
-                                                  intl2.DateFormat(
-                                                          'MMM d, y hh:mm a')
-                                                      .format(DateTime.parse(
-                                                          payment
-                                                              .paymentDateTime
-                                                              .toString())),
-                                                  style: const TextStyle(
-                                                      fontSize: 18.0),
-                                                ),
+                                                (isGregorian)
+                                                    ? Text(
+                                                        intl2.DateFormat(
+                                                                'MMM d, y hh:mm a')
+                                                            .format(DateTime
+                                                                .parse(payment
+                                                                    .paymentDateTime
+                                                                    .toString())),
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .titleSmall,
+                                                      )
+                                                    : Text(
+                                                        '${globalUsage.onConvertGreg2Hijri(payment.paymentDateTime)} ${intl2.DateFormat('hh:mm a').format(DateTime.parse(payment.paymentDateTime.toString()))}',
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .titleSmall,
+                                                      ),
                                                 Text(
                                                   '${translations[selectedLanguage]?['EarnedBy'] ?? 'Earned by: '}${payment.staffFirstName} ${payment.staffLastName}',
                                                   style: const TextStyle(

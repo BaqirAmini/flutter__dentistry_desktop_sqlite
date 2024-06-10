@@ -5,7 +5,9 @@ import 'dart:typed_data';
 import 'dart:ui';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/main/dashboard.dart';
@@ -36,6 +38,8 @@ String gStaffHDate = '';
 var selectedLanguage;
 // ignore: prefer_typing_uninitialized_variables
 var isEnglish;
+var selectedCalType;
+var isGregorian;
 
 class StaffDetail extends StatelessWidget {
   final int staffID;
@@ -76,6 +80,11 @@ class StaffDetail extends StatelessWidget {
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
+    // Choose calendar type from its provider
+    var calTypeProvider = Provider.of<SettingsProvider>(context);
+    selectedCalType = calTypeProvider.selectedDateType;
+    isGregorian = selectedCalType == 'میلادی';
+
     gStaffID = staffID;
     gStaffFName = staffFName;
     gStaffLName = staffLName ?? '';
@@ -449,6 +458,7 @@ class _StaffMoreDetailState extends State<_StaffMoreDetail> {
     // Fetch translations keys based on the selected language.
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
+    GlobalUsage globalUsage = GlobalUsage();
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.5,
       width: MediaQuery.of(context).size.width * 0.52,
@@ -475,10 +485,16 @@ class _StaffMoreDetailState extends State<_StaffMoreDetail> {
                             style: const TextStyle(
                                 color: Colors.grey, fontSize: 12.0),
                           ),
-                          Text(gStaffHDate.isEmpty
-                              ? '--'
-                              : intl2.DateFormat('MMM d, y')
-                                  .format(DateTime.parse(gStaffHDate))),
+                          (isGregorian)
+                              ? Text(gStaffHDate.isEmpty
+                                  ? '--'
+                                  : intl2.DateFormat('MMM d, y')
+                                      .format(DateTime.parse(gStaffHDate)))
+                              : Text(
+                                  gStaffHDate.isEmpty
+                                      ? '--'
+                                      : '${globalUsage.onConvertGreg2Hijri(gStaffHDate)} ه.ش',
+                                  textDirection: TextDirection.rtl),
                         ],
                       ),
                     ),

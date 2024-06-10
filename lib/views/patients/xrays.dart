@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
+import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/main/dashboard.dart';
@@ -14,6 +15,7 @@ import 'package:intl/intl.dart' as intl2;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
+import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dentistry/config/developer_options.dart';
 
@@ -24,6 +26,8 @@ int counter = 0;
 var selectedLanguage;
 // ignore: prefer_typing_uninitialized_variables
 var isEnglish;
+var selectedCalType;
+var isGregorian;
 
 class XRayUploadScreen extends StatelessWidget {
   const XRayUploadScreen({Key? key}) : super(key: key);
@@ -34,6 +38,11 @@ class XRayUploadScreen extends StatelessWidget {
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
+
+    // Choose calendar type from its provider
+    var calTypeProvider = Provider.of<SettingsProvider>(context);
+    selectedCalType = calTypeProvider.selectedDateType;
+    isGregorian = selectedCalType == 'میلادی';
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: DefaultTabController(
@@ -113,21 +122,8 @@ class XRayUploadScreen extends StatelessWidget {
 Future<List<XRayDataModel>> _fetchXRayImages(String type) async {
   try {
     final conn = await onConnToSqliteDb();
-    final results = await conn.rawQuery('''SELECT xray_ID, xray_name, description,
-	CASE strftime('%m', reg_date)
-		WHEN '01' THEN 'Jan'
-		WHEN '02' THEN 'Feb'
-		WHEN '03' THEN 'Mar'
-		WHEN '04' THEN 'Apr'
-		WHEN '05' THEN 'May'
-		WHEN '06' THEN 'Jun'
-		WHEN '07' THEN 'Jul'
-		WHEN '08' THEN 'Aug'
-		WHEN '09' THEN 'Sep'
-		WHEN '10' THEN 'Oct'
-		WHEN '11' THEN 'Nov'
-		WHEN '12' THEN 'Dec'
-	END || ' ' || strftime('%d, %Y', reg_date) AS reg_date FROM patient_xrays	 WHERE pat_ID = ? AND xray_type = ?''',
+    final results = await conn.rawQuery(
+        '''SELECT xray_ID, xray_name, description, reg_date FROM patient_xrays	 WHERE pat_ID = ? AND xray_type = ?''',
         [PatientInfo.patID, type]);
     final xrays = results
         .map((row) => XRayDataModel(
@@ -536,18 +532,40 @@ class __ImageThumbNailState extends State<_ImageThumbNail> {
                                         FocusScope.of(context).requestFocus(
                                           FocusNode(),
                                         );
-                                        final DateTime? dateTime =
-                                            await showDatePicker(
-                                                context: context,
-                                                initialDate: DateTime.now(),
-                                                firstDate: DateTime(1900),
-                                                lastDate: DateTime(2100));
-                                        if (dateTime != null) {
-                                          final intl2.DateFormat formatter =
-                                              intl2.DateFormat('yyyy-MM-dd');
-                                          final String formattedDate =
-                                              formatter.format(dateTime);
-                                          dateContoller.text = formattedDate;
+                                        DateTime? dateTime;
+                                        if (isGregorian) {
+                                          dateTime = await showDatePicker(
+                                              context: context,
+                                              initialDate: DateTime.now(),
+                                              firstDate: DateTime(1900),
+                                              lastDate: DateTime(2100));
+                                          if (dateTime != null) {
+                                            final intl2.DateFormat formatter =
+                                                intl2.DateFormat('yyyy-MM-dd');
+                                            final String formattedDate =
+                                                formatter.format(dateTime);
+                                            dateContoller.text = formattedDate;
+                                          }
+                                        } else {
+                                          // Set Hijry/Jalali calendar
+                                          // ignore: use_build_context_synchronously
+                                          Jalali? hijriDate =
+                                              await showPersianDatePicker(
+                                                  context: context,
+                                                  initialDate: Jalali.now(),
+                                                  firstDate: Jalali(1395, 8),
+                                                  lastDate: Jalali(1450, 9));
+                                          if (hijriDate != null) {
+                                            dateTime = DateTime(
+                                              hijriDate.year,
+                                              hijriDate.month,
+                                              hijriDate.day,
+                                            );
+                                            // Fortmat to display a more user-friendly manner in the field like: 2024-05-04 07:00
+                                            dateContoller.text =
+                                                intl2.DateFormat('yyyy-MM-dd ')
+                                                    .format(dateTime);
+                                          }
                                         }
                                       },
                                       inputFormatters: [
@@ -669,7 +687,27 @@ class __ImageThumbNailState extends State<_ImageThumbNail> {
                                 if (xrayFormKey.currentState!.validate() &&
                                     _selectedImage != null) {
                                   final conn = await onConnToSqliteDb();
-                                  final date = dateContoller.text;
+
+                                  String date;
+                                  if (isGregorian) {
+                                    date = dateContoller.text;
+                                  } else {
+                                    List<String> dateParts =
+                                        dateContoller.text.split('-');
+                                    Jalali jalali = Jalali(
+                                        int.parse(dateParts[0]),
+                                        int.parse(dateParts[1]),
+                                        int.parse(dateParts[2]));
+                                    Date gregDate = jalali.toGregorian();
+                                    DateTime gregDateTime = DateTime(
+                                        gregDate.year,
+                                        gregDate.month,
+                                        gregDate.day);
+                                    intl2.DateFormat formatter =
+                                        intl2.DateFormat('yyyy-MM-dd');
+                                    date = formatter.format(gregDateTime);
+                                  }
+
                                   final description = xrayNoteController.text;
                                   Directory? userDir =
                                       await getApplicationDocumentsDirectory();
@@ -787,6 +825,7 @@ class _ImageViewerState extends State<ImageViewer> {
               },
               itemBuilder: (context, index) {
                 try {
+                  GlobalUsage globalUsage = GlobalUsage();
                   // This widget contains date, description and the image itself.
                   return Directionality(
                     textDirection:
@@ -806,10 +845,20 @@ class _ImageViewerState extends State<ImageViewer> {
                                     '',
                                 style: Theme.of(context).textTheme.labelLarge,
                               ),
-                              Text(
-                                widget.images[index].xrayDate,
-                                style: Theme.of(context).textTheme.bodyLarge,
-                              ),
+                              (isGregorian)
+                                  ? Text(
+                                      intl2.DateFormat('MMM d, y').format(
+                                          DateTime.parse(
+                                              widget.images[index].xrayDate)),
+                                      style:
+                                          Theme.of(context).textTheme.bodyLarge,
+                                    )
+                                  : Text(
+                                      globalUsage.onConvertGreg2Hijri(
+                                          widget.images[index].xrayDate),
+                                      style:
+                                          Theme.of(context).textTheme.bodyLarge,
+                                    ),
                             ],
                           ),
                         ),

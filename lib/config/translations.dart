@@ -384,6 +384,9 @@ final Map<String, Map<String, String>> translations = {
         'Note: To restore X-Ray files, just exract the ZIP file here: ',
     'RecordLimitMsg':
         'Max Records Reached. Please contact Emransoft for more info.',
+    'ChangeCalendar': 'Change Calendar',
+    'Gregorian': 'Gregorian',
+    'Hijri': 'Hijri',
     /*----/. SETTINGS -----*/
     /*---------- USER PROFILE -----------*/
     'MyProfileHeading': 'Edit My Personal Info',
@@ -870,6 +873,9 @@ final Map<String, Map<String, String>> translations = {
         'نوت: برای بازیابی فایلهای اکسری کافی است فایل ZIP آنرا در اینجا Extract نمایید: ',
     'RecordLimitMsg':
         'حد نهایی ریکاردها تکمیل گردیده است. لطفاً برای معلومات بیشتر با عمران سافت تماس بگیرید.',
+    'ChangeCalendar': 'تبدیل جنتری (تقویم)',
+    'Gregorian': 'میلادی',
+    'Hijri': 'هجری شمسی',
     /*----/. SETTINGS -----*/
     /*---------- USER PROFILE -----------*/
     'MyProfileHeading': 'تغییر معلومات شخصی من',
@@ -1365,6 +1371,9 @@ final Map<String, Map<String, String>> translations = {
         'یادونه: د اکسری فایلونو بیرته ترلاسه کولو لپاره، یوازې دلته د ZIP فایلونه استخراج کړئ: ',
     'RecordLimitMsg':
         'د ریکارډونو وروستی حد بشپړ شوی. مهرباني وکړئ د نورو معلوماتو لپاره عمران سافت سره اړیکه ونیسئ.',
+    'ChangeCalendar': 'تقویم بدل  کړئ',
+    'Gregorian': 'میلادي',
+    'Hijri': 'هجري',
     /*----/. SETTINGS -----*/
     /*---------- USER PROFILE -----------*/
     'MyProfileHeading': 'زما شخصي معلومات سم کړئ',

@@ -201,7 +201,8 @@ class _SettingsMenuState extends State<SettingsMenu> {
                       ),
                       ListTile(
                         leading: const Icon(Icons.calendar_today_outlined),
-                        title: const Text('تبدیل تاریخ'),
+                        title: Text(
+                            translations[selectedLanguage]?['ChangeCalendar'] ?? ''),
                         onTap: () {
                           setState(() {
                             _selectedIndex = 7;
@@ -1407,10 +1408,10 @@ Widget _onChangeDateType() {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
-                            'تبدیل تاریخ',
-                            style:
-                                TextStyle(fontSize: 20.0, color: Colors.black),
+                          Text(
+                            translations[selectedLanguage]?['ChangeCalendar'] ??
+                                '',
+                            style: Theme.of(context).textTheme.headlineMedium,
                           ),
                           const SizedBox(
                             height: 50.0,
@@ -1447,15 +1448,18 @@ Widget _onChangeDateType() {
                                                   .size
                                                   .width *
                                               0.08, // adjust as needed
-                                          child: const Row(
+                                          child: Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceEvenly,
                                             children: <Widget>[
-                                              Icon(
+                                              const Icon(
                                                 Icons.calendar_month_outlined,
                                                 color: Colors.blue,
                                               ),
-                                              Text('هجری شمسی'),
+                                              Text(
+                                                  translations[selectedLanguage]
+                                                          ?['Hijri'] ??
+                                                      ''),
                                             ],
                                           ),
                                         ),
@@ -1491,7 +1495,7 @@ Widget _onChangeDateType() {
                                     height: MediaQuery.of(context).size.height *
                                         0.08, // adjust as needed
                                     width: MediaQuery.of(context).size.width *
-                                        0.11, 
+                                        0.11,
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceEvenly,
@@ -1501,15 +1505,18 @@ Widget _onChangeDateType() {
                                                   .size
                                                   .width *
                                               0.07, // adjust as needed
-                                          child: const Row(
+                                          child: Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceEvenly,
                                             children: <Widget>[
-                                              Icon(
+                                              const Icon(
                                                 Icons.calendar_month_outlined,
                                                 color: Colors.blue,
                                               ),
-                                              Text('میلادی'),
+                                              Text(
+                                                  translations[selectedLanguage]
+                                                          ?['Gregorian'] ??
+                                                      ''),
                                             ],
                                           ),
                                         ),

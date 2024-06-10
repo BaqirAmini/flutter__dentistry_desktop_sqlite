@@ -1125,6 +1125,22 @@ class _AppointmentContentState extends State<_AppointmentContent> {
               itemBuilder: (context, index) {
                 var visitTime = groupedData.keys.elementAt(index);
                 var round = groupedRound.keys.elementAt(index);
+                String visitDateTime;
+                if (isGregorian) {
+                  intl2.DateFormat formatter =
+                      intl2.DateFormat('yyyy-MM-dd hh:mm a');
+                  visitDateTime = formatter.format(DateTime.parse(visitTime));
+                } else {
+                  // Parse the string into a DateTime object
+                  DateTime gregorian = DateTime.parse(visitTime);
+                  // Convert the DateTime object to a Jalali date
+                  Jalali jalali = Jalali.fromDateTime(gregorian);
+                  DateTime hijriDT = DateTime(jalali.year, jalali.month,
+                      jalali.day, gregorian.hour, gregorian.minute);
+                  final intl2.DateFormat formatter =
+                      intl2.DateFormat('yyyy-MM-dd hh:mm a');
+                  visitDateTime = formatter.format(hijriDT);
+                }
                 return Card(
                   elevation: 0.5,
                   child: Column(
@@ -1139,9 +1155,10 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             Text(
-                              intl2.DateFormat('MMM d, y hh:mm a')
-                                  .format(DateTime.parse(visitTime)),
-                              style: const TextStyle(fontSize: 18.0),
+                              
+                              visitDateTime,
+                              textDirection: TextDirection.ltr,
+                              style: Theme.of(context).textTheme.titleSmall,
                             ),
                             const Spacer(),
                             Card(
