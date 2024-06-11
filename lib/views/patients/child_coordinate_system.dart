@@ -96,85 +96,89 @@ class _ChildQuadrantGrid extends State<ChildQuadrantGrid> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         InputDecorator(
-          decoration: InputDecoration(
-            contentPadding: const EdgeInsets.all(20),
-            border: const OutlineInputBorder(),
-            labelText: _selectedTeethLetters.isEmpty
-                // ignore: unnecessary_string_interpolations
-                ? '${translations[selectedLanguage]?['SelectTeeth'] ?? ''}'
-                // ignore: unnecessary_string_interpolations
-                : '${translations[selectedLanguage]?['ChildTeethSelection'] ?? ''}',
-            floatingLabelAlignment: FloatingLabelAlignment.center,
-            labelStyle: TextStyle(
-                color: _selectedTeethLetters.isEmpty ? Colors.red : Colors.blue,
-                fontSize: 18),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: const BorderRadius.all(
-                Radius.circular(30.0),
-              ),
-              borderSide: BorderSide(
-                color: _selectedTeethLetters.isEmpty ? Colors.red : Colors.blue,
+            decoration: InputDecoration(
+              contentPadding: const EdgeInsets.all(20),
+              border: const OutlineInputBorder(),
+              labelText: _selectedTeethLetters.isEmpty
+                  // ignore: unnecessary_string_interpolations
+                  ? '${translations[selectedLanguage]?['SelectTeeth'] ?? ''}'
+                  // ignore: unnecessary_string_interpolations
+                  : '${translations[selectedLanguage]?['ChildTeethSelection'] ?? ''}',
+              floatingLabelAlignment: FloatingLabelAlignment.center,
+              labelStyle: TextStyle(
+                  color:
+                      _selectedTeethLetters.isEmpty ? Colors.red : Colors.blue,
+                  fontSize: 18),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(30.0),
+                ),
+                borderSide: BorderSide(
+                  color:
+                      _selectedTeethLetters.isEmpty ? Colors.red : Colors.blue,
+                ),
               ),
             ),
-          ),
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height * 0.35,
-            child: Stack(
-              children: [
-                Column(
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.35,
+                child: Stack(
                   children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          _buildQuadrantWithLabel(
-                              'Q2',
-                              List<String>.generate(
-                                      5, (i) => String.fromCharCode(65 + i))
-                                  .reversed
-                                  .toList()),
-                          _buildQuadrantWithLabel(
-                              'Q1',
-                              List<String>.generate(
-                                  5, (i) => String.fromCharCode(65 + i))),
-                        ],
+                    Column(
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              _buildQuadrantWithLabel(
+                                  'Q2',
+                                  List<String>.generate(
+                                          5, (i) => String.fromCharCode(65 + i))
+                                      .reversed
+                                      .toList()),
+                              _buildQuadrantWithLabel(
+                                  'Q1',
+                                  List<String>.generate(
+                                      5, (i) => String.fromCharCode(65 + i))),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              _buildQuadrantWithLabel(
+                                  'Q3',
+                                  List<String>.generate(
+                                          5, (i) => String.fromCharCode(65 + i))
+                                      .reversed
+                                      .toList()),
+                              _buildQuadrantWithLabel(
+                                  'Q4',
+                                  List<String>.generate(
+                                      5, (i) => String.fromCharCode(65 + i))),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    Center(
+                      child: Container(
+                        width: 1,
+                        height: double.infinity,
+                        color: Colors.blue,
                       ),
                     ),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          _buildQuadrantWithLabel(
-                              'Q3',
-                              List<String>.generate(
-                                      5, (i) => String.fromCharCode(65 + i))
-                                  .reversed
-                                  .toList()),
-                          _buildQuadrantWithLabel(
-                              'Q4',
-                              List<String>.generate(
-                                  5, (i) => String.fromCharCode(65 + i))),
-                        ],
+                    Center(
+                      child: Container(
+                        height: 1,
+                        width: double.infinity,
+                        color: Colors.blue,
                       ),
                     ),
                   ],
                 ),
-                Center(
-                  child: Container(
-                    width: 1,
-                    height: double.infinity,
-                    color: Colors.blue,
-                  ),
-                ),
-                Center(
-                  child: Container(
-                    height: 1,
-                    width: double.infinity,
-                    color: Colors.blue,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+              ),
+            )),
         Directionality(
           textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
           child: Row(
@@ -221,9 +225,7 @@ class _ChildQuadrantGrid extends State<ChildQuadrantGrid> {
                   ),
                 ),
               ),
-              Text(
-                translations[selectedLanguage]?['AllTeeth'] ?? ''
-              ),
+              Text(translations[selectedLanguage]?['AllTeeth'] ?? ''),
             ],
           ),
         ),

@@ -77,95 +77,98 @@ class _AdultQuadrantGrid extends State<AdultQuadrantGrid> {
     return Column(
       children: [
         InputDecorator(
-          decoration: InputDecoration(
-            border: const OutlineInputBorder(),
-            labelText: _selectedTeethNum.isEmpty
-                // ignore: unnecessary_string_interpolations
-                ? '${translations[selectedLanguage]?['SelectTeeth'] ?? ''}'
-                // ignore: unnecessary_string_interpolations
-                : '${translations[selectedLanguage]?['AdultTeethSelection'] ?? ''}',
-            contentPadding: const EdgeInsets.all(20),
-            floatingLabelAlignment: FloatingLabelAlignment.center,
-            labelStyle: TextStyle(
-                color: _selectedTeethNum.isEmpty ? Colors.red : Colors.blue,
-                fontSize: 18),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: const BorderRadius.all(Radius.circular(30.0)),
-              borderSide: BorderSide(
-                  color: _selectedTeethNum.isEmpty ? Colors.red : Colors.blue),
-            ),
-            focusedBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(50.0),
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              labelText: _selectedTeethNum.isEmpty
+                  // ignore: unnecessary_string_interpolations
+                  ? '${translations[selectedLanguage]?['SelectTeeth'] ?? ''}'
+                  // ignore: unnecessary_string_interpolations
+                  : '${translations[selectedLanguage]?['AdultTeethSelection'] ?? ''}',
+              contentPadding: const EdgeInsets.all(20),
+              floatingLabelAlignment: FloatingLabelAlignment.center,
+              labelStyle: TextStyle(
+                  color: _selectedTeethNum.isEmpty ? Colors.red : Colors.blue,
+                  fontSize: 18),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(30.0)),
+                borderSide: BorderSide(
+                    color:
+                        _selectedTeethNum.isEmpty ? Colors.red : Colors.blue),
+              ),
+              focusedBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(50.0),
+                ),
               ),
             ),
-          ),
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height * 0.35,
-            child: Stack(
-              children: [
-                Column(
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.35,
+                child: Stack(
                   children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          _buildQuadrantWithLabel(
-                            'Q2',
-                            List<int>.generate(
-                              8,
-                              (i) => (i + 1),
-                            ).reversed.toList(),
+                    Column(
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              _buildQuadrantWithLabel(
+                                'Q2',
+                                List<int>.generate(
+                                  8,
+                                  (i) => (i + 1),
+                                ).reversed.toList(),
+                              ),
+                              _buildQuadrantWithLabel(
+                                'Q1',
+                                List<int>.generate(
+                                  8,
+                                  (i) => (i + 1),
+                                ),
+                              ),
+                            ],
                           ),
-                          _buildQuadrantWithLabel(
-                            'Q1',
-                            List<int>.generate(
-                              8,
-                              (i) => (i + 1),
-                            ),
+                        ),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              _buildQuadrantWithLabel(
+                                'Q3',
+                                List<int>.generate(
+                                  8,
+                                  (i) => (i + 1),
+                                ).reversed.toList(),
+                              ),
+                              _buildQuadrantWithLabel(
+                                'Q4',
+                                List<int>.generate(
+                                  8,
+                                  (i) => (i + 1),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
+                      ],
+                    ),
+                    Center(
+                      child: Container(
+                        width: 1,
+                        height: double.infinity,
+                        color: Colors.blue,
                       ),
                     ),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          _buildQuadrantWithLabel(
-                            'Q3',
-                            List<int>.generate(
-                              8,
-                              (i) => (i + 1),
-                            ).reversed.toList(),
-                          ),
-                          _buildQuadrantWithLabel(
-                            'Q4',
-                            List<int>.generate(
-                              8,
-                              (i) => (i + 1),
-                            ),
-                          ),
-                        ],
+                    Center(
+                      child: Container(
+                        height: 1,
+                        width: double.infinity,
+                        color: Colors.blue,
                       ),
                     ),
                   ],
                 ),
-                Center(
-                  child: Container(
-                    width: 1,
-                    height: double.infinity,
-                    color: Colors.blue,
-                  ),
-                ),
-                Center(
-                  child: Container(
-                    height: 1,
-                    width: double.infinity,
-                    color: Colors.blue,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+              ),
+            )),
         Directionality(
           textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
           child: Row(
