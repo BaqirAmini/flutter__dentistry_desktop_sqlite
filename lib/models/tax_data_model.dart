@@ -1437,7 +1437,11 @@ class MyDataSource extends DataTableSource {
           '${data[index].annualTaxes} ${translations[selectedLanguage]?['Afn'] ?? ''}')),
       DataCell(Text(
           '${data[index].deliveredTax} ${translations[selectedLanguage]?['Afn'] ?? ''}')),
-      DataCell(Text(data[index].deliverDate.toString())),
+      DataCell((isGregorian)
+          ? Text(data[index].deliverDate.toString())
+          : Text(GlobalUsage().onConvertGreg2Hijri(
+              data[index].deliverDate.toString(),
+            ))),
       DataCell(
         Builder(builder: (BuildContext context) {
           return IconButton(
@@ -2465,17 +2469,39 @@ onPayDueTaxes(BuildContext context) {
                             },
                             onTap: () async {
                               FocusScope.of(context).requestFocus(FocusNode());
-                              final DateTime? dateTime = await showDatePicker(
-                                  context: context,
-                                  initialDate: DateTime.now(),
-                                  firstDate: DateTime(1900),
-                                  lastDate: DateTime(2100));
-                              if (dateTime != null) {
-                                final intl.DateFormat formatter =
-                                    intl.DateFormat('yyyy-MM-dd');
-                                final String formattedDate =
-                                    formatter.format(dateTime);
-                                paidDateController.text = formattedDate;
+                              DateTime? dateTime;
+                              if (isGregorian) {
+                                dateTime = await showDatePicker(
+                                    context: context,
+                                    initialDate: DateTime.now(),
+                                    firstDate: DateTime(1900),
+                                    lastDate: DateTime(2100));
+                                if (dateTime != null) {
+                                  final intl.DateFormat formatter =
+                                      intl.DateFormat('yyyy-MM-dd');
+                                  final String formattedDate =
+                                      formatter.format(dateTime);
+                                  paidDateController.text = formattedDate;
+                                }
+                              } else {
+                                // Set Hijry/Jalali calendar
+                                // ignore: use_build_context_synchronously
+                                Jalali? hijriDate = await showPersianDatePicker(
+                                    context: context,
+                                    initialDate: Jalali.now(),
+                                    firstDate: Jalali(1395, 8),
+                                    lastDate: Jalali(1450, 9));
+                                if (hijriDate != null) {
+                                  dateTime = DateTime(
+                                    hijriDate.year,
+                                    hijriDate.month,
+                                    hijriDate.day,
+                                  );
+                                  // Fortmat to display a more user-friendly manner in the field like: 2024-05-04 07:00
+                                  paidDateController.text =
+                                      intl.DateFormat('yyyy-MM-dd ')
+                                          .format(dateTime);
+                                }
                               }
                             },
                             inputFormatters: [
@@ -2631,11 +2657,29 @@ onPayDueTaxes(BuildContext context) {
                         onPressed: () async {
                           if (formKeyDueTax.currentState!.validate()) {
                             int taxId = TaxInfo.taxID!;
-                            String paidDate = paidDateController.text;
+                            String paidDate;
+
+                            if (isGregorian) {
+                              paidDate = paidDateController.text;
+                            } else {
+                              List<String> dateParts =
+                                  paidDateController.text.split('-');
+                              Jalali jalali = Jalali(
+                                  int.parse(dateParts[0]),
+                                  int.parse(dateParts[1]),
+                                  int.parse(dateParts[2]));
+                              Date gregDate = jalali.toGregorian();
+                              DateTime gregDateTime = DateTime(
+                                  gregDate.year, gregDate.month, gregDate.day);
+                              intl.DateFormat formatter =
+                                  intl.DateFormat('yyyy-MM-dd');
+                              paidDate = formatter.format(gregDateTime);
+                            }
+
                             double paidAmount = TaxInfo.dueTaxes!;
                             double dueAmount = 0;
                             String notes = noteController.text;
-// Insert tax_payments table to make the due taxes zero.
+                            // Insert tax_payments table to make the due taxes zero.
                             final conn = await onConnToSqliteDb();
                             var dueResults = await conn.rawInsert(
                                 'INSERT INTO tax_payments (tax_ID, paid_date, paid_by, paid_amount, due_amount, note, modified_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
