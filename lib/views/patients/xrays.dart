@@ -28,6 +28,23 @@ var selectedLanguage;
 var isEnglish;
 var selectedCalType;
 var isGregorian;
+// This is shows snackbar when called
+void _onShowSnack(Color backColor, String msg, BuildContext context) {
+  Flushbar(
+    backgroundColor: backColor,
+    flushbarStyle: FlushbarStyle.GROUNDED,
+    flushbarPosition: FlushbarPosition.BOTTOM,
+    messageText: Directionality(
+      textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
+      child: Text(
+        msg,
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: Colors.white),
+      ),
+    ),
+    duration: const Duration(seconds: 3),
+  ).show(context);
+}
 
 class XRayUploadScreen extends StatelessWidget {
   const XRayUploadScreen({Key? key}) : super(key: key);
@@ -805,6 +822,97 @@ class _ImageViewerState extends State<ImageViewer> {
     controller = PageController(initialPage: widget.initialIndex);
   }
 
+// This is to display an alert dialog to delete expenses
+  onDeleteXrayFile(
+      BuildContext context, Function onDelete, int xrayId, String xRayImgName) {
+    return showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+              title: Directionality(
+                textDirection:
+                    isEnglish ? TextDirection.ltr : TextDirection.rtl,
+                child: const Text('Delete This X-Ray File'),
+              ),
+              content: Directionality(
+                textDirection:
+                    isEnglish ? TextDirection.ltr : TextDirection.rtl,
+                child: const Text(
+                    'Are you sure you want to permanantly delete this X-Ray file?'),
+              ),
+              actions: [
+                Row(
+                  mainAxisAlignment: isEnglish
+                      ? MainAxisAlignment.end
+                      : MainAxisAlignment.start,
+                  children: [
+                    TextButton(
+                        onPressed: () =>
+                            Navigator.of(context, rootNavigator: true).pop(),
+                        child: const Text('لغو')),
+                    TextButton(
+                      onPressed: () async {
+                        Directory? userDir =
+                            await getApplicationDocumentsDirectory();
+                        // Name of the uploaded xray image name
+                        final xrayImageName = p.basename(xRayImgName);
+                        // Patient directory path for instance, Users/name-specified-in-windows/Documents/CROWN/Ali123
+                        final patientDirPath = p.join(userDir.path, 'CROWN',
+                            '${PatientInfo.firstName}${PatientInfo.patID}');
+                        // Patient Directory for instance, CROWN/Ali123
+                        final patientsDir = Directory(patientDirPath);
+                        if (!patientsDir.existsSync()) {
+                          // If the directory is not existing, create it.
+                          final xrayImagePath =
+                              p.join(patientDirPath, xrayImageName);
+                          print('Hello: $xrayImagePath');
+                        }
+
+                        print('Directory: $patientDirPath');
+                        final xrayImagePath =
+                            p.join(patientDirPath, xrayImageName);
+                        print('Here is: $xrayImageName');
+
+                        /*    final conn = await onConnToSqliteDb();
+                        var results = await conn.rawDelete(
+                            'DELETE FROM patient_xrays WHERE xray_ID = ? AND pat_ID = ?',
+                            [xrayId, PatientInfo.patID]);
+                        if (results > 0) {
+                          Directory? userDir =
+                              await getApplicationDocumentsDirectory();
+                          // Name of the uploaded xray image name
+                          final xrayImageName =
+                              p.basename(xRayImgName);
+                          // Patient directory path for instance, Users/name-specified-in-windows/Documents/CROWN/Ali123
+                          final patientDirPath = p.join(userDir.path, 'CROWN',
+                              '${PatientInfo.firstName}${PatientInfo.patID}');
+                          // Patient Directory for instance, CROWN/Ali123
+                          final patientsDir = Directory(patientDirPath);
+                          if (!patientsDir.existsSync()) {
+                            // If the directory is not existing, create it.
+                            final xrayImagePath =
+                                p.join(patientDirPath, xrayImageName);
+                          }
+
+                          // ignore: use_build_context_synchronously
+                          _onShowSnack(
+                              Colors.green, 'The X-Ray file deleted.', context);
+                          onDelete();
+                        } else {
+                          // ignore: use_build_context_synchronously
+                          _onShowSnack(Colors.red,
+                              'Deleting the X-Ray file failed.', context);
+                        } */
+                        // ignore: use_build_context_synchronously
+                        Navigator.of(context, rootNavigator: true).pop();
+                      },
+                      child: const Text('حذف'),
+                    ),
+                  ],
+                ),
+              ],
+            ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -877,52 +985,74 @@ class _ImageViewerState extends State<ImageViewer> {
                             ],
                           ),
                         ),
-                        MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: GestureDetector(
-                            // When tapped, it opens the image using windows default image viewer.
-                            onTap: () =>
-                                OpenFile.open(widget.images[index].xrayImage),
-                            child: Container(
-                                decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.black)),
-                                width: MediaQuery.of(context).size.width * 0.5,
-                                height:
-                                    MediaQuery.of(context).size.height * 0.5,
-                                child: FutureBuilder(
-                                  future: File(widget.images[index].xrayImage)
-                                      .exists()
-                                      .then((exists) {
-                                    if (exists) {
-                                      return File(
-                                          widget.images[index].xrayImage);
-                                    } else {
-                                      throw Exception('Image file not found');
-                                    }
-                                  }),
-                                  builder: (BuildContext context,
-                                      AsyncSnapshot<File> snapshot) {
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.done) {
-                                      if (snapshot.hasError) {
-                                        // If there's an error, return a message
-                                        return Center(
-                                            child: Text(
-                                                translations[selectedLanguage]
+                        Column(
+                          children: [
+                            MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: GestureDetector(
+                                // When tapped, it opens the image using windows default image viewer.
+                                onTap: () => OpenFile.open(
+                                    widget.images[index].xrayImage),
+                                child: Container(
+                                    decoration: BoxDecoration(
+                                        border:
+                                            Border.all(color: Colors.black)),
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.5,
+                                    height: MediaQuery.of(context).size.height *
+                                        0.5,
+                                    child: FutureBuilder(
+                                      future:
+                                          File(widget.images[index].xrayImage)
+                                              .exists()
+                                              .then((exists) {
+                                        if (exists) {
+                                          return File(
+                                              widget.images[index].xrayImage);
+                                        } else {
+                                          throw Exception(
+                                              'Image file not found');
+                                        }
+                                      }),
+                                      builder: (BuildContext context,
+                                          AsyncSnapshot<File> snapshot) {
+                                        if (snapshot.connectionState ==
+                                            ConnectionState.done) {
+                                          if (snapshot.hasError) {
+                                            // If there's an error, return a message
+                                            return Center(
+                                                child: Text(translations[
+                                                            selectedLanguage]
                                                         ?['XrayNotFound'] ??
                                                     ''));
-                                      } else {
-                                        // If the file exists, display it
-                                        return Image.file(snapshot.data!,
-                                            fit: BoxFit.fill);
-                                      }
-                                    } else {
-                                      // While the file is being checked, display a loading spinner
-                                      return const CircularProgressIndicator();
-                                    }
-                                  },
-                                )),
-                          ),
+                                          } else {
+                                            // If the file exists, display it
+                                            return Image.file(snapshot.data!,
+                                                fit: BoxFit.fill);
+                                          }
+                                        } else {
+                                          // While the file is being checked, display a loading spinner
+                                          return const CircularProgressIndicator();
+                                        }
+                                      },
+                                    )),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10.0),
+                              child: IconButton(
+                                  splashRadius:
+                                      MediaQuery.of(context).size.width * 0.013,
+                                  tooltip: 'Delete',
+                                  onPressed: () => onDeleteXrayFile(context,
+                                          () {
+                                        setState(() {});
+                                      }, widget.images[index].xrayID,
+                                          widget.images[index].xrayImage),
+                                  icon: const Icon(Icons.delete_forever_sharp,
+                                      color: Colors.redAccent)),
+                            )
+                          ],
                         ),
                       ],
                     ),
