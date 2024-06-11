@@ -1399,9 +1399,8 @@ class TaxDataTableState extends State<TaxDataTable> {
                                     fontSize: 12.0))),
                       ],
                       source: dataSource,
-                      rowsPerPage: _filteredData.length < 8
-                          ? _gu.calculateRowsPerPage(context)
-                          : _gu.calculateRowsPerPage(context),
+                      rowsPerPage:
+                          _filteredData.length < 8 ? _filteredData.length : 8,
                     )
                 ],
               ),
