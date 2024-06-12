@@ -62,6 +62,10 @@ class XRayUploadScreen extends StatelessWidget {
     isGregorian = selectedCalType == 'میلادی';
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      routes: {
+        '/ImageThumbNail': (context) =>
+            const _ImageThumbNail(xrayCategory: 'Periaplical'),
+      },
       home: DefaultTabController(
         length: 3,
         child: Directionality(
@@ -317,7 +321,9 @@ class __ImageThumbNailState extends State<_ImageThumbNail> {
                                     builder: (context) => ImageViewer(
                                         images: xrayData, initialIndex: index),
                                   ),
-                                );
+                                ).then((_) {
+                                  setState(() {});
+                                });
                               },
                               child: Visibility(
                                 visible: File(xray.xrayImage).existsSync()
@@ -823,21 +829,22 @@ class _ImageViewerState extends State<ImageViewer> {
   }
 
 // This is to display an alert dialog to delete expenses
-  onDeleteXrayFile(
-      BuildContext context, Function onDelete, int xrayId, String xRayImgName) {
+  onDeleteXrayFile(BuildContext context, int xrayId, String xRayImgName) {
     return showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
               title: Directionality(
                 textDirection:
                     isEnglish ? TextDirection.ltr : TextDirection.rtl,
-                child: const Text('Delete This X-Ray File'),
+                child: Text(
+                    translations[selectedLanguage]?['DeleteXRHead'] ?? '',
+                    style: const TextStyle(color: Colors.blue)),
               ),
               content: Directionality(
                 textDirection:
                     isEnglish ? TextDirection.ltr : TextDirection.rtl,
-                child: const Text(
-                    'Are you sure you want to permanantly delete this X-Ray file?'),
+                child: Text(
+                    translations[selectedLanguage]?['ConfirmXRDelete'] ?? ''),
               ),
               actions: [
                 Row(
@@ -848,64 +855,53 @@ class _ImageViewerState extends State<ImageViewer> {
                     TextButton(
                         onPressed: () =>
                             Navigator.of(context, rootNavigator: true).pop(),
-                        child: const Text('لغو')),
+                        child: Text(translations[selectedLanguage]
+                                ?['CancelBtn'] ??
+                            '')),
                     TextButton(
                       onPressed: () async {
-                        Directory? userDir =
-                            await getApplicationDocumentsDirectory();
-                        // Name of the uploaded xray image name
-                        final xrayImageName = p.basename(xRayImgName);
-                        // Patient directory path for instance, Users/name-specified-in-windows/Documents/CROWN/Ali123
-                        final patientDirPath = p.join(userDir.path, 'CROWN',
-                            '${PatientInfo.firstName}${PatientInfo.patID}');
-                        // Patient Directory for instance, CROWN/Ali123
-                        final patientsDir = Directory(patientDirPath);
-                        if (!patientsDir.existsSync()) {
-                          // If the directory is not existing, create it.
-                          final xrayImagePath =
-                              p.join(patientDirPath, xrayImageName);
-                          print('Hello: $xrayImagePath');
-                        }
-
-                        print('Directory: $patientDirPath');
-                        final xrayImagePath =
-                            p.join(patientDirPath, xrayImageName);
-                        print('Here is: $xrayImageName');
-
-                        /*    final conn = await onConnToSqliteDb();
+                        final conn = await onConnToSqliteDb();
                         var results = await conn.rawDelete(
                             'DELETE FROM patient_xrays WHERE xray_ID = ? AND pat_ID = ?',
                             [xrayId, PatientInfo.patID]);
                         if (results > 0) {
                           Directory? userDir =
                               await getApplicationDocumentsDirectory();
-                          // Name of the uploaded xray image name
-                          final xrayImageName =
-                              p.basename(xRayImgName);
                           // Patient directory path for instance, Users/name-specified-in-windows/Documents/CROWN/Ali123
                           final patientDirPath = p.join(userDir.path, 'CROWN',
                               '${PatientInfo.firstName}${PatientInfo.patID}');
                           // Patient Directory for instance, CROWN/Ali123
                           final patientsDir = Directory(patientDirPath);
-                          if (!patientsDir.existsSync()) {
-                            // If the directory is not existing, create it.
+                          if (patientsDir.existsSync()) {
+                            // If the directory is existing, delete the specific file.
                             final xrayImagePath =
-                                p.join(patientDirPath, xrayImageName);
+                                p.join(patientDirPath, xRayImgName);
+                            final xrayImageFile = File(xrayImagePath);
+                            if (await xrayImageFile.exists()) {
+                              await xrayImageFile.delete();
+                            }
+
+                            // If no files are remaining in the directory, delete the directory itself.
+                            if (patientsDir.listSync().isEmpty) {
+                              patientsDir.deleteSync();
+                            }
                           }
 
+                          // This navigator.pop(...) closes the alertdialog
                           // ignore: use_build_context_synchronously
-                          _onShowSnack(
-                              Colors.green, 'The X-Ray file deleted.', context);
-                          onDelete();
+                          Navigator.of(context, rootNavigator: true).pop();
+
+                          //  This pop() closes the image viewer page and navigates back to main page where there are three tabs.
+                          // ignore: use_build_context_synchronously
+                          Navigator.of(context).pop();
                         } else {
                           // ignore: use_build_context_synchronously
                           _onShowSnack(Colors.red,
                               'Deleting the X-Ray file failed.', context);
-                        } */
-                        // ignore: use_build_context_synchronously
-                        Navigator.of(context, rootNavigator: true).pop();
+                        }
                       },
-                      child: const Text('حذف'),
+                      child:
+                          Text(translations[selectedLanguage]?['Delete'] ?? ''),
                     ),
                   ],
                 ),
@@ -1043,12 +1039,11 @@ class _ImageViewerState extends State<ImageViewer> {
                               child: IconButton(
                                   splashRadius:
                                       MediaQuery.of(context).size.width * 0.013,
-                                  tooltip: 'Delete',
-                                  onPressed: () => onDeleteXrayFile(context,
-                                          () {
-                                        setState(() {});
-                                      }, widget.images[index].xrayID,
-                                          widget.images[index].xrayImage),
+                                  tooltip: translations[selectedLanguage]?['Delete'] ?? '',
+                                  onPressed: () => onDeleteXrayFile(
+                                      context,
+                                      widget.images[index].xrayID,
+                                      widget.images[index].xrayImage),
                                   icon: const Icon(Icons.delete_forever_sharp,
                                       color: Colors.redAccent)),
                             )

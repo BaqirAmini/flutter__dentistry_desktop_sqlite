@@ -382,6 +382,9 @@ final Map<String, Map<String, String>> translations = {
     'XFailMsg': 'X-Ray Backup Failed. Please try again.',
     'XrayExtMsg':
         'Note: To restore X-Ray files, just exract the ZIP file here: ',
+    'DeleteXRHead': 'Delete X-Ray File',
+    'ConfirmXRDelete':
+        'Are you sure you want to permanently delete this X-Ray file?',
     'RecordLimitMsg':
         'Max Records Reached. Please contact Emransoft for more info.',
     'ChangeCalendar': 'Change Calendar',
@@ -871,6 +874,9 @@ final Map<String, Map<String, String>> translations = {
     'XFailMsg': 'پشتیبانی اکسری ناکام شد. لطفاً دوباره سعی کنید.',
     'XrayExtMsg':
         'نوت: برای بازیابی فایلهای اکسری کافی است فایل ZIP آنرا در اینجا Extract نمایید: ',
+    'DeleteXRHead': 'حذف فایل اکسری',
+    'ConfirmXRDelete':
+        'آیا مطمیین هستید تا این فایل اکسری را بصورت دایمی حذف کنید؟',
     'RecordLimitMsg':
         'حد نهایی ریکاردها تکمیل گردیده است. لطفاً برای معلومات بیشتر با عمران سافت تماس بگیرید.',
     'ChangeCalendar': 'تبدیل جنتری (تقویم)',
@@ -1369,6 +1375,9 @@ final Map<String, Map<String, String>> translations = {
     'XFailMsg': 'د اکسری بیک اپ ناکام شو. مهرباني وکړئ بیا هڅه وکړئ.',
     'XrayExtMsg':
         'یادونه: د اکسری فایلونو بیرته ترلاسه کولو لپاره، یوازې دلته د ZIP فایلونه استخراج کړئ: ',
+    'DeleteXRHead': 'د اکسری فایل ړنګ کړئ',
+    'ConfirmXRDelete':
+        'ایا تاسو ډاډه یاست چې تاسو غواړئ دا اکسری فایل د تل لپاره حذف کړئ؟',
     'RecordLimitMsg':
         'د ریکارډونو وروستی حد بشپړ شوی. مهرباني وکړئ د نورو معلوماتو لپاره عمران سافت سره اړیکه ونیسئ.',
     'ChangeCalendar': 'تقویم بدل  کړئ',
