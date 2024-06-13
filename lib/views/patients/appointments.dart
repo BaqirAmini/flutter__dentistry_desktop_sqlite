@@ -1128,7 +1128,7 @@ class _AppointmentContentState extends State<_AppointmentContent> {
                 String visitDateTime;
                 if (isGregorian) {
                   intl2.DateFormat formatter =
-                      intl2.DateFormat('yyyy-MM-dd hh:mm a');
+                      intl2.DateFormat('MMM d, y hh:mm a');
                   visitDateTime = formatter.format(DateTime.parse(visitTime));
                 } else {
                   // Parse the string into a DateTime object
