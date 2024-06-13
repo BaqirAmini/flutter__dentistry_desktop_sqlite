@@ -1046,7 +1046,7 @@ class _NewPatientState extends State<NewPatient> {
           if (await _onAddPatientHistory(patId)) {
             // Now create appointments
             if (await AppointmentFunction.onAddAppointment(patId, serviceID!,
-                ServiceInfo.meetingDate!, ServiceInfo.selectedDentistID!)) {
+                meetDateTime, ServiceInfo.selectedDentistID!)) {
               // Here i fetch apt_ID (appointment ID) which needs to be passed.
               int appointmentID;
               final aptIdResult = await conn.rawQuery(

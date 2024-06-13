@@ -284,11 +284,6 @@ class _NewAppointmentState extends State<NewAppointment> {
                     });
                   }
                 } else if (_feeFormKey.currentState!.validate()) {
-                  if (await AppointmentFunction.onAddAppointment(
-                      PatientInfo.patID!,
-                      ServiceInfo.selectedServiceID!,
-                      ServiceInfo.meetingDate!,
-                      ServiceInfo.selectedDentistID!)) {
                     String meetDateTime;
                     if (isGregorian) {
                       meetDateTime = ServiceInfo.meetingDate!;
@@ -305,6 +300,12 @@ class _NewAppointmentState extends State<NewAppointment> {
                       meetDateTime =
                           '${formatter.format(gregDateTime)} ${shamsiParts[1]}';
                     }
+                  if (await AppointmentFunction.onAddAppointment(
+                      PatientInfo.patID!,
+                      ServiceInfo.selectedServiceID!,
+                      meetDateTime,
+                      ServiceInfo.selectedDentistID!)) {
+                  
                     // Here i fetch apt_ID (appointment ID) which needs to be passed.
                     final conn = await onConnToSqliteDb();
                     int appointmentID;
@@ -331,7 +332,7 @@ class _NewAppointmentState extends State<NewAppointment> {
                         ServiceInfo.serviceNote,
                         appointmentID)) {
                       if (await AppointmentFunction.onAddFeePayment(
-                          ServiceInfo.meetingDate!,
+                          meetDateTime,
                           ServiceInfo.selectedDentistID!,
                           appointmentID)) {
                         Navigator.pop(context);
@@ -640,26 +641,6 @@ class AppointmentFunction {
   static Future<bool> onAddAppointment(
       int patient, int service, String meetDate, int staff) async {
     try {
-      String meetDatetime;
-      if (isGregorian) {
-        meetDatetime = meetDate;
-      } else {
-        // Firstly splite date from time which is in hijri
-        List<String> shamsiParts = meetDate.split(' ');
-        String shamsiDate = shamsiParts[0];
-        String shamsiTime = shamsiParts[1];
-
-        List<String> dateParts = shamsiDate.split(('-'));
-        // Now any part is passed into this function to be converted to gregorian calendar
-        Jalali jalali = Jalali(int.parse(dateParts[0]), int.parse(dateParts[1]),
-            int.parse(dateParts[2]));
-        Date gregDate = jalali.toGregorian();
-        DateTime gregDateTime =
-            DateTime(gregDate.year, gregDate.month, gregDate.day);
-        intl.DateFormat formatter = intl.DateFormat('yyyy-MM-dd');
-        meetDatetime = '${formatter.format(gregDateTime)} $shamsiTime';
-      }
-
       final conn = await onConnToSqliteDb();
       // Now create appointments
       await conn.rawInsert(
@@ -671,7 +652,7 @@ class AppointmentFunction {
             GlobalUsage.newPatientCreated ? 1 : _round,
             FeeInfo.discountRate,
             FeeInfo.fee,
-            meetDatetime,
+            meetDate,
             staff
           ]);
 
@@ -686,29 +667,13 @@ class AppointmentFunction {
   static Future<bool> onAddFeePayment(
       String payDate, int staff, int appointment) async {
     try {
-      String payDateTime;
-      if (isGregorian) {
-        payDateTime = payDate;
-      } else {
-        List<String> shamsiParts = payDate.split(' ');
-        // Now fetch shamsi year, month, day
-        List<String> dateParts = shamsiParts[0].split('-');
-        Jalali jalali = Jalali(int.parse(dateParts[0]), int.parse(dateParts[1]),
-            int.parse(dateParts[2]));
-        Date gregDate = jalali.toGregorian();
-        // We need gregorian datetime to format to yyyy-mm-dd hh:mm
-        DateTime gregDateTime =
-            DateTime(gregDate.year, gregDate.month, gregDate.day);
-        intl.DateFormat formatter = intl.DateFormat('yyyy-MM-dd');
-        payDateTime = '${formatter.format(gregDateTime)} ${shamsiParts[1]}';
-      }
       final conn = await onConnToSqliteDb();
 
       await conn.rawInsert(
           '''INSERT INTO fee_payments (payment_date, paid_amount, due_amount, staff_ID, apt_ID)
     VALUES (?, ?, ?, ?, ?)''',
           [
-            payDateTime,
+            payDate,
             FeeInfo.receivedAmount,
             FeeInfo.dueAmount,
             staff,
