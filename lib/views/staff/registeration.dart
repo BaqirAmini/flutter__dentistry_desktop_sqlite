@@ -54,6 +54,7 @@ class _NewStaffFormState extends State<NewStaffForm> {
   final _regExOnlydigits = "[0-9+]";
   final _tazkiraPattern = RegExp(r'^\d{4}-\d{4}-\d{5}$');
   bool _isIntern = false;
+  String hijriSelectedDate = '1400-01-01';
 
   void onShowSnackBar(String content) {
     final snackbar = SnackBar(
@@ -655,7 +656,7 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                     child: TextFormField(
                                       controller: _hireDateController,
                                       validator: (value) {
-                                        if (value!.isEmpty) {
+                                        if (value!.trim().isEmpty) {
                                           return translations[selectedLanguage]
                                                   ?['HDateRequired'] ??
                                               '';
@@ -699,6 +700,8 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                             // Fortmat to display a more user-friendly manner in the field like: 2024-05-04 07:00
 
                                             _hireDateController.text =
+                                                hijriDate.formatFullDate();
+                                            hijriSelectedDate =
                                                 intl2.DateFormat('yyyy-MM-dd ')
                                                     .format(dateTime);
                                           }
@@ -1033,21 +1036,6 @@ class _NewStaffFormState extends State<NewStaffForm> {
                         } else {
                           salary = double.parse(_salaryController.text);
                         }
-                        String hireDate;
-                        if (isGregorian) {
-                          hireDate = _hireDateController.text;
-                        } else {
-                          List<String> dateParts =
-                              _hireDateController.text.split('-');
-                          Jalali jalali = Jalali(int.parse(dateParts[0]),
-                              int.parse(dateParts[1]), int.parse(dateParts[2]));
-                          Date gregDate = jalali.toGregorian();
-                          DateTime gregDateTime = DateTime(
-                              gregDate.year, gregDate.month, gregDate.day);
-                          intl2.DateFormat formatter =
-                              intl2.DateFormat('yyyy-MM-dd');
-                          hireDate = formatter.format(gregDateTime);
-                        }
 
                         double prePaidAmount =
                             _prepaymentController.text.isEmpty
@@ -1065,6 +1053,23 @@ class _NewStaffFormState extends State<NewStaffForm> {
                           fileType = p.extension(_selectedContractFile!.path);
                         }
                         try {
+                          String hireDate;
+                          if (isGregorian) {
+                            hireDate = _hireDateController.text;
+                          } else {
+                            List<String> dateParts =
+                                hijriSelectedDate.split('-');
+                            Jalali jalali = Jalali(
+                                int.parse(dateParts[0]),
+                                int.parse(dateParts[1]),
+                                int.parse(dateParts[2]));
+                            Date gregDate = jalali.toGregorian();
+                            DateTime gregDateTime = DateTime(
+                                gregDate.year, gregDate.month, gregDate.day);
+                            intl2.DateFormat formatter =
+                                intl2.DateFormat('yyyy-MM-dd');
+                            hireDate = formatter.format(gregDateTime);
+                          }
                           final conn = await onConnToSqliteDb();
                           if (!_isIntern) {
                             if (_newStaffFormKey.currentState!.validate() &&
@@ -1080,7 +1085,7 @@ class _NewStaffFormState extends State<NewStaffForm> {
                                             ?['ContractRequired'] ??
                                         '';
                               } else {
-                                 await conn.rawInsert(
+                                await conn.rawInsert(
                                     'INSERT INTO staff (firstname, lastname, hire_date, position, salary, prepayment, phone, family_phone1, family_phone2, contract_file, file_type, tazkira_ID, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                                     [
                                       fname,
@@ -1102,8 +1107,7 @@ class _NewStaffFormState extends State<NewStaffForm> {
                             }
                           } else {
                             if (_selectedContractFile != null) {
-                              if (_newStaffFormKey.currentState!.validate() &&
-                                  _selectedContractFile != null) {
+                              if (_newStaffFormKey.currentState!.validate()) {
                                 if (contractFile!.length > 1024 * 1024) {
                                   _contractFileMessage.value =
                                       translations[selectedLanguage]
@@ -1152,7 +1156,8 @@ class _NewStaffFormState extends State<NewStaffForm> {
                             }
                           }
                         } catch (e) {
-                          print('(1) Inserting staff failed. $e');
+                          print(
+                              '(1) Inserting staff failed. $e: ${_hireDateController.text}');
                         }
                       },
                       child: Padding(
