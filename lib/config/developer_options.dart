@@ -637,6 +637,8 @@ class Features {
   static int allowedPatientsLimit = -1;
   static int allowedStaffLimit = -1;
   static int allowedExpenseLimit = -1;
+  // Flag to ask license key or no when the app firstly installed.
+  static bool licenseKeyRequired = false;
 
 // This function gets number of user acounts and checks if limit has reached.
   static Future<bool> userLimitReached() async {
@@ -660,8 +662,8 @@ class Features {
   static Future<bool> patientLimitReached() async {
     try {
       final conn = await onConnToSqliteDb();
-      var result =
-          await conn.rawQuery('SELECT COUNT(*) AS num_of_patients FROM patients');
+      var result = await conn
+          .rawQuery('SELECT COUNT(*) AS num_of_patients FROM patients');
       int numOfPatients = result.first["num_of_patients"] as int;
       if (numOfPatients >= allowedPatientsLimit && allowedPatientsLimit != -1) {
         return true;
@@ -721,6 +723,8 @@ class Features {
       restoreBackup = true;
       allowedUsersLimit = 3;
       allowedStaffLimit = 50;
+      // For premium it should require license key when the app installed
+      licenseKeyRequired = true;
     } else if (version == 'Standard') {
       genPrescription = false;
       upcomingAppointment = false;
@@ -731,6 +735,8 @@ class Features {
       allowedPatientsLimit = 50;
       allowedStaffLimit = 5;
       allowedExpenseLimit = 100;
+      // For standard it should not require license key when the app installed
+      licenseKeyRequired = false;
     }
   }
 }
