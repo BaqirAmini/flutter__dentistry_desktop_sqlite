@@ -12,8 +12,8 @@ import 'package:flutter_dentistry/views/main/login.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  Features.setVersion('Premium'); // For premium version
-  // Features.setVersion('Standard'); // For standard version
+  // Features.setVersion('Premium'); // For premium version
+  Features.setVersion('Standard'); // For standard version
   runApp(const CrownApp());
 }
 
@@ -64,16 +64,21 @@ class _SplashScreenState extends State<SplashScreen> {
     Future.delayed(const Duration(seconds: 3), () async {
       /*    _globalUsage.deleteValue4User('UserlicenseKey');
       _globalUsage.deleteExpiryDate(); */
-      await _globalUsage.hasLicenseKeyExpired() ||
-              await _globalUsage.getLicenseKey4User() == null
-          // ignore: use_build_context_synchronously
-          ? Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const LicenseVerification()))
-          // ignore: use_build_context_synchronously
+      /*-------------------- It must require license key only if it is PREMIUM app ------------------*/
+      (Features.licenseKeyRequired)
+          ? await _globalUsage.hasLicenseKeyExpired() ||
+                  await _globalUsage.getLicenseKey4User() == null
+              // ignore: use_build_context_synchronously
+              ? Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const LicenseVerification()))
+              // ignore: use_build_context_synchronously
+              : Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (context) => const Login()))
           : Navigator.pushReplacement(
               context, MaterialPageRoute(builder: (context) => const Login()));
+
       try {
         // Call to create database and tables
         var conn = await onConnToSqliteDb();
