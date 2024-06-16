@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dentistry/config/developer_options.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:flutter/material.dart';
@@ -491,7 +492,9 @@ class _DashboardState extends State<Dashboard> {
                         icon: const Icon(Icons.rotate_left_rounded)),
                     SizedBox(width: MediaQuery.of(context).size.width * 0.09),
                     Visibility(
-                      visible: _validDays < 6 ? true : false,
+                      visible: (Features.licenseKeyRequired && _validDays < 6)
+                          ? true
+                          : false,
                       child: Container(
                         margin: const EdgeInsets.only(left: 200),
                         child: Center(

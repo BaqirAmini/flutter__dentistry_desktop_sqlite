@@ -1,6 +1,7 @@
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dentistry/config/developer_options.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:flutter_dentistry/config/private/private.dart';
@@ -77,13 +78,13 @@ class _SettingsState extends State<Settings>
                   .textTheme
                   .headlineMedium!
                   .copyWith(color: Colors.blue)),
-          content: SingleChildScrollView(
-            child: Form(
-              key: _licenseRenewFK,
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.5,
+          content: Form(
+            key: _licenseRenewFK,
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.55,
+                child: SingleChildScrollView(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -101,14 +102,14 @@ class _SettingsState extends State<Settings>
                       ),
                       const SizedBox(height: 10.0),
                       SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.45,
+                        width: MediaQuery.of(context).size.width * 0.5,
                         child: Text(_globalUsage.productKeyRelatedMsg,
                             style: Theme.of(context).textTheme.labelLarge),
                       ),
                       const SizedBox(height: 50.0),
                       Container(
                         margin: const EdgeInsets.all(10.0),
-                        width: MediaQuery.of(context).size.width * 0.43,
+                        width: MediaQuery.of(context).size.width * 0.50,
                         child: Builder(builder: (context) {
                           return Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -117,7 +118,7 @@ class _SettingsState extends State<Settings>
                                   style:
                                       Theme.of(context).textTheme.labelLarge),
                               SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.35,
+                                width: MediaQuery.of(context).size.width * 0.42,
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
@@ -145,17 +146,17 @@ class _SettingsState extends State<Settings>
                                                   });
 
                                                   /*   ClipboardData?
-                                                                        clipboardData =
-                                                                        await Clipboard
-                                                                            .getData(
-                                                                                Clipboard
-                                                                                    .kTextPlain);
-                                                                    String?
-                                                                        copiedText =
-                                                                        clipboardData
-                                                                            ?.text;
-                                                                    print(
-                                                                        'The copy value: $copiedText'); */
+                                                                      clipboardData =
+                                                                      await Clipboard
+                                                                          .getData(
+                                                                              Clipboard
+                                                                                  .kTextPlain);
+                                                                  String?
+                                                                      copiedText =
+                                                                      clipboardData
+                                                                          ?.text;
+                                                                  print(
+                                                                      'The copy value: $copiedText'); */
                                                 },
                                           icon: const Icon(Icons.copy,
                                               size: 15.0),
@@ -205,7 +206,7 @@ class _SettingsState extends State<Settings>
                       ),
                       Container(
                         margin: const EdgeInsets.all(10.0),
-                        width: MediaQuery.of(context).size.width * 0.43,
+                        width: MediaQuery.of(context).size.width * 0.50,
                         child: Builder(
                           builder: (context) {
                             return Row(
@@ -216,7 +217,7 @@ class _SettingsState extends State<Settings>
                                         Theme.of(context).textTheme.labelLarge),
                                 SizedBox(
                                   width:
-                                      MediaQuery.of(context).size.width * 0.35,
+                                      MediaQuery.of(context).size.width * 0.42,
                                   child: Column(
                                     children: [
                                       TextFormField(
@@ -230,10 +231,10 @@ class _SettingsState extends State<Settings>
                                         },
 
                                         /*  inputFormatters: [
-                                                                            FilteringTextInputFormatter.allow(
-                                                                              RegExp(_regExUName),
-                                                                            ),
-                                                                          ], */
+                                                                          FilteringTextInputFormatter.allow(
+                                                                            RegExp(_regExUName),
+                                                                          ),
+                                                                        ], */
                                         decoration: const InputDecoration(
                                           enabledBorder: OutlineInputBorder(
                                             borderSide:
@@ -452,7 +453,9 @@ class _SettingsState extends State<Settings>
                       ),
                     ),
                   Visibility(
-                    visible: (_validDays <= 5) ? true : false,
+                    visible: (Features.licenseKeyRequired && _validDays <= 5)
+                        ? true
+                        : false,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10.0),
                       child: RotationTransition(

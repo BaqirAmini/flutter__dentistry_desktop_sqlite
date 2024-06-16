@@ -12,8 +12,8 @@ import 'package:flutter_dentistry/views/main/login.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  // Features.setVersion('Premium'); // For premium version
-  Features.setVersion('Standard'); // For standard version
+  Features.setVersion('Premium'); // For premium version
+  // Features.setVersion('Standard'); // For standard version
   runApp(const CrownApp());
 }
 
@@ -62,8 +62,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
     // Navigate to the login page after 3 seconds
     Future.delayed(const Duration(seconds: 3), () async {
-      /*    _globalUsage.deleteValue4User('UserlicenseKey');
-      _globalUsage.deleteExpiryDate(); */
+        // _globalUsage.deleteValue4User('UserlicenseKey');
+      // _globalUsage.deleteExpiryDate(); 
       /*-------------------- It must require license key only if it is PREMIUM app ------------------*/
       (Features.licenseKeyRequired)
           ? await _globalUsage.hasLicenseKeyExpired() ||
