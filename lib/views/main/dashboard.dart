@@ -1008,7 +1008,7 @@ class _DashboardState extends State<Dashboard> {
                                                                         .all(
                                                                         3.0),
                                                                 child: Text(
-                                                                  '${netIncome.toString()} ${translations[languageProvider.selectedLanguage]?["Afn"] ?? ''}',
+                                                                  '${netIncome.toStringAsFixed(2)} ${translations[languageProvider.selectedLanguage]?["Afn"] ?? ''}',
                                                                   style: Theme.of(
                                                                           context)
                                                                       .textTheme
@@ -1026,7 +1026,7 @@ class _DashboardState extends State<Dashboard> {
                                                                         .all(
                                                                         3.0),
                                                                 child: Text(
-                                                                  '${netIncome.toString()} ${translations[languageProvider.selectedLanguage]?["Afn"] ?? ''}',
+                                                                  '${netIncome.toStringAsFixed(2)} ${translations[languageProvider.selectedLanguage]?["Afn"] ?? ''}',
                                                                   style: Theme.of(
                                                                           context)
                                                                       .textTheme
@@ -1038,6 +1038,9 @@ class _DashboardState extends State<Dashboard> {
                                                                               0.009,
                                                                           fontWeight:
                                                                               FontWeight.bold),
+                                                                  textDirection:
+                                                                      TextDirection
+                                                                          .ltr,
                                                                 ),
                                                               ),
                                                       ],
