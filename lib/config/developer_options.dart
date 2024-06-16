@@ -661,7 +661,7 @@ class Features {
     try {
       final conn = await onConnToSqliteDb();
       var result =
-          await conn.query('SELECT COUNT(*) AS num_of_patients FROM patients');
+          await conn.rawQuery('SELECT COUNT(*) AS num_of_patients FROM patients');
       int numOfPatients = result.first["num_of_patients"] as int;
       if (numOfPatients >= allowedPatientsLimit && allowedPatientsLimit != -1) {
         return true;
@@ -681,7 +681,7 @@ class Features {
       var result =
           await conn.rawQuery('SELECT COUNT(*) AS num_of_staff FROM staff');
       int numOfStaff = result.first["num_of_staff"] as int;
-      if (numOfStaff >= allowedStaffLimit && allowedStaffLimit != 0) {
+      if (numOfStaff >= allowedStaffLimit && allowedStaffLimit != -1) {
         return true;
       } else {
         return false;
@@ -728,9 +728,9 @@ class Features {
       createBackup = false;
       restoreBackup = false;
       allowedUsersLimit = 2;
-      allowedPatientsLimit = 200;
-      allowedStaffLimit = 10;
-      allowedExpenseLimit = 200;
+      allowedPatientsLimit = 50;
+      allowedStaffLimit = 5;
+      allowedExpenseLimit = 100;
     }
   }
 }
