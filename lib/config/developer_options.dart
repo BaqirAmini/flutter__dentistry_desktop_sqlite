@@ -721,8 +721,8 @@ class Features {
       XRayManage = true;
       createBackup = true;
       restoreBackup = true;
-      allowedUsersLimit = 3;
-      allowedStaffLimit = 50;
+      allowedUsersLimit = 5;
+      allowedStaffLimit = 10;
       // For premium it should require license key when the app installed
       licenseKeyRequired = true;
     } else if (version == 'Standard') {
@@ -732,9 +732,9 @@ class Features {
       createBackup = false;
       restoreBackup = false;
       allowedUsersLimit = 2;
-      allowedPatientsLimit = 50;
-      allowedStaffLimit = 5;
-      allowedExpenseLimit = 100;
+      allowedPatientsLimit = 80;
+      allowedStaffLimit = 3;
+      allowedExpenseLimit = 30;
       // For standard it should not require license key when the app installed
       licenseKeyRequired = false;
     }
