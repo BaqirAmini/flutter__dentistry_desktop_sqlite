@@ -827,7 +827,7 @@ class MyData extends DataTableSource {
                             position,
                             salary,
                             prePayment,
-                            hireDate ?? '',
+                            hireDate ?? DateTime.now().toString(),
                             phone,
                             fPhone1,
                             fPhone2,
@@ -978,10 +978,10 @@ onEditStaff(
     hireDateController.text = hireDate;
   } else {
     // Parse the string into a DateTime object
-    DateTime gregorian = DateTime.parse(hireDate);
+    DateTime gregorian =  DateTime.parse(hireDate);
 
 // Convert the DateTime object to a Jalali date
-    Jalali jalali = Jalali.fromDateTime(gregorian);
+    Jalali jalali = Jalali.fromDateTime(gregorian!);
     DateTime hijriDT = DateTime(jalali.year, jalali.month, jalali.day);
     final intl2.DateFormat formatter = intl2.DateFormat('yyyy-MM-dd');
     hireDateController.text = formatter.format(hijriDT);
