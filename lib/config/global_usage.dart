@@ -10,6 +10,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
 import 'package:shamsi_date/shamsi_date.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:win32/win32.dart';
 import 'package:windows_notification/notification_message.dart';
 import 'package:windows_notification/windows_notification.dart';
@@ -39,6 +40,8 @@ class GlobalUsage {
   // 0-9 and period(.) are allowed
   static const allowedDigPeriod = r"^\d*\.?\d{0,2}$";
   /* -------------------/. CHARACTERS/DIGITS ALLOWED ---------------- */
+
+static Function? onReload;
 
   static bool widgetVisible = false;
 //  This static variable specifies whether the appointment
@@ -683,5 +686,11 @@ class GlobalUsage {
                                                 : 'حوت';
     String jalaliStr = '${jalali.day} $monthName ,${jalali.year}';
     return jalaliStr;
+  }
+
+  // Fetch the Standard / Premium type from shared preference.
+  Future<String> getCrownType() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('crownType') ?? 'Standard';
   }
 }

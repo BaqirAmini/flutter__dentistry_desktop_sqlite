@@ -5,12 +5,16 @@ import 'package:flutter_dentistry/config/developer_options.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:flutter_dentistry/config/private/private.dart';
+import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
+import 'package:flutter_dentistry/views/staff/staff_info.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import '/views/settings/settings_menu.dart';
 import 'package:intl/intl.dart' as intl;
 
+// This variable is used for crown version.
+bool isProVersionActivated = false;
 void main() => runApp(const Settings());
 // Create the global key at the top level of your Dart file
 final GlobalKey<ScaffoldMessengerState> _globalKeyRenewLicense =
@@ -44,6 +48,11 @@ class Settings extends StatefulWidget {
 
 class _SettingsState extends State<Settings>
     with SingleTickerProviderStateMixin {
+  // Declare this method for refreshing UI of staff info
+  void onReload() {
+    setState(() {});
+  }
+
   late AnimationController _controller;
   // form controllers
   final TextEditingController _machineCodeController = TextEditingController();
@@ -427,6 +436,10 @@ class _SettingsState extends State<Settings>
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
+    // Fetching date type (Hijri or Gregorian) from provider
+    var crownVerProvider =
+        Provider.of<SettingsProvider>(context, listen: false);
+    isProVersionActivated = crownVerProvider.getSelectedVersion;
     return Directionality(
       textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
       child: FutureBuilder(
@@ -477,7 +490,7 @@ class _SettingsState extends State<Settings>
                   const SizedBox(width: 15.0)
                 ],
               ),
-              body: const SettingsMenu(),
+              body:  SettingsMenu(refreshCallback: () { onReload(); }),
             );
           }
         },

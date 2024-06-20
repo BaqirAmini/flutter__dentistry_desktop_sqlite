@@ -8,11 +8,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_dentistry/config/developer_options.dart';
+import 'package:flutter_dentistry/config/global_usage.dart';
+import 'package:flutter_dentistry/config/private/private.dart';
 import 'package:flutter_dentistry/config/settings_provider.dart';
+import 'package:flutter_dentistry/views/settings/settings.dart';
 import 'dart:io';
 import 'package:flutter_dentistry/views/staff/staff_info.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart' as INTL;
 import 'package:flutter_dentistry/config/translations.dart';
@@ -32,6 +34,7 @@ var isEnglish;
 
 var selectedDateType;
 var isGregorian;
+bool isProVersionActivated = false;
 
 bool _isLoadingPhoto = false;
 // Create the global key at the top level of your Dart file
@@ -61,9 +64,535 @@ class SettingsMenu extends StatefulWidget {
 }
 
 class _SettingsMenuState extends State<SettingsMenu> {
+  // form controllers
+  final TextEditingController _machineCodeCtrl = TextEditingController();
+  final TextEditingController _liscenseController = TextEditingController();
+  final _licenseKey4CrownPro = GlobalKey<FormState>();
+  bool _isCoppied = false;
+  bool _notVerified = false;
+  String _verifyMsg = '';
+  final GlobalUsage _globalUsage = GlobalUsage();
   // Declare this method for refreshing UI of staff info
   void _onUpdate() {
     setState(() {});
+  }
+
+// This dialog is to renew the license key (product key) of Crown
+  _onVerifyLicenseKey(
+      BuildContext context, bool? selectedVersion, Function refresh) {
+    _machineCodeCtrl.text = _globalUsage.getMachineGuid();
+    _isCoppied = false;
+    _notVerified = false;
+    return showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text('Purchase Your License Key',
+              style: Theme.of(context)
+                  .textTheme
+                  .headlineMedium!
+                  .copyWith(color: Colors.blue)),
+          content: Form(
+            key: _licenseKey4CrownPro,
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.55,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.vpn_key_outlined,
+                          size: MediaQuery.of(context).size.width * 0.03,
+                          color: Colors.blue),
+                      SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.01),
+                      Text(
+                        'License Key Verification',
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineSmall!
+                            .copyWith(color: Colors.blue),
+                      ),
+                      const SizedBox(height: 10.0),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.5,
+                        child: Text(_globalUsage.productKeyRelatedMsg,
+                            style: Theme.of(context).textTheme.labelLarge),
+                      ),
+                      const SizedBox(height: 50.0),
+                      Container(
+                        margin: const EdgeInsets.all(10.0),
+                        width: MediaQuery.of(context).size.width * 0.50,
+                        child: Builder(builder: (context) {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Machine Code',
+                                  style:
+                                      Theme.of(context).textTheme.labelLarge),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.42,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    TextFormField(
+                                      readOnly: true,
+                                      textDirection: TextDirection.ltr,
+                                      controller: _machineCodeCtrl,
+                                      decoration: InputDecoration(
+                                        suffixIcon: IconButton(
+                                          tooltip: 'Copy',
+                                          splashRadius: 18.0,
+                                          onPressed: _machineCodeCtrl
+                                                  .text.isEmpty
+                                              ? null
+                                              : () async {
+                                                  await Clipboard.setData(
+                                                    ClipboardData(
+                                                        text: _machineCodeCtrl
+                                                            .text),
+                                                  );
+
+                                                  setState(() {
+                                                    _isCoppied = true;
+                                                  });
+
+                                                  /*   ClipboardData?
+                                                                      clipboardData =
+                                                                      await Clipboard
+                                                                          .getData(
+                                                                              Clipboard
+                                                                                  .kTextPlain);
+                                                                  String?
+                                                                      copiedText =
+                                                                      clipboardData
+                                                                          ?.text;
+                                                                  print(
+                                                                      'The copy value: $copiedText'); */
+                                                },
+                                          icon: const Icon(Icons.copy,
+                                              size: 15.0),
+                                        ),
+                                        enabledBorder: const OutlineInputBorder(
+                                          borderSide:
+                                              BorderSide(color: Colors.grey),
+                                        ),
+                                        focusedBorder: const OutlineInputBorder(
+                                          borderSide:
+                                              BorderSide(color: Colors.blue),
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.all(15.0),
+                                        border: const OutlineInputBorder(),
+                                      ),
+                                    ),
+                                    if (_isCoppied)
+                                      const Padding(
+                                        padding: EdgeInsets.only(top: 5.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            Icon(
+                                                Icons
+                                                    .check_circle_outline_outlined,
+                                                color: Colors.green,
+                                                size: 16.0),
+                                            SizedBox(width: 5.0),
+                                            Text(
+                                              'Copied',
+                                              style: TextStyle(
+                                                  color: Colors.green,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 12.0),
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        }),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.all(10.0),
+                        width: MediaQuery.of(context).size.width * 0.50,
+                        child: Builder(
+                          builder: (context) {
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Product Key',
+                                    style:
+                                        Theme.of(context).textTheme.labelLarge),
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.42,
+                                  child: Column(
+                                    children: [
+                                      TextFormField(
+                                        textDirection: TextDirection.ltr,
+                                        controller: _liscenseController,
+                                        validator: (value) {
+                                          if (value!.isEmpty) {
+                                            return 'Enter the product key.';
+                                          }
+                                          return null;
+                                        },
+
+                                        /*  inputFormatters: [
+                                                                          FilteringTextInputFormatter.allow(
+                                                                            RegExp(_regExUName),
+                                                                          ),
+                                                                        ], */
+                                        decoration: const InputDecoration(
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide:
+                                                BorderSide(color: Colors.grey),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide:
+                                                BorderSide(color: Colors.blue),
+                                          ),
+                                          contentPadding: EdgeInsets.all(15.0),
+                                          border: OutlineInputBorder(),
+                                        ),
+                                      ),
+                                      if (_notVerified)
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 5.0),
+                                          child: Row(
+                                            children: [
+                                              const Icon(Icons.info_outline,
+                                                  color: Colors.red,
+                                                  size: 17.0),
+                                              const SizedBox(width: 5.0),
+                                              Text(
+                                                _verifyMsg,
+                                                style: const TextStyle(
+                                                    color: Colors.red,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 12.0),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 20.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Builder(
+                            builder: (context) {
+                              return ElevatedButton.icon(
+                                  onPressed: () async {
+                                    if (_licenseKey4CrownPro.currentState!
+                                        .validate()) {
+                                      try {
+                                        // Decrypt the liscense key
+                                        String decryptedValue =
+                                            _globalUsage.decryptProductKey(
+                                                _liscenseController.text,
+                                                secretKey);
+
+                                        // Expiry date is string
+                                        String expiryDateString =
+                                            decryptedValue.substring(
+                                                _machineCodeCtrl.text.length);
+                                        // Convert this string to datetime
+                                        DateTime expiryDate =
+                                            DateTime.parse(expiryDateString);
+
+                                        // Now re-encrypt the machine code with the fetched datetime (expiry datetime) to use for verification in below.
+                                        String reEncryptedValue =
+                                            _globalUsage.generateProductKey(
+                                                expiryDate,
+                                                _machineCodeCtrl.text);
+
+                                        // Store the expiry date temporarely which will be required later
+                                        await _globalUsage
+                                            .storeExpiryDate(expiryDate);
+                                        if (reEncryptedValue ==
+                                            _liscenseController.text) {
+                                          if (await _globalUsage
+                                              .hasLicenseKeyExpired()) {
+                                            setState(() {
+                                              _notVerified = true;
+                                              _verifyMsg =
+                                                  'Sorry, this product key has expired. Please purchase the new one.';
+                                            });
+                                            Provider.of<SettingsProvider>(
+                                                    context,
+                                                    listen: false)
+                                                .setSelectedVersion = false;
+                                            final prefs =
+                                                await SharedPreferences
+                                                    .getInstance();
+                                            prefs.setString(
+                                                'crownType', 'Standard');
+                                            GlobalUsage.onReload!();
+                                            refresh();
+                                          } else {
+                                            await _globalUsage
+                                                .storeExpiryDate(expiryDate);
+                                            await _globalUsage
+                                                .storeLicenseKey4User(
+                                                    _liscenseController.text);
+
+                                            Provider.of<SettingsProvider>(
+                                                    context,
+                                                    listen: false)
+                                                .setSelectedVersion = true;
+                                            isProVersionActivated = true;
+
+                                            final prefs =
+                                                await SharedPreferences
+                                                    .getInstance();
+                                            prefs.setString(
+                                                'crownType', 'Premium');
+                                            Navigator.pop(context);
+
+                                            _onShowSnack(Colors.green,
+                                                'Congratulations, your product key updated!');
+                                          }
+                                        } else {
+                                          setState(() {
+                                            _notVerified = false;
+                                            _verifyMsg =
+                                                'Sorry, this product key is not valid!';
+                                          });
+                                        }
+                                      } catch (e) {
+                                        setState(() {
+                                          _notVerified = true;
+                                          _verifyMsg =
+                                              'Sorry, invalid product key inserted.';
+                                        });
+                                        print('Exception: $e');
+                                      }
+                                    }
+                                  },
+                                  icon: const Icon(Icons.verified),
+                                  label: const Text('Verify'));
+                            },
+                          ),
+                          Builder(
+                            builder: (context) {
+                              return TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context, rootNavigator: true)
+                                          .pop(),
+                                  child: const Text('لغو'));
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+// This function is to switch Freemium to PRO version of Crown
+  Widget _onSwitch2ProVersion() {
+    return FutureBuilder(
+      future: getSelectedCrownVersion(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        } else {
+          if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          } else {
+            bool? selectedCrownVersion = snapshot.data;
+            return StatefulBuilder(
+              builder: (context, setState) {
+                return StatefulBuilder(
+                  builder: (context, setState) {
+                    return Card(
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'خریداری نسخه ممتاز',
+                              style: Theme.of(context).textTheme.headlineMedium,
+                            ),
+                            const SizedBox(height: 15),
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topRight,
+                                  end: Alignment.bottomLeft,
+                                  colors: [Colors.purple, Colors.blueAccent],
+                                ),
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  const Text(
+                                    'چرا نسخه ممتاز؟',
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  const Text(
+                                    'نسخه ممتاز کرون دارای قابلیت های مهم دیگر است که شما را قادر میسازد تا: ',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  const Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(
+                                      '1 - تعداد مریض های نا محدود را ثبت کنید.',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(
+                                      '2 - تعداد مصارف نا محدود را ثبت کنید.',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.3,
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Text(
+                                        '3 - جلسات آینده برای مریض های تان ترتیب دهید که سیستم به شما پیش از جلسه ترتیب شده هشدار میدهد.',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(
+                                      '4 - برای اینکه اطلاعات کلینک تان از بین نرود، پشتیبان گیری کنید.',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(
+                                      '5 - نسخه ای کمپیوتری برای مریض های تان تجویز کنید.',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(
+                                      '6 - اکسری  مریض های تانرا مدیریت کنید (X-Ray).',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(
+                                      '7 - ده کارمند برای کلینیک تا ثبت کنید.',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(
+                                      '8 - پنج یوزر (کابر) ایجاد کنید که هر کاربر از حساب یا اکونت خودش وارد سیستم شود.',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  // Add more Text widgets here for each con
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 15.0),
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.3,
+                              height:
+                                  MediaQuery.of(context).size.height * 0.035,
+                              child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30.0),
+                                  ),
+                                  side: const BorderSide(
+                                    color: Colors.green,
+                                  ),
+                                ),
+                                onPressed: () => _onVerifyLicenseKey(
+                                    context, selectedCrownVersion, () {
+                                  setState(
+                                    () {},
+                                  );
+                                }),
+                                child: Text('خریداری نسخه ممتاز',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge!
+                                        .copyWith(color: Colors.green)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            );
+          }
+        }
+      },
+    );
   }
 
   int _selectedIndex = 1;
@@ -72,6 +601,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
     _fetchPath();
     // Assign the method declared above to static function for later use
     StaffInfo.onUpdateProfile = _onUpdate;
+    GlobalUsage.onReload = _onUpdate;
     // Fetch translations keys based on the selected language.
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
@@ -82,6 +612,11 @@ class _SettingsMenuState extends State<SettingsMenu> {
         Provider.of<SettingsProvider>(context, listen: false);
     selectedDateType = datetypeProvider.selectedDateType;
     isGregorian = selectedDateType == 'میلادی';
+
+    // Fetching date type (Hijri or Gregorian) from provider
+    var crownVerProvider =
+        Provider.of<SettingsProvider>(context, listen: false);
+    isProVersionActivated = crownVerProvider.getSelectedVersion;
 
     return ScaffoldMessenger(
       key: _globalKeyForProfile,
@@ -230,6 +765,48 @@ class _SettingsMenuState extends State<SettingsMenu> {
                           });
                         },
                       ),
+                      isProVersionActivated
+                          ? Card(
+                              elevation: 1.5,
+                              child: ListTile(
+                                  leading: const Icon(
+                                      Icons.workspace_premium_outlined,
+                                      color: Colors.green),
+                                  title: const Row(
+                                    children: [
+                                      Text(
+                                        'PRO Activated',
+                                        style: TextStyle(
+                                            color: Colors.green,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      SizedBox(width: 10.0),
+                                      Icon(Icons.verified, color: Colors.green)
+                                    ],
+                                  ),
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedIndex = 8;
+                                    });
+                                  }),
+                            )
+                          : Card(
+                              elevation: 1.5,
+                              child: ListTile(
+                                leading: const Icon(
+                                    Icons.workspace_premium_outlined,
+                                    color: Colors.green),
+                                title: const Text('Switch to PRO Version',
+                                    style: TextStyle(
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.bold)),
+                                onTap: () {
+                                  setState(() {
+                                    _selectedIndex = 8;
+                                  });
+                                },
+                              ),
+                            ),
                     ],
                   ),
                 ),
@@ -319,7 +896,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
 
 // Switch between settings menu items
 onShowSettingsItem(BuildContext context, int index,
-    [void Function()? onUpdatePhoto]) {
+    [void Function()? onUpdatePhoto, void Function()? onRefreshCrownVersion]) {
   if (index == 1) {
     return onShowProfile(context, onUpdatePhoto);
   } else if (index == 2) {
@@ -332,6 +909,8 @@ onShowSettingsItem(BuildContext context, int index,
     return onChangeLang();
   } else if (index == 7) {
     return _onChangeDateType();
+  } else if (index == 8) {
+    return _SettingsMenuState()._onSwitch2ProVersion();
   } else {
     return const SizedBox.shrink();
   }
@@ -1195,6 +1774,17 @@ Future<String> getSelectedLanguage() async {
 Future<String> getSelectedDateType() async {
   final prefs = await SharedPreferences.getInstance();
   return prefs.getString('selectedDateType') ?? 'میلادی';
+}
+
+// Fetch the selected crown version from shared preference.
+Future<bool> getSelectedCrownVersion() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getBool('selectedCrownVersion') ?? false;
+}
+
+Future<void> _saveCrownType(String value) async {
+  final prefs = await SharedPreferences.getInstance();
+  prefs.setString('crownType', value);
 }
 
 // This function is to change system languages
