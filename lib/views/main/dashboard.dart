@@ -41,6 +41,7 @@ class _DashboardState extends State<Dashboard> {
     _fetchAllPatient();
     _fetchFinance();
     _retrieveClinics();
+    _getRemainValidDays();
 
     /*  setState(() {
       _alertNotification(); // Call the function immediately for the first alert
@@ -492,7 +493,8 @@ class _DashboardState extends State<Dashboard> {
                         icon: const Icon(Icons.rotate_left_rounded)),
                     SizedBox(width: MediaQuery.of(context).size.width * 0.09),
                     Visibility(
-                      visible: (Features.licenseKeyRequired && _validDays < 6)
+                      visible: (Features.licenseKeyRequired &&
+                              (_validDays < 6 && _validDays > 0))
                           ? true
                           : false,
                       child: Container(

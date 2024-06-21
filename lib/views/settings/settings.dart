@@ -49,8 +49,8 @@ class Settings extends StatefulWidget {
 class _SettingsState extends State<Settings>
     with SingleTickerProviderStateMixin {
   // Declare this method for refreshing UI of staff info
-  void onReload() {
-    setState(() {});
+  void onRefresh() {
+   
   }
 
   late AnimationController _controller;
@@ -432,6 +432,8 @@ class _SettingsState extends State<Settings>
 
   @override
   Widget build(BuildContext context) {
+    GlobalUsage.onReload = onRefresh;
+    
     // Fetch translations keys based on the selected language.
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
@@ -453,7 +455,8 @@ class _SettingsState extends State<Settings>
               appBar: AppBar(
                 title: Text(translations[selectedLanguage]?['Settings'] ?? ''),
                 actions: [
-                  if (_validDays <= 365 && _validDays > 0)
+                  if ((_validDays <= 365 && _validDays > 0) &&
+                      Features.licenseKeyRequired)
                     Center(
                       child: Text(
                         '${translations[selectedLanguage]?['ValidDuration'] ?? ''} $_validDays ${translations[selectedLanguage]?['Days'] ?? ''}',
@@ -490,7 +493,7 @@ class _SettingsState extends State<Settings>
                   const SizedBox(width: 15.0)
                 ],
               ),
-              body:  SettingsMenu(refreshCallback: () { onReload(); }),
+              body: const SettingsMenu(),
             );
           }
         },

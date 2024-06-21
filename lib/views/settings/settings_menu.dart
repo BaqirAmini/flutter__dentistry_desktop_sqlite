@@ -9,8 +9,10 @@ import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_dentistry/config/developer_options.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
+import 'package:flutter_dentistry/config/license_verification.dart';
 import 'package:flutter_dentistry/config/private/private.dart';
 import 'package:flutter_dentistry/config/settings_provider.dart';
+import 'package:flutter_dentistry/views/settings/purchase_product_key.dart';
 import 'package:flutter_dentistry/views/settings/settings.dart';
 import 'dart:io';
 import 'package:flutter_dentistry/views/staff/staff_info.dart';
@@ -449,103 +451,124 @@ class _SettingsMenuState extends State<SettingsMenu> {
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
-                                  const Text(
+                                  Text(
                                     'چرا نسخه ممتاز؟',
                                     style: TextStyle(
-                                      fontSize: 24,
+                                      fontSize:
+                                          MediaQuery.of(context).size.width *
+                                              0.015,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
                                   ),
                                   const SizedBox(height: 10),
-                                  const Text(
+                                  Text(
                                     'نسخه ممتاز کرون دارای قابلیت های مهم دیگر است که شما را قادر میسازد تا: ',
                                     style: TextStyle(
-                                      fontSize: 18,
+                                      fontSize:
+                                          MediaQuery.of(context).size.width *
+                                              0.012,
                                       color: Colors.white,
                                     ),
                                   ),
                                   const SizedBox(height: 5),
-                                  const Padding(
-                                    padding: EdgeInsets.all(8.0),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
                                     child: Text(
                                       '1 - تعداد مریض های نا محدود را ثبت کنید.',
                                       style: TextStyle(
-                                        fontSize: 18,
+                                        fontSize:
+                                            MediaQuery.of(context).size.width *
+                                                0.012,
                                         color: Colors.white,
                                       ),
                                     ),
                                   ),
-                                  const Padding(
-                                    padding: EdgeInsets.all(8.0),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
                                     child: Text(
                                       '2 - تعداد مصارف نا محدود را ثبت کنید.',
                                       style: TextStyle(
-                                        fontSize: 18,
+                                        fontSize:
+                                            MediaQuery.of(context).size.width *
+                                                0.012,
                                         color: Colors.white,
                                       ),
                                     ),
                                   ),
                                   SizedBox(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.3,
-                                    child: const Padding(
-                                      padding: EdgeInsets.all(8.0),
+                                    width: MediaQuery.of(context).size.width *
+                                        0.45,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
                                       child: Text(
                                         '3 - جلسات آینده برای مریض های تان ترتیب دهید که سیستم به شما پیش از جلسه ترتیب شده هشدار میدهد.',
                                         style: TextStyle(
-                                          fontSize: 18,
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.012,
                                           color: Colors.white,
                                         ),
                                       ),
                                     ),
                                   ),
-                                  const Padding(
-                                    padding: EdgeInsets.all(8.0),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
                                     child: Text(
                                       '4 - برای اینکه اطلاعات کلینک تان از بین نرود، پشتیبان گیری کنید.',
                                       style: TextStyle(
-                                        fontSize: 18,
+                                        fontSize:
+                                            MediaQuery.of(context).size.width *
+                                                0.012,
                                         color: Colors.white,
                                       ),
                                     ),
                                   ),
-                                  const Padding(
-                                    padding: EdgeInsets.all(8.0),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
                                     child: Text(
                                       '5 - نسخه ای کمپیوتری برای مریض های تان تجویز کنید.',
                                       style: TextStyle(
-                                        fontSize: 18,
+                                        fontSize:
+                                            MediaQuery.of(context).size.width *
+                                                0.012,
                                         color: Colors.white,
                                       ),
                                     ),
                                   ),
-                                  const Padding(
-                                    padding: EdgeInsets.all(8.0),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
                                     child: Text(
                                       '6 - اکسری  مریض های تانرا مدیریت کنید (X-Ray).',
                                       style: TextStyle(
-                                        fontSize: 18,
+                                        fontSize:
+                                            MediaQuery.of(context).size.width *
+                                                0.012,
                                         color: Colors.white,
                                       ),
                                     ),
                                   ),
-                                  const Padding(
-                                    padding: EdgeInsets.all(8.0),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
                                     child: Text(
                                       '7 - ده کارمند برای کلینیک تا ثبت کنید.',
                                       style: TextStyle(
-                                        fontSize: 18,
+                                        fontSize:
+                                            MediaQuery.of(context).size.width *
+                                                0.012,
                                         color: Colors.white,
                                       ),
                                     ),
                                   ),
-                                  const Padding(
-                                    padding: EdgeInsets.all(8.0),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
                                     child: Text(
                                       '8 - پنج یوزر (کابر) ایجاد کنید که هر کاربر از حساب یا اکونت خودش وارد سیستم شود.',
                                       style: TextStyle(
-                                        fontSize: 18,
+                                        fontSize:
+                                            MediaQuery.of(context).size.width *
+                                                0.012,
                                         color: Colors.white,
                                       ),
                                     ),
@@ -558,7 +581,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                             SizedBox(
                               width: MediaQuery.of(context).size.width * 0.3,
                               height:
-                                  MediaQuery.of(context).size.height * 0.035,
+                                  MediaQuery.of(context).size.height * 0.038,
                               child: OutlinedButton(
                                 style: OutlinedButton.styleFrom(
                                   shape: RoundedRectangleBorder(
@@ -568,11 +591,15 @@ class _SettingsMenuState extends State<SettingsMenu> {
                                     color: Colors.green,
                                   ),
                                 ),
-                                onPressed: () => _onVerifyLicenseKey(
-                                    context, selectedCrownVersion, () {
-                                  setState(
-                                    () {},
-                                  );
+                                onPressed: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const PurchaseProductKey()))
+                                    .then((_) {
+                                  setState(() {
+                                    GlobalUsage.onReload!();
+                                  });
                                 }),
                                 child: Text('خریداری نسخه ممتاز',
                                     style: Theme.of(context)
@@ -766,29 +793,25 @@ class _SettingsMenuState extends State<SettingsMenu> {
                         },
                       ),
                       isProVersionActivated
-                          ? Card(
+                          ? const Card(
                               elevation: 1.5,
                               child: ListTile(
-                                  leading: const Icon(
-                                      Icons.workspace_premium_outlined,
-                                      color: Colors.green),
-                                  title: const Row(
-                                    children: [
-                                      Text(
-                                        'PRO Activated',
-                                        style: TextStyle(
-                                            color: Colors.green,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      SizedBox(width: 10.0),
-                                      Icon(Icons.verified, color: Colors.green)
-                                    ],
-                                  ),
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedIndex = 8;
-                                    });
-                                  }),
+                                leading: Icon(Icons.workspace_premium_outlined,
+                                    color: Colors.green),
+                                title: Row(
+                                  children: [
+                                    Text(
+                                      'PRO Activated',
+                                      style: TextStyle(
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    SizedBox(width: 10.0),
+                                    Icon(Icons.verified, color: Colors.green)
+                                  ],
+                                ),
+                                onTap: null,
+                              ),
                             )
                           : Card(
                               elevation: 1.5,
