@@ -8,7 +8,7 @@ import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:flutter_dentistry/config/private/private.dart';
 import 'package:flutter_dentistry/config/settings_provider.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart' as intl;
@@ -357,6 +357,24 @@ class _PurchaseProductKeyState extends State<PurchaseProductKey> {
                         },
                       ),
                     ],
+                  ),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.2,
+                    child: Row(
+                      children: [
+                        Icon(FontAwesomeIcons.whatsapp,
+                            color: Colors.grey[600]),
+                        const SizedBox(width: 8.0),
+                        Text('(+93)79 21 95 121',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelLarge!
+                                .copyWith(
+                                    color: const Color.fromARGB(
+                                        255, 116, 115, 115)))
+                      ],
+                    ),
                   ),
                 ],
               ),
