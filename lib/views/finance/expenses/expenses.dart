@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/developer_options.dart';
+import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/language_provider.dart';
 import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'package:flutter_dentistry/config/translations.dart';
@@ -75,10 +76,12 @@ class _ExpenseListState extends State<ExpenseList> {
                     splashRadius: 27.0,
                     onPressed: () async {
                       if (await Features.expenseLimitReached()) {
-                        _onShowSnack(
-                            Colors.red,
+                        // ignore: use_build_context_synchronously
+                        GlobalUsage.showFlushbarMsg(
                             translations[selectedLanguage]?['RecordLimitMsg'] ??
-                                '');
+                                '',
+                            context,
+                            isEnglish);
                       } else {
                         await fetchExpenseTypes();
                         await fetchStaff();

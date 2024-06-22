@@ -370,10 +370,12 @@ class _MyDataTableState extends State<MyDataTable> {
                 ElevatedButton(
                   onPressed: () async {
                     if (await Features.staffLimitReached()) {
-                      _onShowSnack(
-                          Colors.red,
+                      // ignore: use_build_context_synchronously
+                      GlobalUsage.showFlushbarMsg(
                           translations[selectedLanguage]?['RecordLimitMsg'] ??
-                              '');
+                              '',
+                          context,
+                          isEnglish);
                     } else {
                       // ignore: use_build_context_synchronously
                       Navigator.push(
@@ -2264,12 +2266,12 @@ onCreateUserAccount(BuildContext context, int staff_id) {
                               } else {
                                 if (await Features.userLimitReached()) {
                                   // ignore: use_build_context_synchronously
-                                  Navigator.pop(context);
-                                  _onShowSnack(
-                                      Colors.red,
+                                  GlobalUsage.showFlushbarMsg(
                                       translations[selectedLanguage]
                                               ?['RecordLimitMsg'] ??
-                                          '');
+                                          '',
+                                      context,
+                                      isEnglish);
                                 } else {
                                   var queryResult = await conn.rawInsert(
                                       'INSERT INTO staff_auth (staff_ID, username, password, role) VALUES (?, ?, ?, ?)',

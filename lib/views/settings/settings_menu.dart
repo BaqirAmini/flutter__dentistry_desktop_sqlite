@@ -722,11 +722,12 @@ class _SettingsMenuState extends State<SettingsMenu> {
                               color: Colors.red),
                           title: Text(
                               translations[selectedLanguage]?['Backup'] ?? ''),
-                          onTap: () => _onShowSnack(
-                              Colors.red,
+                          onTap: () => GlobalUsage.showFlushbarMsg(
                               translations[selectedLanguage]
                                       ?['PremAppPurchase'] ??
-                                  ''),
+                                  '',
+                              context,
+                              isEnglish),
                         ),
                       if (Features.restoreBackup)
                         ListTile(
@@ -745,12 +746,13 @@ class _SettingsMenuState extends State<SettingsMenu> {
                           trailing: const Icon(Icons.workspace_premium_outlined,
                               color: Colors.red),
                           title: Text(
-                              translations[selectedLanguage]?['Backup'] ?? ''),
-                          onTap: () => _onShowSnack(
-                              Colors.red,
+                              translations[selectedLanguage]?['Restore'] ?? ''),
+                          onTap: () => GlobalUsage.showFlushbarMsg(
                               translations[selectedLanguage]
                                       ?['PremAppPurchase'] ??
-                                  ''),
+                                  '',
+                              context,
+                              isEnglish),
                         ),
                       const Divider(),
                       ListTile(

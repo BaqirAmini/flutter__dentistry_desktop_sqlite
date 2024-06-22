@@ -895,12 +895,12 @@ class _CalendarPageState extends State<CalendarPage> {
                         : ElevatedButton.icon(
                             icon: const Icon(Icons.workspace_premium_outlined,
                                 color: Colors.red),
-                            onPressed: () => _onShowSnack(
-                                Colors.red,
+                            onPressed: () => GlobalUsage.showFlushbarMsg(
                                 translations[selectedLanguage]
                                         ?['PremAppPurchase'] ??
                                     '',
-                                context),
+                                context,
+                                isEnglish),
                             label: Text(translations[selectedLanguage]
                                     ?['AddBtn'] ??
                                 ''),
@@ -930,7 +930,7 @@ class _CalendarPageState extends State<CalendarPage> {
       String description,
       String frequency) async {
     String formattedTime;
-    
+
     if (isGregorian) {
       intl2.DateFormat formatter = intl2.DateFormat('yyyy-MM-dd HH:mm');
       formattedTime = formatter.format(time);

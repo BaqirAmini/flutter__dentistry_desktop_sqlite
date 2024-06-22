@@ -234,24 +234,12 @@ class __ImageThumbNailState extends State<_ImageThumbNail> {
                                 ),
                                 side: const BorderSide(color: Colors.blue)),
                             onPressed: () {
-                              Flushbar(
-                                backgroundColor: Colors.redAccent,
-                                flushbarStyle: FlushbarStyle.GROUNDED,
-                                flushbarPosition: FlushbarPosition.BOTTOM,
-                                messageText: Directionality(
-                                  textDirection: isEnglish
-                                      ? TextDirection.ltr
-                                      : TextDirection.rtl,
-                                  child: Text(
-                                    translations[selectedLanguage]
-                                            ?['PremAppPurchase'] ??
-                                        '',
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                                duration: const Duration(seconds: 3),
-                              ).show(context);
+                              GlobalUsage.showFlushbarMsg(
+                                  translations[selectedLanguage]
+                                          ?['PremAppPurchase'] ??
+                                      '',
+                                  context,
+                                  isEnglish);
                             },
                             child: const Icon(Icons.add_a_photo_outlined),
                           ),
@@ -1039,7 +1027,9 @@ class _ImageViewerState extends State<ImageViewer> {
                               child: IconButton(
                                   splashRadius:
                                       MediaQuery.of(context).size.width * 0.013,
-                                  tooltip: translations[selectedLanguage]?['Delete'] ?? '',
+                                  tooltip: translations[selectedLanguage]
+                                          ?['Delete'] ??
+                                      '',
                                   onPressed: () => onDeleteXrayFile(
                                       context,
                                       widget.images[index].xrayID,

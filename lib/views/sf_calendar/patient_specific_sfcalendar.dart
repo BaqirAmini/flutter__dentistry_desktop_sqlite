@@ -631,12 +631,12 @@ class _CalendarPageState extends State<CalendarPage> {
                           : ElevatedButton.icon(
                               icon: const Icon(Icons.workspace_premium_outlined,
                                   color: Colors.red),
-                              onPressed: () => _onShowSnack(
-                                  Colors.red,
+                              onPressed: () => GlobalUsage.showFlushbarMsg(
                                   translations[selectedLanguage]
                                           ?['PremAppPurchase'] ??
                                       '',
-                                  context),
+                                  context,
+                                  isEnglish),
                               label: Text(translations[selectedLanguage]
                                       ?['AddBtn'] ??
                                   ''),

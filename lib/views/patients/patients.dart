@@ -607,12 +607,18 @@ onCreatePrescription(BuildContext context) {
                           : ElevatedButton.icon(
                               icon: const Icon(Icons.workspace_premium_outlined,
                                   color: Colors.red),
-                              onPressed: () => _onShowSnack(
+                              onPressed: () => GlobalUsage.showFlushbarMsg(
+                                  translations[selectedLanguage]
+                                          ?['PremAppPurchase'] ??
+                                      '',
+                                  context,
+                                  isEnglish),
+                              /*   onPressed: () => _onShowSnack(
                                   Colors.red,
                                   translations[selectedLanguage]
                                           ?['PremAppPurchase'] ??
                                       '',
-                                  context),
+                                  context), */
                               label: Text(translations[selectedLanguage]
                                       ?['CreatePrescBtn'] ??
                                   ''),
