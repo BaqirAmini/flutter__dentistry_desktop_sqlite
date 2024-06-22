@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:ffi';
+import 'package:another_flushbar/flushbar.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/patients/patient_info.dart';
+import 'package:flutter_dentistry/views/settings/purchase_product_key.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
@@ -20,16 +22,40 @@ import 'package:pdf/widgets.dart' as pw;
 import 'dart:ui' as ui;
 
 class GlobalUsage {
-  // A toast message to be used anywhere required
-  static void showCustomToast(BuildContext context, String message) {
-    final scaffold = ScaffoldMessenger.of(context);
-    scaffold.showSnackBar(
-      SnackBar(
-        content: Text(message),
-        action: SnackBarAction(
-            label: 'OK', onPressed: scaffold.hideCurrentSnackBar),
+  // This is to show a snackbar message.
+  static void showFlushbarMsg(
+      String msg, BuildContext context, bool isEnglish) {
+    Flushbar(
+      backgroundColor: Colors.red,
+      flushbarStyle: FlushbarStyle.GROUNDED,
+      flushbarPosition: FlushbarPosition.BOTTOM,
+      mainButton: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: Card(
+            shape: CircleBorder(),
+            elevation: 5,
+            child: IconButton(
+              alignment:
+                  isEnglish ? Alignment.centerLeft : Alignment.centerRight,
+              tooltip: 'Purchase Crown PRO',
+              onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const PurchaseProductKey())),
+              icon: const Icon(Icons.workspace_premium_outlined,
+                  color: Colors.green),
+            ),
+          )),
+      messageText: Directionality(
+        textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
+        child: Text(
+          msg,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white),
+        ),
       ),
-    );
+      duration: const Duration(seconds: 5),
+    ).show(context);
   }
 
   /* ------------------- CHARACTERS/DIGITS ALLOWED ---------------- */
@@ -41,7 +67,7 @@ class GlobalUsage {
   static const allowedDigPeriod = r"^\d*\.?\d{0,2}$";
   /* -------------------/. CHARACTERS/DIGITS ALLOWED ---------------- */
 
-static Function? onReload;
+  static Function? onReload;
 
   static bool widgetVisible = false;
 //  This static variable specifies whether the appointment
