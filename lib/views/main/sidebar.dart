@@ -2,15 +2,19 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_dentistry/config/developer_options.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
+import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'package:flutter_dentistry/views/finance/expenses/expenses.dart';
 import 'package:flutter_dentistry/views/services/services.dart';
+import 'package:flutter_dentistry/views/settings/purchase_product_key.dart';
 import 'package:flutter_dentistry/views/settings/settings.dart';
+import 'package:flutter_dentistry/views/settings/settings_menu.dart';
 import 'package:flutter_dentistry/views/sf_calendar/appointment_sfcalendar.dart';
 import 'package:flutter_dentistry/views/staff/staff.dart';
 import 'package:flutter_dentistry/views/finance/taxes/taxes.dart';
 import 'package:flutter_dentistry/views/staff/staff_info.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'login.dart';
 import 'package:flutter_dentistry/views/patients/patients.dart';
 import 'package:flutter_dentistry/config/translations.dart';
@@ -29,6 +33,9 @@ class _SidebarState extends State<Sidebar> {
   var selectedLanguage;
   // ignore: prefer_typing_uninitialized_variables
   var isEnglish;
+// This variable is used for crown version.
+  bool isProVersionActivated = false;
+
   // Sign out from system
   void onLogOut(BuildContext context) {
     showDialog(
@@ -213,12 +220,68 @@ class _SidebarState extends State<Sidebar> {
     selectedLanguage = languageProvider.selectedLanguage;
     isEnglish = selectedLanguage == 'English';
 
+    // Fetch crown version (Standard / PRO) from provider
+    var crownVerProvider =
+        Provider.of<SettingsProvider>(context);
+    isProVersionActivated = crownVerProvider.getSelectedVersion;
+
     return Drawer(
       child: ListView(
         children: [
           UserAccountsDrawerHeader(
             accountName: Text('${StaffInfo.firstName} ${StaffInfo.lastName}'),
-            accountEmail: Text('${StaffInfo.position}'),
+            accountEmail: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('${StaffInfo.position}'),
+                isProVersionActivated
+                    ? Container(
+                        margin: const EdgeInsets.only(left: 10.0),
+                        child: Card(
+                          elevation: 5.0,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 5.0, horizontal: 8.0),
+                            child: Row(
+                              children: [
+                                Text(
+                                  'PRO',
+                                  style: TextStyle(
+                                      fontSize:
+                                          MediaQuery.of(context).size.width *
+                                              0.008,
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(width: 10.0),
+                                Icon(Icons.verified,
+                                    color: Colors.green,
+                                    size: MediaQuery.of(context).size.width *
+                                        0.012)
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container(
+                        margin: const EdgeInsets.only(left: 10.0),
+                        child: Card(
+                          elevation: 5.0,
+                          child: TextButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const PurchaseProductKey())).then((_) {
+                              setState(() {});
+                            }),
+                            child: const Text('Switch to PRO',
+                                style: TextStyle(color: Colors.red)),
+                          ),
+                        ),
+                      ),
+              ],
+            ),
             currentAccountPicture: InkWell(
               child: CircleAvatar(
                 backgroundImage: _image,
