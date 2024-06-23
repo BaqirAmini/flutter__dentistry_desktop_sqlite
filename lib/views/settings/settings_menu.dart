@@ -54,7 +54,8 @@ void _onShowSnack(Color backColor, String msg) {
 }
 
 class SettingsMenu extends StatefulWidget {
-  const SettingsMenu({Key? key}) : super(key: key);
+  int selectedIndex;
+  SettingsMenu({Key? key, required this.selectedIndex}) : super(key: key);
 
   @override
   State<SettingsMenu> createState() => _SettingsMenuState();
@@ -75,7 +76,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'خریداری نسخه ممتاز',
+                translations[selectedLanguage]?['PurProHeading'] ?? '',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 15),
@@ -94,18 +95,18 @@ class _SettingsMenuState extends State<SettingsMenu> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'چرا نسخه ممتاز؟',
+                      translations[selectedLanguage]?['WhyPro'] ?? '',
                       style: TextStyle(
-                        fontSize: MediaQuery.of(context).size.width * 0.015,
+                        fontSize: MediaQuery.of(context).size.width * 0.012,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'نسخه ممتاز کرون دارای قابلیت های مهم دیگر است که شما را قادر میسازد تا: ',
+                     translations[selectedLanguage]?['Label4Pro'] ?? '',
                       style: TextStyle(
-                        fontSize: MediaQuery.of(context).size.width * 0.012,
+                        fontSize: MediaQuery.of(context).size.width * 0.010,
                         color: Colors.white,
                       ),
                     ),
@@ -113,9 +114,9 @@ class _SettingsMenuState extends State<SettingsMenu> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        '1 - تعداد مریض های نا محدود را ثبت کنید.',
+                        translations[selectedLanguage]?['ListFeature1'] ?? '',
                         style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width * 0.012,
+                          fontSize: MediaQuery.of(context).size.width * 0.010,
                           color: Colors.white,
                         ),
                       ),
@@ -123,9 +124,9 @@ class _SettingsMenuState extends State<SettingsMenu> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        '2 - تعداد مصارف نا محدود را ثبت کنید.',
+                        translations[selectedLanguage]?['ListFeature2'] ?? '',
                         style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width * 0.012,
+                          fontSize: MediaQuery.of(context).size.width * 0.010,
                           color: Colors.white,
                         ),
                       ),
@@ -135,9 +136,9 @@ class _SettingsMenuState extends State<SettingsMenu> {
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
-                          '3 - جلسات آینده برای مریض های تان ترتیب دهید که سیستم به شما پیش از جلسه ترتیب شده هشدار میدهد.',
+                          translations[selectedLanguage]?['ListFeature3'] ?? '',
                           style: TextStyle(
-                            fontSize: MediaQuery.of(context).size.width * 0.012,
+                            fontSize: MediaQuery.of(context).size.width * 0.010,
                             color: Colors.white,
                           ),
                         ),
@@ -146,9 +147,9 @@ class _SettingsMenuState extends State<SettingsMenu> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        '4 - برای اینکه اطلاعات کلینک تان از بین نرود، پشتیبان گیری کنید.',
+                        translations[selectedLanguage]?['ListFeature4'] ?? '',
                         style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width * 0.012,
+                          fontSize: MediaQuery.of(context).size.width * 0.010,
                           color: Colors.white,
                         ),
                       ),
@@ -156,9 +157,9 @@ class _SettingsMenuState extends State<SettingsMenu> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        '5 - نسخه ای کمپیوتری برای مریض های تان تجویز کنید.',
+                        translations[selectedLanguage]?['ListFeature5'] ?? '',
                         style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width * 0.012,
+                          fontSize: MediaQuery.of(context).size.width * 0.010,
                           color: Colors.white,
                         ),
                       ),
@@ -166,9 +167,9 @@ class _SettingsMenuState extends State<SettingsMenu> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        '6 - اکسری  مریض های تانرا مدیریت کنید (X-Ray).',
+                        translations[selectedLanguage]?['ListFeature6'] ?? '',
                         style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width * 0.012,
+                          fontSize: MediaQuery.of(context).size.width * 0.010,
                           color: Colors.white,
                         ),
                       ),
@@ -176,9 +177,9 @@ class _SettingsMenuState extends State<SettingsMenu> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        '7 - ده کارمند برای کلینیک تا ثبت کنید.',
+                        translations[selectedLanguage]?['ListFeature7'] ?? '',
                         style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width * 0.012,
+                          fontSize: MediaQuery.of(context).size.width * 0.010,
                           color: Colors.white,
                         ),
                       ),
@@ -186,9 +187,9 @@ class _SettingsMenuState extends State<SettingsMenu> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        '8 - پنج یوزر (کابر) ایجاد کنید که هر کاربر از حساب یا اکونت خودش وارد سیستم شود.',
+                        translations[selectedLanguage]?['ListFeature8'] ?? '',
                         style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width * 0.012,
+                          fontSize: MediaQuery.of(context).size.width * 0.010,
                           color: Colors.white,
                         ),
                       ),
@@ -219,7 +220,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                       GlobalUsage.onReload!();
                     });
                   }),
-                  child: Text('خریداری نسخه ممتاز',
+                  child: Text(translations[selectedLanguage]?['PurchaseBtn'] ?? '',
                       style: Theme.of(context)
                           .textTheme
                           .labelLarge!
@@ -233,7 +234,6 @@ class _SettingsMenuState extends State<SettingsMenu> {
     );
   }
 
-  int _selectedIndex = 1;
   @override
   Widget build(BuildContext context) {
     _fetchPath();
@@ -283,7 +283,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                             translations[selectedLanguage]?['MyProfile'] ?? ''),
                         onTap: () {
                           setState(() {
-                            _selectedIndex = 1;
+                            widget.selectedIndex = 1;
                           });
                         },
                       ),
@@ -302,7 +302,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                             translations[selectedLanguage]?['ChangePwd'] ?? ''),
                         onTap: () {
                           setState(() {
-                            _selectedIndex = 2;
+                            widget.selectedIndex = 2;
                           });
                         },
                       ),
@@ -322,7 +322,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                               translations[selectedLanguage]?['Backup'] ?? ''),
                           onTap: () {
                             setState(() {
-                              _selectedIndex = 3;
+                              widget.selectedIndex = 3;
                             });
                           },
                         )
@@ -347,7 +347,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                               translations[selectedLanguage]?['Restore'] ?? ''),
                           onTap: () {
                             setState(() {
-                              _selectedIndex = 4;
+                              widget.selectedIndex = 4;
                             });
                           },
                         )
@@ -381,7 +381,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                             ''),
                         onTap: () {
                           setState(() {
-                            _selectedIndex = 7;
+                            widget.selectedIndex = 7;
                           });
                         },
                       ),
@@ -391,7 +391,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                             translations[selectedLanguage]?['Theme'] ?? ''),
                         onTap: () {
                           setState(() {
-                            _selectedIndex = 5;
+                            widget.selectedIndex = 5;
                           });
                         },
                       ),
@@ -401,29 +401,37 @@ class _SettingsMenuState extends State<SettingsMenu> {
                             translations[selectedLanguage]?['Languages'] ?? ''),
                         onTap: () {
                           setState(() {
-                            _selectedIndex = 6;
+                            widget.selectedIndex = 6;
                           });
                         },
                       ),
                       isProVersionActivated
-                          ? const Card(
+                          ? Card(
                               elevation: 1.5,
                               child: ListTile(
-                                leading: Icon(Icons.workspace_premium_outlined,
+                                leading: const Icon(
+                                    Icons.workspace_premium_outlined,
                                     color: Colors.green),
                                 title: Row(
                                   children: [
                                     Text(
-                                      'PRO Activated',
-                                      style: TextStyle(
+                                      translations[selectedLanguage]?['Pro'] ??
+                                          '',
+                                      style: const TextStyle(
                                           color: Colors.green,
                                           fontWeight: FontWeight.bold),
                                     ),
-                                    SizedBox(width: 10.0),
-                                    Icon(Icons.verified, color: Colors.green)
+                                    const SizedBox(width: 10.0),
+                                    const Icon(Icons.verified,
+                                        color: Colors.green)
                                   ],
                                 ),
                                 onTap: null,
+                                  /*   onTap: () {
+                                  setState(() {
+                                    widget.selectedIndex = 8;
+                                  });
+                                }, */
                               ),
                             )
                           : Card(
@@ -431,14 +439,17 @@ class _SettingsMenuState extends State<SettingsMenu> {
                               child: ListTile(
                                 leading: const Icon(
                                     Icons.workspace_premium_outlined,
-                                    color: Colors.green),
-                                title: const Text('Switch to PRO Version',
-                                    style: TextStyle(
-                                        color: Colors.green,
+                                    color: Colors.red),
+                                title: Text(
+                                    translations[selectedLanguage]
+                                            ?['Switch2Pro'] ??
+                                        '',
+                                    style: const TextStyle(
+                                        color: Colors.red,
                                         fontWeight: FontWeight.bold)),
                                 onTap: () {
                                   setState(() {
-                                    _selectedIndex = 8;
+                                    widget.selectedIndex = 8;
                                   });
                                 },
                               ),
@@ -450,7 +461,8 @@ class _SettingsMenuState extends State<SettingsMenu> {
             ),
             Flexible(
               flex: 3,
-              child: onShowSettingsItem(context, _selectedIndex, onUpdatePhoto),
+              child: onShowSettingsItem(
+                  context, widget.selectedIndex, onUpdatePhoto),
             ),
           ],
         ),

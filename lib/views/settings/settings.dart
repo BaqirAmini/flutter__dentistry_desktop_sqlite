@@ -15,7 +15,6 @@ import 'package:intl/intl.dart' as intl;
 
 // This variable is used for crown version.
 bool isProVersionActivated = false;
-void main() => runApp(const Settings());
 // Create the global key at the top level of your Dart file
 final GlobalKey<ScaffoldMessengerState> _globalKeyRenewLicense =
     GlobalKey<ScaffoldMessengerState>();
@@ -40,7 +39,9 @@ var selectedLanguage;
 var isEnglish;
 
 class Settings extends StatefulWidget {
-  const Settings({Key? key}) : super(key: key);
+  // This argument is in fact 'selectedIndex' in settings_menu.dart page which determines what menu should be displayed.
+  final int passedArg;
+  const Settings({Key? key, required this.passedArg}) : super(key: key);
 
   @override
   State<Settings> createState() => _SettingsState();
@@ -49,9 +50,7 @@ class Settings extends StatefulWidget {
 class _SettingsState extends State<Settings>
     with SingleTickerProviderStateMixin {
   // Declare this method for refreshing UI of staff info
-  void onRefresh() {
-   
-  }
+  void onRefresh() {}
 
   late AnimationController _controller;
   // form controllers
@@ -433,7 +432,7 @@ class _SettingsState extends State<Settings>
   @override
   Widget build(BuildContext context) {
     GlobalUsage.onReload = onRefresh;
-    
+    print('In settings: ${widget.passedArg}');
     // Fetch translations keys based on the selected language.
     var languageProvider = Provider.of<LanguageProvider>(context);
     selectedLanguage = languageProvider.selectedLanguage;
@@ -493,7 +492,7 @@ class _SettingsState extends State<Settings>
                   const SizedBox(width: 15.0)
                 ],
               ),
-              body: const SettingsMenu(),
+              body: SettingsMenu(selectedIndex: widget.passedArg),
             );
           }
         },

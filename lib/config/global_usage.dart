@@ -37,7 +37,7 @@ class GlobalUsage {
             child: IconButton(
               alignment:
                   isEnglish ? Alignment.centerLeft : Alignment.centerRight,
-              tooltip: 'Purchase Crown PRO',
+              tooltip: 'Purchase',
               onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(

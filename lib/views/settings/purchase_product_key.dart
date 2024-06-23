@@ -70,7 +70,7 @@ class _PurchaseProductKeyState extends State<PurchaseProductKey> {
     isProVersionActivated = crownVerProvider.getSelectedVersion;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Purchase Your Product Key'),
+        title: const Text('Purchased License Key Verification'),
       ),
       body: Center(
         child: Form(
@@ -306,6 +306,12 @@ class _PurchaseProductKeyState extends State<PurchaseProductKey> {
                                           _verifyMsg =
                                               'Sorry, this product key has expired. Please purchase the new one.';
                                         });
+                                      /*   Provider.of<SettingsProvider>(context, listen: false)
+                                            .setSelectedVersion = false;
+                                        isProVersionActivated = false;
+                                        prefs.setString('crownType', 'Standard');
+                                        Features.setVersion(
+                                            await _globalUsage.getCrownType()); */
                                       } else {
                                         await _globalUsage
                                             .storeExpiryDate(expiryDate);
@@ -357,21 +363,26 @@ class _PurchaseProductKeyState extends State<PurchaseProductKey> {
                     ],
                   ),
                   SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+                  Text('Need Help? Contact Us', style: Theme.of(context).textTheme.titleMedium),
                   SizedBox(
                     width: MediaQuery.of(context).size.width * 0.2,
-                    child: Row(
-                      children: [
-                        Icon(FontAwesomeIcons.whatsapp,
-                            color: Colors.grey[600]),
-                        const SizedBox(width: 8.0),
-                        Text('(+93)79 21 95 121',
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelLarge!
-                                .copyWith(
-                                    color: const Color.fromARGB(
-                                        255, 116, 115, 115)))
-                      ],
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(FontAwesomeIcons.whatsapp,
+                              color: Colors.grey[600]),
+                          const SizedBox(width: 8.0),
+                          Text('(+93)79 21 95 121',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge!
+                                  .copyWith(
+                                      color: const Color.fromARGB(
+                                          255, 116, 115, 115)))
+                        ],
+                      ),
                     ),
                   ),
                 ],

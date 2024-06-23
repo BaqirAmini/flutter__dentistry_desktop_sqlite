@@ -374,7 +374,7 @@ final Map<String, Map<String, String>> translations = {
     'ChangeProfilePhoto': 'Change Profile Photo',
     'ValidDuration': 'Your Product Key is Valid for: ',
     'Days': 'Days ',
-    'PremAppPurchase': 'Please purchase the premium app.',
+    'PremAppPurchase': 'Please Purchase Crown PRO.',
     'CreateXBtn': 'Backup X-Ray Images',
     'XDirNotFound': 'X-Ray Directory not Found.',
     'XDirEmpty': 'X-Ray Directory is Empty.',
@@ -386,10 +386,28 @@ final Map<String, Map<String, String>> translations = {
     'ConfirmXRDelete':
         'Are you sure you want to permanently delete this X-Ray file?',
     'RecordLimitMsg':
-        'Max Records Reached. Please contact Emransoft for more info.',
+        'Please Purchase Crown PRO.',
     'ChangeCalendar': 'Change Calendar',
     'Gregorian': 'Gregorian',
     'Hijri': 'Hijri',
+    'Pro': 'Crown PRO',
+    'Switch2Pro': 'Switch to PRO',
+    'PurProHeading': 'Purchase Crown PRO',
+    'WhyPro': 'Why Crown PRO?',
+    'Label4Pro':
+        'Crown PRO holds more important features which enables you to:',
+    'ListFeature1': '1 - Register unlimited patients.',
+    'ListFeature2': '2 - Register unlimited expenses.',
+    'ListFeature3':
+        '3 - Schedule upcoming appointments for you patients for which Crown alerts you before.',
+    'ListFeature4':
+        '4 - Create backup from your database to not lose your clinical data.',
+    'ListFeature5': '5 - Create digital prescription for your patients.',
+    'ListFeature6': '6 - Manage your patients\' X-Ray.',
+    'ListFeature7': '7 - Register maximum staff for your clinic.',
+    'ListFeature8':
+        '8 - Create more user accounts which helps any user can login to the Crown independently.',
+    'PurchaseBtn': 'Purchase',
     /*----/. SETTINGS -----*/
     /*---------- USER PROFILE -----------*/
     'MyProfileHeading': 'Edit My Personal Info',
@@ -866,7 +884,7 @@ final Map<String, Map<String, String>> translations = {
     'ChangeProfilePhoto': 'تغییر عکس پروفایل',
     'ValidDuration': 'کلید محصول (کلید لایسنس) شما مدار اعتبار است مدت: ',
     'Days': 'روز ',
-    'PremAppPurchase': 'لطفاً نسخه ممتاز این اپلیکیشن را خریداری کنید.',
+    'PremAppPurchase': 'لطفاً کرون ممتاز را خریداری کنید.',
     'CreateXBtn': 'پشتیبان گیری از تصاویر اکسری',
     'XDirNotFound': 'فولدر اکسری یافت نشد.',
     'XDirEmpty': 'فولدر اکسری خالی است.',
@@ -878,10 +896,28 @@ final Map<String, Map<String, String>> translations = {
     'ConfirmXRDelete':
         'آیا مطمیین هستید تا این فایل اکسری را بصورت دایمی حذف کنید؟',
     'RecordLimitMsg':
-        'حد نهایی ریکاردها تکمیل گردیده است. لطفاً برای معلومات بیشتر با عمران سافت تماس بگیرید.',
+        'لطفاً کرون ممتاز را خریداری کنید.',
     'ChangeCalendar': 'تبدیل جنتری (تقویم)',
     'Gregorian': 'میلادی',
     'Hijri': 'هجری شمسی',
+    'Pro': 'کرون ممتاز',
+    'Switch2Pro': 'تبدیل به ممتاز',
+    'PurProHeading': 'خریداری کرون ممتاز',
+    'WhyPro': 'چرا نسخه ممتاز کرون؟',
+    'Label4Pro':
+        'کرون ممتاز دارای قابلیتهای مهم بیشتر است که شما را قادر میسازد تا:',
+    'ListFeature1': '1 - تعداد نامحدود مریض را ثبت دیتابیس کنید.',
+    'ListFeature2': '2 - تعداد نامحدود مصارف را ثبت دیتابیس کنید.',
+    'ListFeature3':
+        '3 - جلسات آینده برای مریض های تان ترتیب دهید و سیستم پیش از آن به شما هشدار میدهد.',
+    'ListFeature4':
+        '4 - از دیتابیس تان پشتیبان گیری کنید تا مبادا اطلاعات مرتبط به کلینیک تان از بین برود.',
+    'ListFeature5': '5 - نسخه دیجیتالی برای مریض های تان ایجاد کنید.',
+    'ListFeature6': '6 - اکسری (X-Ray) مریض های تانرا به خوبی مدیریت کنید.',
+    'ListFeature7': '7 - حداکثر کارمندان کلینیک تانرا ثبت دیتابیس کنید.',
+    'ListFeature8':
+        '8 - حساب کاربری (یوزر) بیشتری برای کارمندان تان ایجاد کنید تا هر کارمند از حساب یا اکونت خودش وارد سیستم شود.',
+    'PurchaseBtn': 'خریداری',
     /*----/. SETTINGS -----*/
     /*---------- USER PROFILE -----------*/
     'MyProfileHeading': 'تغییر معلومات شخصی من',
@@ -1367,7 +1403,7 @@ final Map<String, Map<String, String>> translations = {
     'ValidDuration':
         'ستاسو د محصول کیلي (د جواز کلیدي) د دې لپاره اعتبار لري: ',
     'Days': 'ورځې ',
-    'PremAppPurchase': 'مهرباني وکړئ د دې اپلیکیشن پریمیم نسخه واخلئ.',
+    'PremAppPurchase': 'مهرباني وکړئ کرون پریمیم واخلئ.',
     'CreateXBtn': 'بیک اپ اکسری عکسونه',
     'XDirNotFound': 'د اکسری فولډر ونه موندل شو.',
     'XDirEmpty': 'X-Ray Directory is Empty.',
@@ -1379,10 +1415,27 @@ final Map<String, Map<String, String>> translations = {
     'ConfirmXRDelete':
         'ایا تاسو ډاډه یاست چې تاسو غواړئ دا اکسری فایل د تل لپاره حذف کړئ؟',
     'RecordLimitMsg':
-        'د ریکارډونو وروستی حد بشپړ شوی. مهرباني وکړئ د نورو معلوماتو لپاره عمران سافت سره اړیکه ونیسئ.',
+        'مهرباني وکړئ کرون پریمیم واخلئ.',
     'ChangeCalendar': 'تقویم بدل  کړئ',
     'Gregorian': 'میلادي',
     'Hijri': 'هجري',
+    'Pro': 'کرون پریمیم',
+    'Switch2Pro': 'پریمیم نسخه ته واړوئ',
+    'PurProHeading': 'د پریمیم کرون پیرود',
+    'WhyPro': 'ولې د کرون پریمیم نسخه؟',
+    'Label4Pro': 'کرون پریمیم ډیر مهم ځانګړتیاوې لري چې تاسو ته وړتیا ورکوي:',
+    'ListFeature1': '1 - په ډیټابیس کې د غیر محدود شمیر ناروغانو ثبت کړئ.',
+    'ListFeature2': '2 - په ډیټابیس کې د غیر محدود شمیر کارونې ثبت کړئ.',
+    'ListFeature3':
+        '3 - د خپلو ناروغانو لپاره راتلونکي ناستې تنظیم کړئ او سیسټم به تاسو ته دمخه خبرداری درکړي.',
+    'ListFeature4':
+        '4 - خپل ډیټابیس بیک اپ کړئ ترڅو ستاسو د کلینیک اړوند معلومات له لاسه ورنکړي.',
+    'ListFeature5': '5 - د خپلو ناروغانو لپاره ډیجیټل نسخه جوړه کړئ.',
+    'ListFeature6': '6 - خپل د د ناروغان اکسری (X-Ray) ښه اداره کړئ.',
+    'ListFeature7': '7 - په ډیټابیس کې ستاسو د کلینیک ډیری کارمندان ثبت کړئ.',
+    'ListFeature8':
+        '8 - د خپلو کارمندانو لپاره ډیر کارونکي حسابونه جوړ کړئ ترڅو هر کارمند وکولی شي د خپل حساب څخه لاګ ان شي.',
+    'PurchaseBtn': 'اخیستل',
     /*----/. SETTINGS -----*/
     /*---------- USER PROFILE -----------*/
     'MyProfileHeading': 'زما شخصي معلومات سم کړئ',

@@ -7,14 +7,12 @@ import 'package:flutter_dentistry/views/finance/expenses/expenses.dart';
 import 'package:flutter_dentistry/views/services/services.dart';
 import 'package:flutter_dentistry/views/settings/purchase_product_key.dart';
 import 'package:flutter_dentistry/views/settings/settings.dart';
-import 'package:flutter_dentistry/views/settings/settings_menu.dart';
 import 'package:flutter_dentistry/views/sf_calendar/appointment_sfcalendar.dart';
 import 'package:flutter_dentistry/views/staff/staff.dart';
 import 'package:flutter_dentistry/views/finance/taxes/taxes.dart';
 import 'package:flutter_dentistry/views/staff/staff_info.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'login.dart';
 import 'package:flutter_dentistry/views/patients/patients.dart';
 import 'package:flutter_dentistry/config/translations.dart';
@@ -221,8 +219,7 @@ class _SidebarState extends State<Sidebar> {
     isEnglish = selectedLanguage == 'English';
 
     // Fetch crown version (Standard / PRO) from provider
-    var crownVerProvider =
-        Provider.of<SettingsProvider>(context);
+    var crownVerProvider = Provider.of<SettingsProvider>(context);
     isProVersionActivated = crownVerProvider.getSelectedVersion;
 
     return Drawer(
@@ -245,7 +242,7 @@ class _SidebarState extends State<Sidebar> {
                             child: Row(
                               children: [
                                 Text(
-                                  'PRO',
+                                  translations[selectedLanguage]?['Pro'] ?? '',
                                   style: TextStyle(
                                       fontSize:
                                           MediaQuery.of(context).size.width *
@@ -269,13 +266,14 @@ class _SidebarState extends State<Sidebar> {
                           elevation: 5.0,
                           child: TextButton(
                             onPressed: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const PurchaseProductKey())).then((_) {
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const Settings(passedArg: 8)))
+                                .then((_) {
                               setState(() {});
                             }),
-                            child: const Text('Switch to PRO',
+                            child: Text(translations[selectedLanguage]?['Switch2Pro'] ?? '',
                                 style: TextStyle(color: Colors.red)),
                           ),
                         ),
@@ -290,7 +288,7 @@ class _SidebarState extends State<Sidebar> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const Settings(),
+                    builder: (context) => const Settings(passedArg: 1),
                   ),
                 ).then((_) {
                   _fetchUserProfilePhoto();
@@ -449,7 +447,7 @@ class _SidebarState extends State<Sidebar> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const Settings(),
+                  builder: (context) => const Settings(passedArg: 1),
                 ),
               );
             },
