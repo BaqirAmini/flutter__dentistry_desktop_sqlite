@@ -405,7 +405,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                           });
                         },
                       ),
-                      isProVersionActivated
+                      Features.licenseKeyRequired
                           ? Card(
                               elevation: 1.5,
                               child: ListTile(
