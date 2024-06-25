@@ -10,12 +10,15 @@ import 'package:flutter_dentistry/config/settings_provider.dart';
 import 'package:flutter_dentistry/models/db_conn.dart';
 import 'package:flutter_dentistry/views/main/login.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   GlobalUsage globalUsage = GlobalUsage();
   /* --------------- JUST FOR TEST! comment out (if not needed) --------------- */
   //  Features.setVersion('Standard'); 
   // Features.setVersion('Premium'); 
+  //  SharedPreferences prefs = await SharedPreferences.getInstance();
+  // await prefs.clear();
   /* ---------------/. JUST FOR TEST! comment out (if not needed) --------------- */
   // This function call is used to enable users switch to PRO when they use the FREEMIUM
   Features.setVersion(
