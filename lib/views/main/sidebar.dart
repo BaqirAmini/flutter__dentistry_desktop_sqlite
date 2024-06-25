@@ -231,7 +231,7 @@ class _SidebarState extends State<Sidebar> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('${StaffInfo.position}'),
-                isProVersionActivated
+                Features.licenseKeyRequired
                     ? Container(
                         margin: const EdgeInsets.only(left: 10.0),
                         child: Card(
@@ -273,8 +273,10 @@ class _SidebarState extends State<Sidebar> {
                                 .then((_) {
                               setState(() {});
                             }),
-                            child: Text(translations[selectedLanguage]?['Switch2Pro'] ?? '',
-                                style: TextStyle(color: Colors.red)),
+                            child: Text(
+                                translations[selectedLanguage]?['Switch2Pro'] ??
+                                    '',
+                                style: const TextStyle(color: Colors.red)),
                           ),
                         ),
                       ),
