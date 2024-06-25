@@ -13,6 +13,11 @@ import 'package:provider/provider.dart';
 
 void main() async {
   GlobalUsage globalUsage = GlobalUsage();
+  /* --------------- JUST FOR TEST! comment out (if not needed) --------------- */
+  //  Features.setVersion('Standard'); 
+  // Features.setVersion('Premium'); 
+  /* ---------------/. JUST FOR TEST! comment out (if not needed) --------------- */
+  // This function call is used to enable users switch to PRO when they use the FREEMIUM
   Features.setVersion(
       await globalUsage.getCrownType()); // For premium / Standard version
   runApp(const CrownApp());
@@ -63,6 +68,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     // Navigate to the login page after 3 seconds
     Future.delayed(const Duration(seconds: 3), () async {
+      /* ----------- JUST FOR TEST to delete the stored license key ----------- */
       // _globalUsage.deleteValue4User('UserlicenseKey');
       // _globalUsage.deleteExpiryDate();
       /*-------------------- It must require license key only if it is PREMIUM app ------------------*/
