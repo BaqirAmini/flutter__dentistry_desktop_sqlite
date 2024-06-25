@@ -399,7 +399,7 @@ final Map<String, Map<String, String>> translations = {
     'ListFeature1': '1 - Register unlimited patients.',
     'ListFeature2': '2 - Register unlimited expenses.',
     'ListFeature3':
-        '3 - Schedule upcoming appointments for you patients for which Crown alerts you before.',
+        '3 - Schedule upcoming appointments for your patients for which Crown alerts you before.',
     'ListFeature4':
         '4 - Create backup from your database to not lose your clinical data.',
     'ListFeature5': '5 - Create digital prescription for your patients.',
