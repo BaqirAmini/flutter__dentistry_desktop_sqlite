@@ -1,12 +1,10 @@
-import 'dart:ffi';
 import 'dart:io';
-import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dentistry/config/global_usage.dart';
 import 'package:flutter_dentistry/config/private/private.dart';
 import 'package:flutter_dentistry/views/main/login.dart';
-import 'package:win32/win32.dart';
+import 'package:flutter_dentistry/views/settings/contact_us.dart';
 
 void main() => runApp(const LicenseVerification());
 
@@ -60,54 +58,127 @@ class _LiscenseVerificationState extends State<LicenseVerification> {
         child: Scaffold(
           body: Center(
             child: Container(
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(Radius.circular(10)),
-                shape: BoxShape.rectangle,
-                border: Border.all(color: Colors.grey, width: 1.5),
-              ),
-              width: MediaQuery.of(context).size.width * 0.7,
-              height: MediaQuery.of(context).size.height * 0.7,
-              child: Form(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Form(
-                      key: _liscenseVerifyFK,
-                      child: Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.vpn_key_outlined,
-                                size: MediaQuery.of(context).size.width * 0.05,
-                                color: Colors.blue),
-                            SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.01),
-                            Text(
-                              'License Key Verification',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineLarge!
-                                  .copyWith(color: Colors.blue),
-                            ),
-                            const SizedBox(height: 10.0),
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.5,
-                              child: Text(_globalUsage.productKeyRelatedMsg,
-                                  style:
-                                      Theme.of(context).textTheme.labelLarge),
-                            ),
-                            const SizedBox(height: 50.0),
-                            Container(
-                              margin: const EdgeInsets.all(10.0),
-                              width: MediaQuery.of(context).size.width * 0.43,
-                              child: Builder(builder: (context) {
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
+                  shape: BoxShape.rectangle,
+                  border: Border.all(color: Colors.grey, width: 1.5),
+                ),
+                width: MediaQuery.of(context).size.width * 0.7,
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: _liscenseVerifyFK,
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.vpn_key_outlined,
+                              size: MediaQuery.of(context).size.width * 0.05,
+                              color: Colors.blue),
+                          SizedBox(
+                              height:
+                                  MediaQuery.of(context).size.height * 0.01),
+                          Text(
+                            'License Key Verification',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineLarge!
+                                .copyWith(color: Colors.blue),
+                          ),
+                          const SizedBox(height: 10.0),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.5,
+                            child: Text(_globalUsage.productKeyRelatedMsg,
+                                style: Theme.of(context).textTheme.labelLarge),
+                          ),
+                          const SizedBox(height: 50.0),
+                          Container(
+                            margin: const EdgeInsets.all(10.0),
+                            width: MediaQuery.of(context).size.width * 0.43,
+                            child: Builder(builder: (context) {
+                              return Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('Machine Code',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge),
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width *
+                                        0.35,
+                                    child: TextFormField(
+                                      readOnly: true,
+                                      textDirection: TextDirection.ltr,
+                                      controller: _machineCodeController,
+                                      decoration: InputDecoration(
+                                        suffixIcon: !_isCoppied
+                                            ? IconButton(
+                                                tooltip: 'Copy',
+                                                splashRadius: 18.0,
+                                                onPressed:
+                                                    _machineCodeController
+                                                            .text.isEmpty
+                                                        ? null
+                                                        : () async {
+                                                            Clipboard.setData(
+                                                              ClipboardData(
+                                                                  text:
+                                                                      _machineCodeController
+                                                                          .text),
+                                                            );
+                                                            _onShowSnack(
+                                                                Colors.green,
+                                                                'Machine code copied.');
+                                                            setState(() {
+                                                              _isCoppied = true;
+                                                            });
+
+                                                            /*   ClipboardData?
+                                                            clipboardData =
+                                                            await Clipboard
+                                                                .getData(
+                                                                    Clipboard
+                                                                        .kTextPlain);
+                                                        String?
+                                                            copiedText =
+                                                            clipboardData
+                                                                ?.text;
+                                                        print(
+                                                            'The copy value: $copiedText'); */
+                                                          },
+                                                icon: const Icon(Icons.copy,
+                                                    size: 15.0),
+                                              )
+                                            : const Icon(Icons.done_rounded),
+                                        enabledBorder: const OutlineInputBorder(
+                                          borderSide:
+                                              BorderSide(color: Colors.grey),
+                                        ),
+                                        focusedBorder: const OutlineInputBorder(
+                                          borderSide:
+                                              BorderSide(color: Colors.blue),
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.all(15.0),
+                                        border: const OutlineInputBorder(),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }),
+                          ),
+                          Container(
+                            margin: const EdgeInsets.all(10.0),
+                            width: MediaQuery.of(context).size.width * 0.43,
+                            child: Builder(
+                              builder: (context) {
                                 return Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text('Machine Code',
+                                    Text('Product Key',
                                         style: Theme.of(context)
                                             .textTheme
                                             .labelLarge),
@@ -115,123 +186,43 @@ class _LiscenseVerificationState extends State<LicenseVerification> {
                                       width: MediaQuery.of(context).size.width *
                                           0.35,
                                       child: TextFormField(
-                                        readOnly: true,
                                         textDirection: TextDirection.ltr,
-                                        controller: _machineCodeController,
-                                        decoration: InputDecoration(
-                                          suffixIcon: !_isCoppied
-                                              ? IconButton(
-                                                  tooltip: 'Copy',
-                                                  splashRadius: 18.0,
-                                                  onPressed:
-                                                      _machineCodeController
-                                                              .text.isEmpty
-                                                          ? null
-                                                          : () async {
-                                                              Clipboard.setData(
-                                                                ClipboardData(
-                                                                    text: _machineCodeController
-                                                                        .text),
-                                                              );
-                                                              _onShowSnack(
-                                                                  Colors.green,
-                                                                  'Machine code copied.');
-                                                              setState(() {
-                                                                _isCoppied =
-                                                                    true;
-                                                              });
+                                        controller: _liscenseController,
+                                        validator: (value) {
+                                          if (value!.isEmpty) {
+                                            return 'Enter the product key.';
+                                          }
+                                          return null;
+                                        },
 
-                                                              /*   ClipboardData?
-                                                                  clipboardData =
-                                                                  await Clipboard
-                                                                      .getData(
-                                                                          Clipboard
-                                                                              .kTextPlain);
-                                                              String?
-                                                                  copiedText =
-                                                                  clipboardData
-                                                                      ?.text;
-                                                              print(
-                                                                  'The copy value: $copiedText'); */
-                                                            },
-                                                  icon: const Icon(Icons.copy,
-                                                      size: 15.0),
-                                                )
-                                              : const Icon(Icons.done_rounded),
-                                          enabledBorder:
-                                              const OutlineInputBorder(
+                                        /*  inputFormatters: [
+                                                                FilteringTextInputFormatter.allow(
+                                                                  RegExp(_regExUName),
+                                                                ),
+                                                              ], */
+                                        decoration: const InputDecoration(
+                                          enabledBorder: OutlineInputBorder(
                                             borderSide:
                                                 BorderSide(color: Colors.grey),
                                           ),
-                                          focusedBorder:
-                                              const OutlineInputBorder(
+                                          focusedBorder: OutlineInputBorder(
                                             borderSide:
                                                 BorderSide(color: Colors.blue),
                                           ),
-                                          contentPadding:
-                                              const EdgeInsets.all(15.0),
-                                          border: const OutlineInputBorder(),
+                                          contentPadding: EdgeInsets.all(15.0),
+                                          border: OutlineInputBorder(),
                                         ),
                                       ),
                                     ),
                                   ],
                                 );
-                              }),
+                              },
                             ),
-                            Container(
-                              margin: const EdgeInsets.all(10.0),
-                              width: MediaQuery.of(context).size.width * 0.43,
-                              child: Builder(
-                                builder: (context) {
-                                  return Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text('Product Key',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .labelLarge),
-                                      SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.35,
-                                        child: TextFormField(
-                                          textDirection: TextDirection.ltr,
-                                          controller: _liscenseController,
-                                          validator: (value) {
-                                            if (value!.isEmpty) {
-                                              return 'Enter the product key.';
-                                            }
-                                            return null;
-                                          },
-
-                                          /*  inputFormatters: [
-                                                                      FilteringTextInputFormatter.allow(
-                                                                        RegExp(_regExUName),
-                                                                      ),
-                                                                    ], */
-                                          decoration: const InputDecoration(
-                                            enabledBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: Colors.grey),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: Colors.blue),
-                                            ),
-                                            contentPadding:
-                                                EdgeInsets.all(15.0),
-                                            border: OutlineInputBorder(),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: 20.0),
-                            Row(
+                          ),
+                          const SizedBox(height: 20.0),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.43,
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 Builder(
@@ -345,14 +336,15 @@ class _LiscenseVerificationState extends State<LicenseVerification> {
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                          ),
+                          SizedBox(
+                              height: MediaQuery.of(context).size.height * 0.13),
+                          const ContactUs()
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
+                  ),
+                )),
           ),
         ),
       ),
