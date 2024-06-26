@@ -374,6 +374,7 @@ final Map<String, Map<String, String>> translations = {
     'ChangeProfilePhoto': 'Change Profile Photo',
     'ValidDuration': 'Your Product Key is Valid for: ',
     'Days': 'Days ',
+    'Hours': 'Hours ',
     'PremAppPurchase': 'Please Purchase Crown PRO.',
     'CreateXBtn': 'Backup X-Ray Images',
     'XDirNotFound': 'X-Ray Directory not Found.',
@@ -884,6 +885,7 @@ final Map<String, Map<String, String>> translations = {
     'ChangeProfilePhoto': 'تغییر عکس پروفایل',
     'ValidDuration': 'کلید محصول (کلید لایسنس) شما مدار اعتبار است مدت: ',
     'Days': 'روز ',
+    'Hours': 'ساعت ',
     'PremAppPurchase': 'لطفاً کرون ممتاز را خریداری کنید.',
     'CreateXBtn': 'پشتیبان گیری از تصاویر اکسری',
     'XDirNotFound': 'فولدر اکسری یافت نشد.',
@@ -1403,6 +1405,7 @@ final Map<String, Map<String, String>> translations = {
     'ValidDuration':
         'ستاسو د محصول کیلي (د جواز کلیدي) د دې لپاره اعتبار لري: ',
     'Days': 'ورځې ',
+    'Hours': 'ساعته ',
     'PremAppPurchase': 'مهرباني وکړئ کرون پریمیم واخلئ.',
     'CreateXBtn': 'بیک اپ اکسری عکسونه',
     'XDirNotFound': 'د اکسری فولډر ونه موندل شو.',
