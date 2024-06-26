@@ -337,6 +337,7 @@ class _DashboardState extends State<Dashboard> {
   final GlobalUsage _globalUsage = GlobalUsage();
 
   int _validDays = 0;
+  int _validHours = 0;
   Future<void> _getRemainValidDays() async {
     // Get the current date and time
     DateTime now = DateTime.now();
@@ -344,6 +345,7 @@ class _DashboardState extends State<Dashboard> {
     if (expiryDate != null) {
       int diffInHours = expiryDate.difference(now).inHours;
       _validDays = (diffInHours / 24).floor();
+      _validHours = (diffInHours).floor();
     }
   }
 
@@ -506,6 +508,32 @@ class _DashboardState extends State<Dashboard> {
                               padding: const EdgeInsets.all(6.0),
                               child: Text(
                                 'Your Product Key Will Expire in: $_validDays Days',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall!
+                                    .copyWith(
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                     Visibility(
+                      visible: (Features.licenseKeyRequired &&
+                              (_validDays <= 0 && _validHours > 0))
+                          ? true
+                          : false,
+                      child: Container(
+                        margin: const EdgeInsets.only(left: 200),
+                        child: Center(
+                          child: Card(
+                            elevation: 5,
+                            child: Padding(
+                              padding: const EdgeInsets.all(6.0),
+                              child: Text(
+                                'Your Product Key Will Expire in: $_validHours Hours',
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodySmall!

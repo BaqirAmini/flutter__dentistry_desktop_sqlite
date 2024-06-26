@@ -15,8 +15,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() async {
   GlobalUsage globalUsage = GlobalUsage();
   /* --------------- JUST FOR TEST! comment out (if not needed) --------------- */
-  //  Features.setVersion('Standard'); 
-  // Features.setVersion('Premium'); 
+  //  Features.setVersion('Standard');
+  // Features.setVersion('Premium');
   //  SharedPreferences prefs = await SharedPreferences.getInstance();
   // await prefs.clear();
   /* ---------------/. JUST FOR TEST! comment out (if not needed) --------------- */
@@ -75,6 +75,9 @@ class _SplashScreenState extends State<SplashScreen> {
       // _globalUsage.deleteValue4User('UserlicenseKey');
       // _globalUsage.deleteExpiryDate();
       /*-------------------- It must require license key only if it is PREMIUM app ------------------*/
+      print('Expiry Date: ${await _globalUsage.getExpiryDate()}');
+      print('License Expired: ${await _globalUsage.hasLicenseKeyExpired()}');
+      print('Get License key for user: ${await _globalUsage.getLicenseKey4User()}');
       (Features.licenseKeyRequired)
           ? await _globalUsage.hasLicenseKeyExpired() ||
                   await _globalUsage.getLicenseKey4User() == null

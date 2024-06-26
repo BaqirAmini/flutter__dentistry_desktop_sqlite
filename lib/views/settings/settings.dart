@@ -63,6 +63,7 @@ class _SettingsState extends State<Settings>
 
   final GlobalUsage _globalUsage = GlobalUsage();
   int _validDays = 0;
+  int _validHours = 0;
   Future<void> _getRemainValidDays() async {
     // Get the current date and time
     DateTime now = DateTime.now();
@@ -70,6 +71,7 @@ class _SettingsState extends State<Settings>
     if (expiryDate != null) {
       int diffInHours = expiryDate.difference(now).inHours;
       _validDays = (diffInHours / 24).floor();
+      _validHours = diffInHours;
     }
   }
 
@@ -459,6 +461,18 @@ class _SettingsState extends State<Settings>
                     Center(
                       child: Text(
                         '${translations[selectedLanguage]?['ValidDuration'] ?? ''} $_validDays ${translations[selectedLanguage]?['Days'] ?? ''}',
+                        style: Theme.of(context)
+                            .primaryTextTheme
+                            .labelLarge!
+                            .copyWith(
+                                color:
+                                    const Color.fromARGB(255, 223, 230, 135)),
+                      ),
+                    ),
+                  if (_validDays <= 0 && _validHours >= 0)
+                    Center(
+                      child: Text(
+                        '${translations[selectedLanguage]?['ValidDuration'] ?? ''} $_validHours ${translations[selectedLanguage]?['Hours'] ?? ''}',
                         style: Theme.of(context)
                             .primaryTextTheme
                             .labelLarge!
