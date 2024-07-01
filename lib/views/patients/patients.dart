@@ -2577,10 +2577,11 @@ class _PatientDataTableState extends State<PatientDataTable> {
   Future<void> _fetchData() async {
     final conn = await onConnToSqliteDb();
     final queryResult = await conn.rawQuery(
-        'SELECT firstname, lastname, age, sex, marital_status, phone, pat_ID, strftime("%Y-%m-%d", reg_date) as reg_date, blood_group, address FROM patients ORDER BY reg_date DESC');
+        'SELECT firstname, lastname, age, sex, marital_status, phone, pat_ID, strftime("%Y-%m-%d", reg_date) as reg_date, blood_group, address, cust_pat_ID FROM patients ORDER BY reg_date DESC');
 
     _data = queryResult.map((row) {
       return PatientData(
+        custPatID: (row["cust_pat_ID"] ?? 0) as int,
         firstName: row["firstname"].toString(),
         lastName: row["lastname"] == null ? '' : row["lastname"].toString(),
         age: row["age"].toString(),
@@ -2953,7 +2954,7 @@ class PatientDataSource extends DataTableSource {
   @override
   DataRow getRow(int index) {
     return DataRow(cells: [
-      DataCell(Text('P-${data[index].age}${data[index].patID}')),
+      DataCell(Text('P-${data[index].custPatID}')),
       DataCell(Text(data[index].firstName)),
       DataCell(Text(data[index].lastName)),
       DataCell(Text(
@@ -2980,8 +2981,7 @@ class PatientDataSource extends DataTableSource {
               PatientInfo.bloodGroup = data[index].bloodGroup;
               PatientInfo.address = data[index].address;
               PatientInfo.maritalStatus = data[index].maritalStatus;
-              PatientInfo.formattedPatId =
-                  'P-${data[index].age}${data[index].patID}';
+              PatientInfo.formattedPatId = 'P-${data[index].custPatID}';
               Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -3057,6 +3057,7 @@ class PatientDataSource extends DataTableSource {
 }
 
 class PatientData {
+  final int custPatID;
   final String firstName;
   final String lastName;
   final String age;
@@ -3073,6 +3074,7 @@ class PatientData {
   final Icon deletePatient;
 
   PatientData({
+    required this.custPatID,
     required this.firstName,
     required this.lastName,
     required this.age,
