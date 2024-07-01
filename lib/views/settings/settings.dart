@@ -469,7 +469,8 @@ class _SettingsState extends State<Settings>
                                     const Color.fromARGB(255, 223, 230, 135)),
                       ),
                     ),
-                  if (_validDays <= 0 && _validHours >= 0)
+                  if ((_validDays <= 0 && _validHours >= 0) &&
+                      Features.licenseKeyRequired)
                     Center(
                       child: Text(
                         '${translations[selectedLanguage]?['ValidDuration'] ?? ''} $_validHours ${translations[selectedLanguage]?['Hours'] ?? ''}',
