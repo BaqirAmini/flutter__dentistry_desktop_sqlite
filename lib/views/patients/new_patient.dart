@@ -64,10 +64,27 @@ class _NewPatientState extends State<NewPatient> {
   bool _ageSelected = false;
   int _currentStep = 0;
 
+  final _custPatIDController = TextEditingController();
   final _nameController = TextEditingController();
   final _lNameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addrController = TextEditingController();
+  // Set the last patient ID to patient ID field
+  // Query to fetch patients
+  Future<void> _fetchPatients() async {
+    final conn = await onConnToSqliteDb();
+    var results = await conn
+        .rawQuery('SELECT cust_pat_ID FROM patients ORDER BY pat_ID DESC');
+    int lastPatId = (results.first['cust_pat_ID'] ?? 0) as int;
+    _custPatIDController.text =
+        lastPatId.toString().isEmpty ? '' : '${++lastPatId}';
+  }
+
+  @override
+  void initState() {
+    _fetchPatients();
+    super.initState();
+  }
 
 // Global keys for forms created in this file.
   final _formKey1 = GlobalKey<FormState>();
@@ -116,6 +133,64 @@ class _NewPatientState extends State<NewPatient> {
                   ),
                   Column(
                     children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            '*',
+                            style: TextStyle(
+                                color: Colors.red, fontWeight: FontWeight.bold),
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width * 0.3,
+                            margin: const EdgeInsets.only(
+                                left: 20.0,
+                                right: 10.0,
+                                top: 10.0,
+                                bottom: 10.0),
+                            child: TextFormField(
+                              controller: _custPatIDController,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(GlobalUsage.allowedDigits),
+                                ),
+                              ],
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return 'آی دی مریض الزامی میباشد.';
+                                } /* else if (value.length < 3 ||
+                                    value.length > 10) {
+                                  return translations[selectedLanguage]
+                                      ?['FNLength'];
+                                } */
+                                return null;
+                              },
+                              decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: 'آی دی مریض',
+                                suffixIcon: Icon(Icons.numbers_outlined),
+                                enabledBorder: OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(color: Colors.grey)),
+                                focusedBorder: OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(color: Colors.blue)),
+                                errorBorder: OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(color: Colors.red)),
+                                focusedErrorBorder: OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50.0)),
+                                    borderSide: BorderSide(
+                                        color: Colors.red, width: 1.5)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -982,6 +1057,7 @@ class _NewPatientState extends State<NewPatient> {
 // Add a new patient
   Future<void> onAddNewPatient(BuildContext context) async {
     try {
+      var custPatID = _custPatIDController.text;
       var firstName = _nameController.text;
       var lastName = _lNameController.text;
       var sex = _sexGroupValue;
@@ -996,16 +1072,25 @@ class _NewPatientState extends State<NewPatient> {
       // First Check the patient where it already exists
       var queryCheck = await conn.rawQuery(
           'SELECT pat_ID, phone FROM patients WHERE phone = ?', [phone]);
+      var queryIDCheck = await conn.rawQuery(
+          'SELECT cust_pat_ID, phone FROM patients WHERE cust_pat_ID = ?',
+          [custPatID]);
       if (queryCheck.isNotEmpty) {
         _onShowSnack(
             Colors.red, translations[selectedLanguage]?['DupPatient'] ?? '');
         setState(() {
           _currentStep = 0;
         });
+      } else if (queryIDCheck.isNotEmpty) {
+        _onShowSnack(Colors.red,
+            'مریض با این آی دی در سیستم وجود دارد. لطفاً یک آی دی نو وارد کنید.');
+        setState(() {
+          _currentStep = 0;
+        });
       } else {
         // Firstly insert a patient into patients table
         var insertPatQuery = await conn.rawInsert(
-            'INSERT INTO patients (staff_ID, firstname, lastname, sex, age, marital_status, phone, blood_group, address, reg_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO patients (staff_ID, firstname, lastname, sex, age, marital_status, phone, blood_group, address, reg_date, cust_pat_ID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
               ServiceInfo.selectedDentistID,
               firstName,
@@ -1016,7 +1101,8 @@ class _NewPatientState extends State<NewPatient> {
               phone,
               bGrop,
               addr,
-              DateTime.now().toIso8601String()
+              DateTime.now().toIso8601String(),
+              custPatID
             ]);
 // Choose a specific patient to fetch his/here ID
         if (insertPatQuery > 0) {
