@@ -24,7 +24,7 @@ Future<Database> onConnToSqliteDb() async {
 
     // Open the database. The `onCreate` callback will be called if the database doesn't exist.
     final db =
-        await openDatabase(path, version: 2, onCreate: (db, version) async {
+        await openDatabase(path, version: 3, onCreate: (db, version) async {
       await db.execute('PRAGMA foreign_keys = ON');
       // TABLE = staff
       await db.execute('''
@@ -75,6 +75,7 @@ Future<Database> onConnToSqliteDb() async {
       await db.execute('''
           CREATE TABLE patients(
             pat_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            cust_pat_ID INTEGER,
             staff_ID INTEGER NOT NULL,
             firstname TEXT,
             lastname TEXT,
@@ -294,6 +295,14 @@ Future<Database> onConnToSqliteDb() async {
 
         await db.execute("DROP TABLE clinics");
         await db.execute("ALTER TABLE new_clinics RENAME TO clinics");
+      } else if (oldVersion < 3) {
+        // Add a custom patient ID to be inserted manually by users
+        await db.execute("ALTER TABLE patients ADD COLUMN cust_pat_ID INTEGER");
+        // Update the cust_pat_ID with the primary key values from the same table
+        await db.transaction((txn) async {
+          await txn.rawUpdate('''
+              UPDATE patients SET cust_pat_ID = pat_ID''');
+        });
       }
     });
 
